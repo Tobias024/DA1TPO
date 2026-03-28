@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_auth"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.subastapp.fragments.LoginFragment"
+        android:label="Iniciar Sesión">
+        <action
+            android:id="@+id/action_login_to_register1"
+            app:destination="@id/registerStep1Fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerStep1Fragment"
+        android:name="com.subastapp.fragments.RegisterStep1Fragment"
+        android:label="Registro — Paso 1">
+        <action
+            android:id="@+id/action_register1_to_register2"
+            app:destination="@id/registerStep2Fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerStep2Fragment"
+        android:name="com.subastapp.fragments.RegisterStep2Fragment"
+        android:label="Completar Registro" />
+
+</navigation>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SubastApp</string>
+    <string name="tagline">Subastas en tiempo real</string>
+
+    <!-- Auth -->
+    <string name="login">Iniciar Sesión</string>
+    <string name="register">Registrarse</string>
+    <string name="email">Email</string>
+    <string name="password">Contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="enter">INGRESAR</string>
+    <string name="create_account">Crear cuenta nueva</string>
+    <string name="step1_title">Registro — Paso 1</string>
+    <string name="step2_title">Completar Registro</string>
+    <string name="nombre">Nombre</string>
+    <string name="apellido">Apellido</string>
+    <string name="domicilio">Domicilio Legal</string>
+    <string name="pais">País de Origen</string>
+    <string name="dni_frente">Foto DNI — Frente</string>
+    <string name="dni_dorso">Foto DNI — Dorso</string>
+    <string name="continuar">CONTINUAR</string>
+    <string name="confirmar_password">Confirmar contraseña</string>
+
+    <!-- Auctions -->
+    <string name="subastas_activas">Subastas Activas</string>
+    <string name="filter_todas">Todas</string>
+    <string name="filter_activas">Activas</string>
+    <string name="filter_proximas">Próximas</string>
+    <string name="filter_cerradas">Cerradas</string>
+    <string name="en_vivo">● En vivo</string>
+    <string name="catalogo">Catálogo</string>
+    <string name="precio_base">Precio Base</string>
+    <string name="lote">Lote #%d</string>
+
+    <!-- Bidding -->
+    <string name="oferta_actual">Oferta Actual</string>
+    <string name="pujar">PUJAR</string>
+    <string name="limite_min">Mín: %s</string>
+    <string name="limite_max">Máx: %s</string>
+    <string name="solo_observador">👁 Solo estás observando</string>
+    <string name="historial_pujas">Historial de pujas</string>
+    <string name="se_primero">Sé el primero en pujar</string>
+
+    <!-- Payment -->
+    <string name="medios_pago">Medios de Pago</string>
+    <string name="agregar_medio">Añadir Medio de Pago</string>
+    <string name="verificado">✓ Verificado</string>
+    <string name="pendiente_verificacion">⏳ Pendiente de verificación</string>
+
+    <!-- Consignment -->
+    <string name="consignacion">Solicitar Consignación</string>
+    <string name="mis_consignaciones">Mis Consignaciones</string>
+    <string name="enviar_solicitud">ENVIAR SOLICITUD</string>
+    <string name="declara_propiedad">Declaro que el bien es de mi propiedad y no posee ningún impedimento legal para su comercialización.</string>
+    <string name="declara_origen">Puedo acreditar el origen lícito del bien en caso de ser requerido.</string>
+
+    <!-- Profile -->
+    <string name="perfil">Perfil</string>
+    <string name="cerrar_sesion">Cerrar sesión</string>
+    <string name="mis_compras">Mis Compras</string>
+    <string name="notificaciones">Notificaciones</string>
+
+    <!-- Errors -->
+    <string name="error_campos_requeridos">Complete todos los campos requeridos.</string>
+    <string name="error_conexion">Error de conexión. Verifique su internet.</string>
+    <string name="error_credenciales">Email o contraseña incorrectos.</string>
+    <string name="error_fotos_minimo">Debe adjuntar al menos 6 fotografías.</string>
+    <string name="error_declaraciones">Debe aceptar ambas declaraciones.</string>
+</resources>

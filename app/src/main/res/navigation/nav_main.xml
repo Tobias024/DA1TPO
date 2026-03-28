@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/auctionsFragment">
+
+    <!-- Bottom nav destinations -->
+    <fragment
+        android:id="@+id/auctionsFragment"
+        android:name="com.subastapp.fragments.AuctionsFragment"
+        android:label="Subastas">
+        <action
+            android:id="@+id/action_auctions_to_detail"
+            app:destination="@id/auctionDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.subastapp.fragments.PaymentMethodsFragment"
+        android:label="Medios de Pago">
+        <action
+            android:id="@+id/action_payment_to_add"
+            app:destination="@id/addPaymentFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/consignmentListFragment"
+        android:name="com.subastapp.fragments.ConsignmentListFragment"
+        android:label="Consignaciones">
+        <action
+            android:id="@+id/action_consignmentList_to_form"
+            app:destination="@id/consignmentFormFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.subastapp.fragments.ProfileFragment"
+        android:label="Perfil">
+        <action
+            android:id="@+id/action_profile_to_notifications"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
+
+    <!-- Secondary destinations -->
+    <fragment
+        android:id="@+id/auctionDetailFragment"
+        android:name="com.subastapp.fragments.AuctionDetailFragment"
+        android:label="Detalle de Subasta">
+        <argument
+            android:name="auctionId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_detail_to_catalog"
+            app:destination="@id/catalogFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/catalogFragment"
+        android:name="com.subastapp.fragments.CatalogFragment"
+        android:label="Catálogo">
+        <argument
+            android:name="auctionId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addPaymentFragment"
+        android:name="com.subastapp.fragments.AddPaymentMethodFragment"
+        android:label="Añadir Medio de Pago" />
+
+    <fragment
+        android:id="@+id/consignmentFormFragment"
+        android:name="com.subastapp.fragments.ConsignmentFormFragment"
+        android:label="Solicitar Consignación" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.subastapp.fragments.NotificationsFragment"
+        android:label="Notificaciones" />
+
+</navigation>

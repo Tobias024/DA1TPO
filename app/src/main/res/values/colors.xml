@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary brand colors -->
+    <color name="gold">#C9A84C</color>
+    <color name="gold_dark">#A07830</color>
+    <color name="gold_light">#E8C87A</color>
+
+    <!-- Backgrounds -->
+    <color name="navy">#0D0D1A</color>
+    <color name="navy_card">#1A1A2E</color>
+    <color name="navy_input">#0D1225</color>
+    <color name="navy_border">#2A2A4A</color>
+
+    <!-- Text -->
+    <color name="white">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="text_muted">#666666</color>
+
+    <!-- Status colors -->
+    <color name="green_live">#4CAF50</color>
+    <color name="red_live">#FF3B30</color>
+    <color name="orange_pending">#FF9800</color>
+    <color name="blue_upcoming">#4A90D9</color>
+
+    <!-- Category colors -->
+    <color name="cat_comun">#888888</color>
+    <color name="cat_especial">#4CAF50</color>
+    <color name="cat_plata">#A0A0A0</color>
+    <color name="cat_oro">#C9A84C</color>
+    <color name="cat_platino">#E5E4E2</color>
+
+    <!-- System -->
+    <color name="transparent">#00000000</color>
+    <color name="black">#FF000000</color>
+</resources>
