@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Soft gold radial glow for splash screen behind logo -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#1AC9A84C"/>
+    <gradient
+        android:type="radial"
+        android:gradientRadius="50%"
+        android:centerColor="#33C9A84C"
+        android:endColor="#00C9A84C"/>
 </shape>

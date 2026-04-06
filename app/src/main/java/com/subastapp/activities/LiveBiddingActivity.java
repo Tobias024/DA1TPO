@@ -122,7 +122,7 @@ public class LiveBiddingActivity extends AppCompatActivity {
 
         boolean canBid = auction.isUsuarioPuedePujar();
         binding.bidInputLayout.setVisibility(canBid ? android.view.View.VISIBLE : android.view.View.GONE);
-        binding.tvWatchOnly.setVisibility(canBid ? android.view.View.GONE : android.view.View.VISIBLE);
+        binding.cvWatchOnly.setVisibility(canBid ? android.view.View.GONE : android.view.View.VISIBLE);
         if (!canBid && auction.getMotivoNoPuede() != null) {
             binding.tvWatchOnly.setText("👁 Solo observando — " + auction.getMotivoNoPuede());
         }

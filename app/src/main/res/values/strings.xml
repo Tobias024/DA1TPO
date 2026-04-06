@@ -1,26 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SubastApp</string>
-    <string name="tagline">Subastas en tiempo real</string>
+    <string name="app_name">The Curator</string>
+    <string name="tagline">LUXE AUCTION PROTOCOL</string>
 
     <!-- Auth -->
     <string name="login">Iniciar Sesión</string>
     <string name="register">Registrarse</string>
-    <string name="email">Email</string>
+    <string name="email">Usuario</string>
     <string name="password">Contraseña</string>
     <string name="forgot_password">¿Olvidaste tu contraseña?</string>
-    <string name="enter">INGRESAR</string>
+    <string name="enter">Ingresar</string>
     <string name="create_account">Crear cuenta nueva</string>
-    <string name="step1_title">Registro — Paso 1</string>
+    <string name="step1_title">Verificación de Identidad</string>
     <string name="step2_title">Completar Registro</string>
     <string name="nombre">Nombre</string>
     <string name="apellido">Apellido</string>
     <string name="domicilio">Domicilio Legal</string>
+    <string name="telefono">Teléfono</string>
     <string name="pais">País de Origen</string>
+    <string name="dni">DNI</string>
     <string name="dni_frente">Foto DNI — Frente</string>
     <string name="dni_dorso">Foto DNI — Dorso</string>
+    <string name="subir_frontal">SUBIR IMAGEN FRONTAL</string>
+    <string name="subir_posterior">SUBIR IMAGEN POSTERIOR</string>
     <string name="continuar">CONTINUAR</string>
     <string name="confirmar_password">Confirmar contraseña</string>
+    <string name="informacion_personal">Información Personal</string>
+    <string name="documentacion">Documentación</string>
+    <string name="doc_descripcion">Para participar en subastas de alto valor, requerimos una copia digital legible de su documento de identidad.</string>
+    <string name="seguridad_nota">Sus datos están protegidos bajo protocolos de cifrado bancario y solo serán utilizados para verificación de identidad.</string>
+    <string name="etapa_de">Etapa %1$d de %2$d</string>
+    <string name="inicio_sesion">INICIO DE SESIÓN</string>
+    <string name="bienvenido">¡Bienvenido!</string>
+    <string name="registro_postor">REGISTRO DE POSTOR</string>
 
     <!-- Auctions -->
     <string name="subastas_activas">Subastas Activas</string>
@@ -32,15 +44,33 @@
     <string name="catalogo">Catálogo</string>
     <string name="precio_base">Precio Base</string>
     <string name="lote">Lote #%d</string>
+    <string name="ver_todas">Ver todas →</string>
+    <string name="proximas_subastas">Próximas Subastas</string>
+    <string name="programadas">Programadas para esta semana</string>
+    <string name="hero_title">La esencia del coleccionismo moderno.</string>
+    <string name="hero_subtitle">Explora piezas curadas por expertos internacionales. Desde reliquias históricas hasta vanguardia contemporánea.</string>
+    <string name="subastas_premium">Subastas Premium\nSOLO PARA NIVEL ORO</string>
+    <string name="puja_actual">PUJA ACTUAL</string>
+    <string name="participar">Participar</string>
 
     <!-- Bidding -->
     <string name="oferta_actual">Oferta Actual</string>
-    <string name="pujar">PUJAR</string>
+    <string name="pujar">Realizar Puja</string>
     <string name="limite_min">Mín: %s</string>
     <string name="limite_max">Máx: %s</string>
     <string name="solo_observador">👁 Solo estás observando</string>
-    <string name="historial_pujas">Historial de pujas</string>
+    <string name="historial_pujas">Historial de Ofertas</string>
     <string name="se_primero">Sé el primero en pujar</string>
+    <string name="eres_maximo">✔ ERES EL MÁXIMO POSTOR</string>
+    <string name="ingresa_monto">$ Ingresa monto manual</string>
+    <string name="viewers">viewers</string>
+    <string name="en_vivo_badge">EN VIVO</string>
+    <string name="provenance_context">PROVENANCE &amp; CONTEXT</string>
+    <string name="especificaciones">Especificaciones Técnicas</string>
+    <string name="valor_base">VALOR BASE</string>
+    <string name="ultima_oferta">ÚLTIMA OFERTA</string>
+    <string name="incremento_pc">INCREMENTO 1%</string>
+    <string name="limite_badge">LÍMITE 30%</string>
 
     <!-- Payment -->
     <string name="medios_pago">Medios de Pago</string>
@@ -51,20 +81,44 @@
     <!-- Consignment -->
     <string name="consignacion">Solicitar Consignación</string>
     <string name="mis_consignaciones">Mis Consignaciones</string>
-    <string name="enviar_solicitud">ENVIAR SOLICITUD</string>
-    <string name="declara_propiedad">Declaro que el bien es de mi propiedad y no posee ningún impedimento legal para su comercialización.</string>
-    <string name="declara_origen">Puedo acreditar el origen lícito del bien en caso de ser requerido.</string>
+    <string name="enviar_solicitud">ENVIAR A INSPECCIÓN →</string>
+    <string name="declara_propiedad">Declaro que el bien me pertenece y no posee ningún impedimento legal.</string>
+    <string name="declara_origen">Acredito origen lícito del bien.</string>
+    <string name="consignment_title">Solicitud de Subasta</string>
+    <string name="consignment_subtitle">Inicie el proceso de curaduría para su pieza excepcional. Nuestro equipo de expertos evaluará la autenticidad y valor de mercado de su bien.</string>
+    <string name="detalles_objeto">Detalles del Objeto</string>
+    <string name="nombre_bien">NOMBRE DEL BIEN</string>
+    <string name="descripcion_detallada">DESCRIPCIÓN DETALLADA</string>
+    <string name="historia_objeto">HISTORIA DEL OBJETO</string>
+    <string name="galeria_activos">Galería de Activos</string>
+    <string name="minimo_fotos">MÍNIMO 8 FOTOGRAFÍAS</string>
+    <string name="declaraciones_legales">Declaraciones Legales</string>
+    <string name="proceso_deposito">PROCESO DE DEPÓSITO Y SEGURO</string>
+    <string name="proceso_descripcion">Una vez aceptada la solicitud, el bien deberá ser enviado a nuestro depósito climatizado para inspección técnica. Todas las piezas están cubiertas por un seguro premium contra todo riesgo desde el momento de la recepción física.</string>
+    <string name="necesita_asistencia">¿Necesita asistencia experta?</string>
+    <string name="hablar_curador">Hablar con un curador especializado en su categoría.</string>
+    <string name="consignacion_lujo">CONSIGNACIÓN DE LUJO</string>
 
     <!-- Profile -->
     <string name="perfil">Perfil</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
     <string name="mis_compras">Mis Compras</string>
-    <string name="notificaciones">Notificaciones</string>
+    <string name="notificaciones">Alertas</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_subastas">Subastas</string>
+    <string name="nav_ventas">Ventas</string>
+    <string name="nav_perfil">Perfil</string>
+    <string name="nav_alertas">Alertas</string>
 
     <!-- Errors -->
     <string name="error_campos_requeridos">Complete todos los campos requeridos.</string>
     <string name="error_conexion">Error de conexión. Verifique su internet.</string>
     <string name="error_credenciales">Email o contraseña incorrectos.</string>
-    <string name="error_fotos_minimo">Debe adjuntar al menos 6 fotografías.</string>
+    <string name="error_fotos_minimo">Debe adjuntar al menos 8 fotografías.</string>
     <string name="error_declaraciones">Debe aceptar ambas declaraciones.</string>
+
+    <!-- Authenticity -->
+    <string name="authenticity_guaranteed">AUTHENTICITY GUARANTEED</string>
+    <string name="miembro_oro">MIEMBRO\nORO</string>
 </resources>

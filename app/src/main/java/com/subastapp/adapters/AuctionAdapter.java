@@ -12,7 +12,9 @@ import java.util.List;
 
 public class AuctionAdapter extends RecyclerView.Adapter<AuctionAdapter.AuctionViewHolder> {
 
-    public interface OnAuctionClick { void onClick(Auction auction); }
+    public interface OnAuctionClick {
+        void onClick(Auction auction);
+    }
 
     private final Context context;
     private List<Auction> auctions;
@@ -45,10 +47,22 @@ public class AuctionAdapter extends RecyclerView.Adapter<AuctionAdapter.AuctionV
 
         // Status badge color
         switch (a.getEstado()) {
-            case "EN_CURSO": holder.tvStatus.setText("🔴 En vivo"); holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.red_live)); break;
-            case "ABIERTA":  holder.tvStatus.setText("✅ Abierta");  holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.green_live)); break;
-            case "PROXIMA":  holder.tvStatus.setText("📅 Próxima"); holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.blue_upcoming)); break;
-            default:         holder.tvStatus.setText("Cerrada");    holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.text_muted)); break;
+            case "EN_CURSO":
+                holder.tvStatus.setText("🔴 En vivo");
+                holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.red_live));
+                break;
+            case "ABIERTA":
+                holder.tvStatus.setText("✅ Abierta");
+                holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.green_live));
+                break;
+            case "PROXIMA":
+                holder.tvStatus.setText("📅 Próxima");
+                holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.blue_upcoming));
+                break;
+            default:
+                holder.tvStatus.setText("Cerrada");
+                holder.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.text_muted));
+                break;
         }
 
         // Category
@@ -66,18 +80,21 @@ public class AuctionAdapter extends RecyclerView.Adapter<AuctionAdapter.AuctionV
     }
 
     @Override
-    public int getItemCount() { return auctions != null ? auctions.size() : 0; }
+    public int getItemCount() {
+        return auctions != null ? auctions.size() : 0;
+    }
 
     static class AuctionViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvLocation, tvStatus, tvCategory, tvAuctioneer, tvCurrency;
+
         AuctionViewHolder(View view) {
             super(view);
-            tvTitle     = view.findViewById(R.id.tv_auction_title);
-            tvLocation  = view.findViewById(R.id.tv_location);
-            tvStatus    = view.findViewById(R.id.tv_status);
-            tvCategory  = view.findViewById(R.id.tv_category);
+            tvTitle = view.findViewById(R.id.tv_auction_title);
+            tvLocation = view.findViewById(R.id.tv_location);
+            tvStatus = view.findViewById(R.id.tv_status);
+            tvCategory = view.findViewById(R.id.tv_category);
             tvAuctioneer = view.findViewById(R.id.tv_auctioneer);
-            tvCurrency  = view.findViewById(R.id.tv_currency);
+            tvCurrency = view.findViewById(R.id.tv_currency);
         }
     }
 }

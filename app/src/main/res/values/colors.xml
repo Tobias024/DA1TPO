@@ -1,35 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary brand colors -->
+    <!-- ── Brand Gold ─────────────────────────────────────────── -->
     <color name="gold">#C9A84C</color>
     <color name="gold_dark">#A07830</color>
     <color name="gold_light">#E8C87A</color>
+    <color name="gold_subtle">#C9A84C33</color>   <!-- 20% alpha -->
 
-    <!-- Backgrounds -->
-    <color name="navy">#0D0D1A</color>
-    <color name="navy_card">#1A1A2E</color>
-    <color name="navy_input">#0D1225</color>
-    <color name="navy_border">#2A2A4A</color>
+    <!-- ── Dark Maroon Backgrounds (The Curator palette) ─────── -->
+    <color name="navy">#1A0500</color>             <!-- deepest bg  -->
+    <color name="navy_card">#2A0D05</color>        <!-- card bg     -->
+    <color name="navy_input">#200800</color>       <!-- input bg    -->
+    <color name="navy_border">#3D1A0D</color>      <!-- border/divider -->
+    <color name="navy_elevated">#331005</color>    <!-- slightly raised surface -->
 
-    <!-- Text -->
-    <color name="white">#FFFFFF</color>
-    <color name="text_secondary">#AAAAAA</color>
-    <color name="text_muted">#666666</color>
+    <!-- ── Text ──────────────────────────────────────────────── -->
+    <color name="white">#FFF8F0</color>            <!-- warm cream white -->
+    <color name="text_secondary">#C9B8A8</color>   <!-- muted cream    -->
+    <color name="text_muted">#7A5E52</color>       <!-- disabled / hint -->
 
-    <!-- Status colors -->
+    <!-- ── Status ────────────────────────────────────────────── -->
     <color name="green_live">#4CAF50</color>
-    <color name="red_live">#FF3B30</color>
-    <color name="orange_pending">#FF9800</color>
-    <color name="blue_upcoming">#4A90D9</color>
+    <color name="red_live">#E84343</color>
+    <color name="orange_pending">#E8A043</color>
+    <color name="blue_upcoming">#6A9FD9</color>
 
-    <!-- Category colors -->
+    <!-- ── Category tiers ────────────────────────────────────── -->
     <color name="cat_comun">#888888</color>
     <color name="cat_especial">#4CAF50</color>
-    <color name="cat_plata">#A0A0A0</color>
+    <color name="cat_plata">#C0C0C0</color>
     <color name="cat_oro">#C9A84C</color>
     <color name="cat_platino">#E5E4E2</color>
 
-    <!-- System -->
+    <!-- ── System ─────────────────────────────────────────────── -->
     <color name="transparent">#00000000</color>
     <color name="black">#FF000000</color>
+    <color name="scrim">#CC1A0500</color>
 </resources>

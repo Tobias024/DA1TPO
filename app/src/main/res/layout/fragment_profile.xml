@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/navy">
@@ -8,21 +9,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingBottom="88dp">
 
-        <!-- Avatar + name -->
+        <!-- ── Header card with avatar ──────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="24dp">
+            android:background="@color/navy_card"
+            android:paddingVertical="32dp"
+            android:paddingHorizontal="24dp">
 
+            <!-- Avatar -->
             <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/iv_avatar"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:src="@android:drawable/ic_menu_my_calendar"
-                android:padding="20dp"
                 android:background="@drawable/bg_logo_circle"/>
 
             <TextView
@@ -32,7 +36,7 @@
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:layout_marginTop="12dp"/>
+                android:layout_marginTop="14dp"/>
 
             <TextView
                 android:id="@+id/tv_user_email"
@@ -42,24 +46,27 @@
                 android:textSize="13sp"
                 android:layout_marginTop="4dp"/>
 
+            <!-- Member tier badge -->
             <TextView
                 android:id="@+id/tv_user_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/gold"
+                android:textColor="@color/navy"
                 android:textStyle="bold"
-                android:textSize="13sp"
-                android:layout_marginTop="10dp"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="4dp"
-                android:background="@drawable/bg_category_badge"/>
+                android:textSize="10sp"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="5dp"
+                android:background="@drawable/bg_currency_badge"/>
         </LinearLayout>
 
-        <!-- Metrics -->
+        <!-- ── Stats row ─────────────────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="16dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
@@ -79,14 +86,15 @@
                         android:layout_height="wrap_content"
                         android:text="0"
                         android:textColor="@color/gold"
-                        android:textSize="22sp"
+                        android:textSize="24sp"
                         android:textStyle="bold"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Ganadas"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp"/>
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -107,39 +115,117 @@
                         android:layout_height="wrap_content"
                         android:text="$0"
                         android:textColor="@color/gold"
-                        android:textSize="22sp"
+                        android:textSize="24sp"
                         android:textStyle="bold"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total pagado"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp"/>
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Menu items -->
-        <Button
-            android:id="@+id/btn_notifications"
+        <!-- ── Menu items ─────────────────────────────────────── -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
-            android:text="🔔  Notificaciones"
-            android:gravity="start|center_vertical"
-            android:paddingHorizontal="16dp"
-            style="@style/Widget.SubastApp.Button.OutlinedGold"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
 
-        <Button
-            android:id="@+id/btn_logout"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:text="Cerrar sesión"
-            android:textColor="@color/red_live"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:strokeColor="@color/red_live"
-            xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            <!-- Mis compras -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_compras"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.SubastApp.Card"
+                android:layout_marginBottom="10dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🛍"
+                        android:textSize="18sp"
+                        android:layout_marginEnd="12dp"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mis_compras"
+                        android:textColor="@color/white"
+                        android:textSize="15sp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="@color/text_muted"
+                        android:textSize="20sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Notificaciones -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btn_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.SubastApp.Card"
+                android:layout_marginBottom="10dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔔"
+                        android:textSize="18sp"
+                        android:layout_marginEnd="12dp"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/notificaciones"
+                        android:textColor="@color/white"
+                        android:textSize="15sp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="@color/text_muted"
+                        android:textSize="20sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/navy_border"
+                android:layout_marginVertical="8dp"/>
+
+            <!-- Logout -->
+            <Button
+                android:id="@+id/btn_logout"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="4dp"
+                android:text="@string/cerrar_sesion"
+                android:textColor="@color/red_live"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="@color/red_live"
+                app:strokeWidth="1dp"
+                app:cornerRadius="4dp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>
