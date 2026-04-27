@@ -1,52 +1,47 @@
 package com.subastapp.fragments;
 
 import android.os.Bundle;
-import android.view.*;
-import android.widget.*;
-import androidx.annotation.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import com.subastapp.R;
 import com.subastapp.activities.MainActivity;
-import com.subastapp.api.*;
-import com.subastapp.model.*;
 import com.subastapp.utils.SessionManager;
-import retrofit2.*;
 
+/** Pantalla Perfil (Doc) — datos del usuario + accesos a sub-secciones. */
 public class ProfileFragment extends Fragment {
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedState) {
-        super.onViewCreated(view, savedState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         SessionManager session = new SessionManager(requireContext());
-        ApiService api = ApiClient.create(ApiService.class);
+        ((TextView) view.findViewById(R.id.tv_user_name)).setText(session.getUserName());
+        ((TextView) view.findViewById(R.id.tv_user_email)).setText(session.getUserEmail());
+        ((TextView) view.findViewById(R.id.tv_user_category)).setText(session.getUserCategory());
 
-        // Show user name
-        ((TextView) view.findViewById(R.id.tv_user_name))
-                .setText(session.getUserName());
-        ((TextView) view.findViewById(R.id.tv_user_email))
-                .setText(session.getUserEmail());
-        ((TextView) view.findViewById(R.id.tv_user_category))
-                .setText("★ " + session.getUserCategory());
-
-        // Load metrics
-        api.getMyMetrics().enqueue(new Callback<UserMetrics>() {
-            @Override
-            public void onResponse(@NonNull Call<UserMetrics> c, @NonNull Response<UserMetrics> r) {
-                if (r.isSuccessful() && r.body() != null && isAdded()) {
-                    UserMetrics m = r.body();
-                    ((TextView) view.findViewById(R.id.tv_auctions_won))
-                            .setText(String.valueOf(m.getTotalSubastasGanadas()));
-                    ((TextView) view.findViewById(R.id.tv_total_paid))
-                            .setText(String.format("$%.2f", m.getImporteTotalPagado()));
-                }
-            }
-            @Override public void onFailure(@NonNull Call<UserMetrics> c, @NonNull Throwable t) {}
-        });
+        view.findViewById(R.id.card_edit).setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.action_profile_to_edit));
+        view.findViewById(R.id.card_metrics).setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.action_profile_to_metrics));
+        view.findViewById(R.id.card_consignments).setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.action_profile_to_consignments));
+        view.findViewById(R.id.card_payments).setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.action_profile_to_payments));
+        view.findViewById(R.id.card_notifications).setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.action_profile_to_notifications));
 
         view.findViewById(R.id.btn_logout).setOnClickListener(v -> {
             session.clearSession();
@@ -54,9 +49,5 @@ public class ProfileFragment extends Fragment {
                 ((MainActivity) getActivity()).onLogout();
             }
         });
-
-        view.findViewById(R.id.btn_notifications).setOnClickListener(v ->
-                androidx.navigation.Navigation.findNavController(view)
-                        .navigate(R.id.action_profile_to_notifications));
     }
 }

@@ -1,9 +1,15 @@
 package com.subastapp.model;
+
 public class UserMetrics {
-    private int totalSubastasGanadas;
-    private double importeTotalPagado;
-    private double importeTotalOfertado;
-    public int getTotalSubastasGanadas() { return totalSubastasGanadas; }
-    public double getImporteTotalPagado() { return importeTotalPagado; }
-    public double getImporteTotalOfertado() { return importeTotalOfertado; }
+    private double totalGastado;
+    private int subastasParticipadas;
+    private int subastasGanadas;
+    private double tasaExito;
+    private double mayorPuja;
+
+    public double getTotalGastado() { return totalGastado; }
+    public int getSubastasParticipadas() { return subastasParticipadas; }
+    public int getSubastasGanadas() { return subastasGanadas; }
+    public double getTasaExito() { return tasaExito; }
+    public double getMayorPuja() { return mayorPuja; }
 }

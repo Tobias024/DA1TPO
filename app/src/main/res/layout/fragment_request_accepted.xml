@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface_cream"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/solicitud_aceptada_titulo"
+            android:textColor="@color/brand_primary"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tu artículo fue inspeccionado y aceptado para participar en una subasta."
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:layout_marginBottom="20dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.SubastAR.Card"
+            android:layout_marginBottom="16dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView android:text="Subasta asignada" android:textColor="@color/input_hint" android:textSize="13sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_subasta" android:text="—" android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp"/>
+
+                <TextView android:text="Valor base ofrecido" android:textColor="@color/input_hint" android:textSize="13sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_valor_base" android:text="—" android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp"/>
+
+                <TextView android:text="@string/comisiones" android:textColor="@color/input_hint" android:textSize="13sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_comisiones" android:text="—" android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp"/>
+
+                <TextView android:text="Póliza de seguro" android:textColor="@color/input_hint" android:textSize="13sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tv_poliza" android:text="—" android:textColor="@color/text_primary" android:textSize="16sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <Button
+            android:id="@+id/btn_aceptar"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="@string/aceptar_propuesta"
+            style="@style/Widget.SubastAR.Button.Primary"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btn_rechazar"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="@string/rechazar_propuesta"
+            style="@style/Widget.SubastAR.Button.Outlined"/>
+    </LinearLayout>
+</ScrollView>

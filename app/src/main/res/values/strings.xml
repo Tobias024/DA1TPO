@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">The Curator</string>
-    <string name="tagline">LUXE AUCTION PROTOCOL</string>
+    <string name="app_name">SubastAR</string>
+    <string name="tagline">Sistema de Subastas</string>
 
     <!-- Auth -->
     <string name="login">Iniciar Sesión</string>
     <string name="register">Registrarse</string>
-    <string name="email">Usuario</string>
+    <string name="documento">Documento</string>
+    <string name="documento_hint">DNI / Documento</string>
+    <string name="email">Email</string>
     <string name="password">Contraseña</string>
     <string name="forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="enter">Ingresar</string>
     <string name="create_account">Crear cuenta nueva</string>
     <string name="step1_title">Verificación de Identidad</string>
     <string name="step2_title">Completar Registro</string>
+    <string name="step3_title">Método de Pago</string>
     <string name="nombre">Nombre</string>
     <string name="apellido">Apellido</string>
     <string name="domicilio">Domicilio Legal</string>
@@ -27,14 +30,20 @@
     <string name="confirmar_password">Confirmar contraseña</string>
     <string name="informacion_personal">Información Personal</string>
     <string name="documentacion">Documentación</string>
-    <string name="doc_descripcion">Para participar en subastas de alto valor, requerimos una copia digital legible de su documento de identidad.</string>
-    <string name="seguridad_nota">Sus datos están protegidos bajo protocolos de cifrado bancario y solo serán utilizados para verificación de identidad.</string>
+    <string name="doc_descripcion">Para participar en subastas, requerimos una copia digital legible de su documento de identidad (frente y dorso).</string>
+    <string name="seguridad_nota">Sus datos están protegidos y solo serán utilizados para verificación de identidad.</string>
     <string name="etapa_de">Etapa %1$d de %2$d</string>
     <string name="inicio_sesion">INICIO DE SESIÓN</string>
     <string name="bienvenido">¡Bienvenido!</string>
-    <string name="registro_postor">REGISTRO DE POSTOR</string>
+    <string name="no_cuenta">¿no tenés una cuenta?</string>
+    <string name="registro_postor">REGISTRO</string>
+    <string name="registrate">Registrate</string>
+    <string name="aceptar_tyc">Acepto los Términos y Condiciones</string>
+    <string name="finalizar_registro">FINALIZAR REGISTRO</string>
 
     <!-- Auctions -->
+    <string name="home_titulo">Subastas</string>
+    <string name="resumen_activas">Subastas Activas</string>
     <string name="subastas_activas">Subastas Activas</string>
     <string name="filter_todas">Todas</string>
     <string name="filter_activas">Activas</string>
@@ -47,11 +56,14 @@
     <string name="ver_todas">Ver todas →</string>
     <string name="proximas_subastas">Próximas Subastas</string>
     <string name="programadas">Programadas para esta semana</string>
-    <string name="hero_title">La esencia del coleccionismo moderno.</string>
-    <string name="hero_subtitle">Explora piezas curadas por expertos internacionales. Desde reliquias históricas hasta vanguardia contemporánea.</string>
-    <string name="subastas_premium">Subastas Premium\nSOLO PARA NIVEL ORO</string>
+    <string name="recientemente_finalizadas">Recientemente Finalizadas</string>
+    <string name="vendido">Vendido</string>
+    <string name="hero_title">Conectá con cada remate desde donde estés.</string>
+    <string name="hero_subtitle">Explorá el catálogo de subastas, pujá en tiempo real y consigná tus piezas para futuras subastas.</string>
     <string name="puja_actual">PUJA ACTUAL</string>
     <string name="participar">Participar</string>
+    <string name="streaming">Streaming</string>
+    <string name="descubrir">Descubrir</string>
 
     <!-- Bidding -->
     <string name="oferta_actual">Oferta Actual</string>
@@ -61,64 +73,100 @@
     <string name="solo_observador">👁 Solo estás observando</string>
     <string name="historial_pujas">Historial de Ofertas</string>
     <string name="se_primero">Sé el primero en pujar</string>
-    <string name="eres_maximo">✔ ERES EL MÁXIMO POSTOR</string>
-    <string name="ingresa_monto">$ Ingresa monto manual</string>
-    <string name="viewers">viewers</string>
+    <string name="eres_maximo">✔ Sos el máximo postor</string>
+    <string name="ingresa_monto">$ Ingresá monto manual</string>
+    <string name="viewers">conectados</string>
     <string name="en_vivo_badge">EN VIVO</string>
-    <string name="provenance_context">PROVENANCE &amp; CONTEXT</string>
-    <string name="especificaciones">Especificaciones Técnicas</string>
+    <string name="provenance_context">HISTORIA Y CONTEXTO</string>
+    <string name="especificaciones">Especificaciones</string>
     <string name="valor_base">VALOR BASE</string>
     <string name="ultima_oferta">ÚLTIMA OFERTA</string>
-    <string name="incremento_pc">INCREMENTO 1%</string>
-    <string name="limite_badge">LÍMITE 30%</string>
+    <string name="incremento_pc">INCREMENTO MÍN. 1%</string>
+    <string name="limite_badge">LÍMITE 20%</string>
+    <string name="puja_pendiente">Esperando confirmación de tu puja anterior…</string>
 
     <!-- Payment -->
     <string name="medios_pago">Medios de Pago</string>
-    <string name="agregar_medio">Añadir Medio de Pago</string>
+    <string name="agregar_medio">Agregar Medio de Pago</string>
     <string name="verificado">✓ Verificado</string>
     <string name="pendiente_verificacion">⏳ Pendiente de verificación</string>
+    <string name="elegir_medio_inicial">Seleccioná tu medio de pago inicial. Podés agregar más desde tu perfil.</string>
 
     <!-- Consignment -->
-    <string name="consignacion">Solicitar Consignación</string>
-    <string name="mis_consignaciones">Mis Consignaciones</string>
-    <string name="enviar_solicitud">ENVIAR A INSPECCIÓN →</string>
+    <string name="consignacion">Subastar algo propio</string>
+    <string name="mis_consignaciones">Mis Subastas</string>
+    <string name="enviar_solicitud">ENVIAR SOLICITUD</string>
     <string name="declara_propiedad">Declaro que el bien me pertenece y no posee ningún impedimento legal.</string>
-    <string name="declara_origen">Acredito origen lícito del bien.</string>
-    <string name="consignment_title">Solicitud de Subasta</string>
-    <string name="consignment_subtitle">Inicie el proceso de curaduría para su pieza excepcional. Nuestro equipo de expertos evaluará la autenticidad y valor de mercado de su bien.</string>
+    <string name="declara_origen">Acredito el origen lícito del bien.</string>
+    <string name="consignment_title">Subastar algo propio</string>
+    <string name="consignment_subtitle">Completá los datos de tu artículo. Si la empresa lo aprueba, te avisaremos para enviarlo a inspección.</string>
     <string name="detalles_objeto">Detalles del Objeto</string>
     <string name="nombre_bien">NOMBRE DEL BIEN</string>
     <string name="descripcion_detallada">DESCRIPCIÓN DETALLADA</string>
-    <string name="historia_objeto">HISTORIA DEL OBJETO</string>
-    <string name="galeria_activos">Galería de Activos</string>
-    <string name="minimo_fotos">MÍNIMO 8 FOTOGRAFÍAS</string>
-    <string name="declaraciones_legales">Declaraciones Legales</string>
-    <string name="proceso_deposito">PROCESO DE DEPÓSITO Y SEGURO</string>
-    <string name="proceso_descripcion">Una vez aceptada la solicitud, el bien deberá ser enviado a nuestro depósito climatizado para inspección técnica. Todas las piezas están cubiertas por un seguro premium contra todo riesgo desde el momento de la recepción física.</string>
-    <string name="necesita_asistencia">¿Necesita asistencia experta?</string>
-    <string name="hablar_curador">Hablar con un curador especializado en su categoría.</string>
-    <string name="consignacion_lujo">CONSIGNACIÓN DE LUJO</string>
+    <string name="historia_objeto">HISTORIA DEL OBJETO (opcional)</string>
+    <string name="galeria_activos">Fotografías</string>
+    <string name="minimo_fotos">MÍNIMO 6 FOTOGRAFÍAS</string>
+    <string name="declaraciones_legales">Declaraciones</string>
+    <string name="proceso_deposito">DEPÓSITO Y SEGURO</string>
+    <string name="proceso_descripcion">Una vez aceptada la solicitud, deberás enviar el bien al depósito que te indiquemos. La empresa contrata una póliza de seguro a tu favor sobre la pieza durante su custodia.</string>
+    <string name="ver_ubicacion_piezas">Ver Ubicación de mis Piezas</string>
+    <string name="consignacion_lujo">SUBASTAR ALGO PROPIO</string>
+    <string name="necesita_asistencia">¿Necesitás ayuda?</string>
+    <string name="hablar_curador">Contactanos para resolver dudas sobre tu solicitud de consignación.</string>
+    <string name="solicitud_enviada_titulo">Solicitud Enviada</string>
+    <string name="solicitud_enviada_msg">Tu artículo está siendo revisado. Te contactaremos a la brevedad por mail.</string>
+    <string name="volver">Volver</string>
+    <string name="solicitud_aceptada_titulo">Solicitud Aceptada</string>
+    <string name="solicitud_rechazada_titulo">Solicitud Rechazada</string>
+    <string name="aceptar_propuesta">Aceptar Propuesta</string>
+    <string name="rechazar_propuesta">Rechazar</string>
 
     <!-- Profile -->
     <string name="perfil">Perfil</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
     <string name="mis_compras">Mis Compras</string>
-    <string name="notificaciones">Alertas</string>
+    <string name="notificaciones">Notificaciones</string>
+    <string name="metricas">Métricas</string>
+    <string name="editar_perfil">Editar Perfil</string>
+    <string name="confirmar_datos">Confirmar Datos</string>
+    <string name="multas">Multas</string>
+
+    <!-- Métricas -->
+    <string name="total_gastado">Total Gastado</string>
+    <string name="participadas">Subastas Participadas</string>
+    <string name="ganadas">Subastas Ganadas</string>
+    <string name="tasa_exito">Tasa de Éxito</string>
+    <string name="mayor_puja">Mayor Puja</string>
+    <string name="cat_mas_participadas">Categorías más participadas</string>
+
+    <!-- Adquisición -->
+    <string name="adquisicion_titulo">¡Felicitaciones! Has ganado</string>
+    <string name="precio_pagado">Precio Pagado</string>
+    <string name="medio_de_pago">Medio de Pago</string>
+    <string name="costo_envio">Costo de Envío</string>
+    <string name="comisiones">Comisiones</string>
 
     <!-- Bottom Nav -->
+    <string name="nav_home">Home</string>
     <string name="nav_subastas">Subastas</string>
-    <string name="nav_ventas">Ventas</string>
-    <string name="nav_perfil">Perfil</string>
+    <string name="nav_descubrir">Descubrir</string>
     <string name="nav_alertas">Alertas</string>
+    <string name="nav_perfil">Perfil</string>
+    <string name="nav_ventas">Ventas</string>
 
     <!-- Errors -->
     <string name="error_campos_requeridos">Complete todos los campos requeridos.</string>
     <string name="error_conexion">Error de conexión. Verifique su internet.</string>
-    <string name="error_credenciales">Email o contraseña incorrectos.</string>
-    <string name="error_fotos_minimo">Debe adjuntar al menos 8 fotografías.</string>
+    <string name="error_credenciales">Documento o contraseña incorrectos.</string>
+    <string name="error_fotos_minimo">Debe adjuntar al menos 6 fotografías.</string>
     <string name="error_declaraciones">Debe aceptar ambas declaraciones.</string>
+    <string name="error_puja_min">La puja debe ser al menos %s.</string>
+    <string name="error_puja_max">La puja no puede superar %s.</string>
+    <string name="error_sin_medio_verificado">Necesitás un medio de pago verificado para pujar.</string>
+    <string name="error_categoria_insuficiente">Tu categoría no permite acceder a esta subasta.</string>
+    <string name="error_multa_pendiente">Regularizá tu multa pendiente para participar.</string>
+    <string name="error_subasta_activa">Ya estás conectado a otra subasta. Salí primero.</string>
 
-    <!-- Authenticity -->
-    <string name="authenticity_guaranteed">AUTHENTICITY GUARANTEED</string>
-    <string name="miembro_oro">MIEMBRO\nORO</string>
+    <!-- Misc -->
+    <string name="cargando">Cargando…</string>
 </resources>

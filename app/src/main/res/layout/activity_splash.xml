@@ -2,9 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/navy">
+    android:background="@color/brand_primary">
 
-    <!-- Ambient glow behind logo -->
+    <!-- Glow detrás del logo -->
     <View
         android:layout_width="260dp"
         android:layout_height="260dp"
@@ -12,11 +12,11 @@
         android:layout_marginBottom="60dp"
         android:background="@drawable/bg_gold_glow"/>
 
-    <!-- Logo circle with scissors icon -->
+    <!-- Logo circular SubastAR -->
     <LinearLayout
         android:id="@+id/logo_container"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:layout_centerInParent="true"
         android:layout_marginBottom="60dp"
         android:gravity="center"
@@ -27,12 +27,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="✂"
-            android:textColor="@color/gold"
-            android:textSize="40sp"/>
+            android:text="S"
+            android:textColor="@color/brand_primary"
+            android:textSize="56sp"
+            android:textStyle="bold"
+            android:fontFamily="serif"/>
     </LinearLayout>
 
-    <!-- Brand block: "The Curator" + tagline -->
+    <!-- Marca SubastAR + tagline -->
     <LinearLayout
         android:id="@+id/brand_block"
         android:layout_width="wrap_content"
@@ -43,30 +45,28 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <!-- "The Curator" -->
         <TextView
             android:id="@+id/tv_app_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
-            android:textColor="@color/white"
-            android:textSize="34sp"
+            android:textColor="@color/text_on_dark"
+            android:textSize="48sp"
             android:textStyle="bold"
-            android:letterSpacing="0.04"/>
+            android:letterSpacing="-0.02"/>
 
-        <!-- "LUXE AUCTION PROTOCOL" -->
         <TextView
             android:id="@+id/tv_tagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tagline"
-            android:textColor="@color/text_muted"
-            android:textSize="10sp"
-            android:letterSpacing="0.18"
-            android:layout_marginTop="4dp"/>
+            android:textColor="@color/on_primary"
+            android:textSize="14sp"
+            android:letterSpacing="0.08"
+            android:layout_marginTop="6dp"/>
     </LinearLayout>
 
-    <!-- Gold progress bar at bottom -->
+    <!-- Progress bar -->
     <ProgressBar
         android:id="@+id/progress_bar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -76,18 +76,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="48dp"
         android:indeterminate="true"
-        android:indeterminateTint="@color/gold"/>
-
-    <!-- "AUTHENTICITY GUARANTEED" footer -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="24dp"
-        android:text="@string/authenticity_guaranteed"
-        android:textColor="@color/text_muted"
-        android:textSize="9sp"
-        android:letterSpacing="0.16"/>
+        android:indeterminateTint="@color/on_primary"/>
 
 </RelativeLayout>

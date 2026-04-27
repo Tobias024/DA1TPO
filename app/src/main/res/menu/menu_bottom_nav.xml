@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_auctions"
+        android:id="@+id/homeFragment"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="@string/nav_home"/>
+    <item
+        android:id="@+id/auctionsFragment"
         android:icon="@android:drawable/ic_menu_agenda"
         android:title="@string/nav_subastas"/>
     <item
-        android:id="@+id/nav_payment"
-        android:icon="@android:drawable/ic_menu_my_calendar"
-        android:title="@string/nav_ventas"/>
-    <item
-        android:id="@+id/nav_consignment"
-        android:icon="@android:drawable/ic_menu_add"
-        android:title="@string/nav_perfil"/>
-    <item
-        android:id="@+id/nav_profile"
-        android:icon="@android:drawable/ic_menu_myplaces"
+        android:id="@+id/notificationsFragment"
+        android:icon="@android:drawable/ic_menu_info_details"
         android:title="@string/nav_alertas"/>
+    <item
+        android:id="@+id/profileFragment"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="@string/nav_perfil"/>
 </menu>

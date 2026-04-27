@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/navy"
+    android:background="@color/surface_cream"
     android:fillViewport="true">
 
     <LinearLayout
@@ -11,187 +11,172 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- ── Top logo strip ───────────────────────────────── -->
+        <!-- ── Banner bordó: marca + título ───────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:background="@color/navy_card"
-            android:paddingVertical="32dp">
+            android:background="@color/brand_primary"
+            android:paddingTop="40dp"
+            android:paddingBottom="48dp">
 
-            <!-- Logo circle -->
             <LinearLayout
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:gravity="center"
                 android:background="@drawable/bg_logo_circle"
                 android:orientation="vertical">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="✂"
-                    android:textColor="@color/gold"
-                    android:textSize="28sp"/>
+                    android:text="S"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    android:fontFamily="serif"/>
             </LinearLayout>
 
-            <!-- "The Curator" -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textColor="@color/white"
-                android:textSize="22sp"
+                android:text="LOGIN"
+                android:textColor="@color/text_on_dark"
+                android:textSize="48sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.04"
-                android:layout_marginTop="10dp"/>
-
-            <!-- Tagline -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tagline"
-                android:textColor="@color/text_muted"
-                android:textSize="9sp"
-                android:letterSpacing="0.14"
-                android:layout_marginTop="3dp"/>
+                android:letterSpacing="-0.02"
+                android:layout_marginTop="16dp"/>
         </LinearLayout>
 
-        <!-- ── Form area ────────────────────────────────────── -->
+        <!-- ── Form ─────────────────────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="32dp"
             android:paddingTop="32dp"
             android:paddingBottom="40dp">
 
-            <!-- "INICIO DE SESIÓN" label -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/inicio_sesion"
-                android:textColor="@color/gold"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.14"
-                android:layout_marginBottom="6dp"/>
-
-            <!-- "¡Bienvenido!" -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bienvenido"
-                android:textColor="@color/white"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="32dp"/>
+                android:textColor="@color/brand_primary"
+                android:textSize="36sp"
+                android:textStyle="normal"
+                android:layout_marginBottom="8dp"/>
 
-            <!-- Error box (hidden by default) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/inicio_sesion"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                android:layout_marginBottom="28dp"/>
+
+            <!-- Error -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/error_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                app:cardBackgroundColor="#3D1A1A"
-                app:strokeColor="#E84343"
+                app:cardBackgroundColor="#FDECEC"
+                app:strokeColor="@color/red_live"
                 app:strokeWidth="1dp"
-                app:cardCornerRadius="2dp"
+                app:cardCornerRadius="8dp"
                 android:layout_marginBottom="16dp">
                 <TextView
                     android:id="@+id/tv_error"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
-                    android:textColor="#FF8080"
-                    android:textSize="13sp"/>
+                    android:textColor="@color/red_live"
+                    android:textSize="14sp"/>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- EMAIL field -->
+            <!-- DOCUMENTO -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="USUARIO"
-                android:textColor="@color/text_muted"
-                android:textSize="9sp"
-                android:letterSpacing="0.12"
-                android:layout_marginBottom="4dp"/>
+                android:text="@string/documento_hint"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginBottom="6dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.SubastApp.TextInputLayout"
+                style="@style/Widget.SubastAR.TextInputLayout"
                 android:layout_marginBottom="20dp">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_email"
+                    android:id="@+id/et_documento"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress"
-                    android:textColor="@color/white"
-                    android:textSize="15sp"/>
+                    android:inputType="number"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- PASSWORD field -->
+            <!-- CONTRASEÑA -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CONTRASEÑA"
-                android:textColor="@color/text_muted"
-                android:textSize="9sp"
-                android:letterSpacing="0.12"
-                android:layout_marginBottom="4dp"/>
+                android:text="@string/password"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginBottom="6dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.SubastApp.TextInputLayout"
+                style="@style/Widget.SubastAR.TextInputLayout"
                 app:passwordToggleEnabled="true"
-                android:layout_marginBottom="28dp">
+                android:layout_marginBottom="8dp">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="@color/white"
-                    android:textSize="15sp"/>
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- INGRESAR button -->
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:text="@string/forgot_password"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginBottom="24dp"
+                android:paddingHorizontal="0dp"/>
+
+            <!-- INGRESAR -->
             <Button
                 android:id="@+id/btn_login"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:text="@string/enter"
-                android:textSize="13sp"
-                style="@style/Widget.SubastApp.Button.Gold"/>
+                android:textSize="16sp"
+                style="@style/Widget.SubastAR.Button.Primary"/>
 
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/navy_border"
-                android:layout_marginVertical="24dp"/>
+            <!-- ¿no tenés una cuenta? -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:text="@string/no_cuenta"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"/>
 
-            <!-- Create account -->
             <Button
                 android:id="@+id/btn_register"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/create_account"
-                style="@style/Widget.SubastApp.Button.OutlinedGold"/>
-
-            <!-- Forgot password -->
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/forgot_password"
-                android:textColor="@color/text_muted"
-                android:textSize="12sp"
-                android:layout_marginTop="8dp"/>
-
+                style="@style/Widget.SubastAR.Button.Outlined"/>
         </LinearLayout>
-
     </LinearLayout>
 </ScrollView>

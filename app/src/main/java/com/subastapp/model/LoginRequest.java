@@ -1,14 +1,14 @@
 package com.subastapp.model;
 
 public class LoginRequest {
-    private String email;
+    private String documento;
     private String password;
 
-    public LoginRequest(String email, String password) {
-        this.email = email;
+    public LoginRequest(String documento, String password) {
+        this.documento = documento;
         this.password = password;
     }
 
-    public String getEmail() { return email; }
+    public String getDocumento() { return documento; }
     public String getPassword() { return password; }
 }

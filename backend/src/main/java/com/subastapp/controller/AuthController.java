@@ -8,8 +8,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,25 +23,33 @@ public class AuthController {
     private final UsuarioRepository usuarioRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
 
-    /** STEP 1: Initial registration with personal data */
+    /** STEP 1: Datos personales + foto DNI (PDF SubastAR — etapa 1). */
     @PostMapping("/register/step1")
     public ResponseEntity<?> registerStep1(@RequestBody Map<String, String> body) {
         String email = body.get("email");
+        String documento = body.get("documento");
 
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email es requerido"));
         }
+        if (documento == null || documento.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Documento es requerido"));
+        }
         if (usuarioRepository.existsByEmail(email)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "El email ya está registrado"));
+        }
+        if (usuarioRepository.existsByDocumento(documento)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "El documento ya está registrado"));
         }
 
         Usuario usuario = Usuario.builder()
                 .nombre(body.get("nombre"))
                 .apellido(body.get("apellido"))
                 .email(email)
+                .documento(documento)
                 .password("PENDING") // not set yet
                 .domicilioLegal(body.get("domicilioLegal"))
                 .paisOrigen(body.get("paisOrigen"))
@@ -99,34 +105,40 @@ public class AuthController {
                 .orElse(ResponseEntity.badRequest().body(Map.of("error", "Token inválido")));
     }
 
-    /** LOGIN */
+    /** LOGIN — autenticación por documento + contraseña (PDF SubastAR). */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
+        String documento = body.get("documento");
         String password = body.get("password");
 
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password));
-        } catch (BadCredentialsException e) {
+        if (documento == null || password == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Documento y contraseña son requeridos"));
+        }
+
+        Usuario usuario = usuarioRepository.findByDocumento(documento).orElse(null);
+        if (usuario == null || !passwordEncoder.matches(password, usuario.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Credenciales incorrectas"));
-        } catch (DisabledException e) {
+        }
+        if (usuario.getEstado() == EstadoUsuario.SUSPENDIDO) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Usuario suspendido. Regularice su situación para continuar."));
         }
-
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(email));
+        if (usuario.getEstado() != EstadoUsuario.APROBADO) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Cuenta pendiente de aprobación."));
+        }
 
         return ResponseEntity.ok(Map.of(
-                "accessToken", jwtUtil.generateToken(email),
-                "refreshToken", jwtUtil.generateRefreshToken(email),
+                "accessToken", jwtUtil.generateToken(usuario.getEmail()),
+                "refreshToken", jwtUtil.generateRefreshToken(usuario.getEmail()),
                 "user", Map.of(
                         "id", usuario.getId(),
                         "nombre", usuario.getNombre(),
                         "apellido", usuario.getApellido(),
                         "email", usuario.getEmail(),
+                        "documento", usuario.getDocumento() != null ? usuario.getDocumento() : "",
                         "categoria", usuario.getCategoria(),
                         "estado", usuario.getEstado()
                 )

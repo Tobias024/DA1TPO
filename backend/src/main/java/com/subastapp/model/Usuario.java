@@ -28,6 +28,10 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
+    /** Documento de identidad — usado como credencial de login (PDF SubastAR). */
+    @Column(unique = true)
+    private String documento;
+
     @Column(nullable = false)
     private String password;
 

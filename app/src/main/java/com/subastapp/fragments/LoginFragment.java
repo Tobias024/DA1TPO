@@ -49,17 +49,17 @@ public class LoginFragment extends Fragment {
     }
 
     private void attemptLogin() {
-        String email = binding.etEmail.getText() != null ? binding.etEmail.getText().toString().trim() : "";
+        String documento = binding.etDocumento.getText() != null ? binding.etDocumento.getText().toString().trim() : "";
         String password = binding.etPassword.getText() != null ? binding.etPassword.getText().toString() : "";
 
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+        if (TextUtils.isEmpty(documento) || TextUtils.isEmpty(password)) {
             showError(getString(R.string.error_campos_requeridos));
             return;
         }
 
         setLoading(true);
 
-        apiService.login(new LoginRequest(email, password)).enqueue(new Callback<LoginResponse>() {
+        apiService.login(new LoginRequest(documento, password)).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                 setLoading(false);

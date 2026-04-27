@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Gold filled pill for USD / currency badges -->
+<!-- Currency pill (SubastAR — bordó) -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#C9A84C"/>
-    <corners android:radius="2dp"/>
+    <solid android:color="@color/brand_primary"/>
+    <corners android:radius="8dp"/>
 </shape>
