@@ -1,0 +1,51 @@
+meta {
+  name: 03 Crear (Subastar algo propio)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/consignments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "tipoBien": "Pintura al óleo",
+    "descripcion": "Óleo sobre lienzo, 60x80 cm, marco original. Adquirido en subasta privada en 2018.",
+    "categoria": "ARTE",
+    "fechaAdquisicion": "2018-04",
+    "artista": "—",
+    "historia": "Pieza recuperada de una colección privada.",
+    "declaraPropiedad": true,
+    "declaraOrigenLicito": true,
+    "fotos": [
+      "https://picsum.photos/seed/demo-01/600/400",
+      "https://picsum.photos/seed/demo-02/600/400",
+      "https://picsum.photos/seed/demo-03/600/400",
+      "https://picsum.photos/seed/demo-04/600/400",
+      "https://picsum.photos/seed/demo-05/600/400",
+      "https://picsum.photos/seed/demo-06/600/400"
+    ]
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.id) {
+    bru.setEnvVar("consignmentId", res.body.id);
+    console.log("✅ Nueva consignación:", res.body.id);
+  }
+}
+
+docs {
+  Crea una solicitud de consignación. Estado inicial: PENDIENTE.
+
+  Validaciones del backend:
+  - declaraPropiedad y declaraOrigenLicito deben ser true.
+  - Mínimo 6 fotos.
+}

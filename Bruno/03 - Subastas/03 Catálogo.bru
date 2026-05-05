@@ -1,0 +1,14 @@
+meta {
+  name: 03 Catálogo
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/auctions/{{auctionId}}/catalog
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

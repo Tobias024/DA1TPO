@@ -1,0 +1,28 @@
+meta {
+  name: 01 Listar Activas
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/auctions?estado=ABIERTA&size=10
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.content && res.body.content.length > 0) {
+    bru.setEnvVar("auctionId", res.body.content[0].id);
+    console.log("✅ auctionId guardado:", res.body.content[0].id);
+  }
+}
+
+docs {
+  Lista subastas filtradas por estado. Estados válidos:
+  PROXIMA, ABIERTA, EN_CURSO, CERRADA, CANCELADA.
+
+  Auto-guarda el primer auctionId para usar en requests posteriores.
+}

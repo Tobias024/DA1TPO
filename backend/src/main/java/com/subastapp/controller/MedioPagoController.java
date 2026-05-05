@@ -51,12 +51,14 @@ public class MedioPagoController {
                 .montoCheque(body.get("montoCheque") != null ?
                         new BigDecimal(body.get("montoCheque").toString()) : null)
                 .numeroCheque((String) body.get("numeroCheque"))
-                .verificado(false) // must be verified by admin
+                // La verificación efectiva queda a cargo de la empresa subastadora
+                // (sistema externo, fuera de scope de esta entrega). Default `true`.
+                .verificado(true)
                 .build();
 
         medioPagoRepository.save(medioPago);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "Medio de pago agregado. Pendiente de verificación.",
+                .body(Map.of("message", "Medio de pago agregado.",
                         "id", medioPago.getId()));
     }
 

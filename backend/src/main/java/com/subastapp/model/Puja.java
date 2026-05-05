@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "pujas")
+@Table(name = "pujos") // nombre legacy (EstructuraActual.sql)
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class Puja {

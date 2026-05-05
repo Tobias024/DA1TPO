@@ -1,0 +1,34 @@
+meta {
+  name: 02 Pujar
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auctions/{{auctionId}}/bids
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "piezaId": "PEGAR_ID_PIEZA",
+    "monto": 260000,
+    "medioPagoId": "PEGAR_ID_MEDIO_PAGO"
+  }
+}
+
+docs {
+  Reglas (PDF):
+  - monto >= mejorOferta + 1% del precioBase
+  - monto <= ultimaOferta + 20% del precioBase   (no aplica para ORO/PLATINO)
+  - Necesita un medio de pago verificado.
+  - Una sola puja en vuelo por usuario (423 LOCKED si hay otra sin confirmar).
+
+  Para conseguir piezaId:  GET /auctions/{id}/catalog
+  Para conseguir medioPagoId: GET /payment-methods
+}

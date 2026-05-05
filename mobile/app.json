@@ -4,15 +4,16 @@
     "slug": "subastar",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
       "backgroundColor": "#710000"
     },
     "scheme": "subastar",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.uade.subastar"
@@ -20,12 +21,14 @@
     "android": {
       "package": "com.uade.subastar",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#710000"
       }
     },
     "extra": {
-      "apiBaseUrl": "http://10.0.2.2:8080/api/v1"
+      "apiBaseUrl": "http://localhost:8080/api/v1"
+    },
+    "experiments": {
+      "tsconfigPaths": true
     }
   }
 }

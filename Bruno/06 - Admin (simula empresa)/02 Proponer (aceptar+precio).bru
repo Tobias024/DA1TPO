@@ -1,0 +1,29 @@
+meta {
+  name: 02 Proponer (aceptar+precio)
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{baseUrl}}/admin/consignments/{{consignmentId}}/propose
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "precioBaseOfrecido": 250000,
+    "comision": 0.15,
+    "subastaId": "{{auctionId}}"
+  }
+}
+
+docs {
+  Simula la aceptación del bien por la empresa con propuesta de valor base
+  + comisión + subasta asignada.
+
+  Transición: EN_INSPECCION → PENDIENTE_CONFIRMACION_USUARIO.
+
+  El campo `subastaId` es opcional. Si lo querés, agarrá uno de
+  03 - Subastas/01 Listar Activas.
+}

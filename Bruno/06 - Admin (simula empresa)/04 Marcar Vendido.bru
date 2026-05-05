@@ -1,0 +1,15 @@
+meta {
+  name: 04 Marcar Vendido
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/admin/consignments/{{consignmentId}}/mark-sold
+  body: none
+  auth: none
+}
+
+docs {
+  Cierra el ciclo: la pieza que estaba EN_SUBASTA pasa a VENDIDO.
+}

@@ -29,7 +29,12 @@ public class MedioPago {
     @Column(nullable = false)
     private Moneda moneda;
 
-    private boolean verificado = false;
+    /**
+     * Verificación a cargo de la empresa subastadora (sistema externo, fuera de
+     * scope de esta entrega). En la app móvil se asume verificado por default
+     * — el lado servidor podrá invalidarlo cuando exista la integración.
+     */
+    private boolean verificado = true;
 
     // CUENTA_BANCARIA fields
     private String banco;

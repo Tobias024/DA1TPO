@@ -1,0 +1,24 @@
+meta {
+  name: 04 Join
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auctions/{{auctionId}}/join
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Conecta al usuario a la subasta. Reglas:
+  - Sólo una subasta activa por usuario.
+  - Si tiene multa pendiente → 403.
+  - Si su categoría no alcanza → 403.
+
+  Crea/reusa un Asistente con `numeroPostor` único en esa subasta.
+}

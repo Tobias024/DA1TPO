@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "piezas")
+@Table(name = "productos") // nombre legacy (EstructuraActual.sql — fusión de productos + itemsCatalogo)
 @Inheritance(strategy = InheritanceType.JOINED)
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor

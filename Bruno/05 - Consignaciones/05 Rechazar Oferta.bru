@@ -1,0 +1,26 @@
+meta {
+  name: 05 Rechazar Oferta
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/consignments/{{consignmentId}}/reject-offer
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "motivo": "El valor base ofrecido es demasiado bajo respecto a la tasación que tenía."
+  }
+}
+
+docs {
+  El usuario rechaza la propuesta. Pasa la consignación a DEVUELTO.
+  Solo válido si está en PENDIENTE_CONFIRMACION_USUARIO.
+}
