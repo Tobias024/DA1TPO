@@ -1,0 +1,35 @@
+meta {
+  name: 01 Listar
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/consignments
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.length > 0) {
+    // Auto-guarda el id de la primera consignación PENDIENTE para los flujos admin.
+    const pendiente = res.body.find(c => c.estado === "PENDIENTE");
+    if (pendiente) {
+      bru.setEnvVar("consignmentId", pendiente.id);
+      console.log("✅ consignmentId (PENDIENTE):", pendiente.id);
+    } else {
+      bru.setEnvVar("consignmentId", res.body[0].id);
+      console.log("✅ consignmentId:", res.body[0].id, "estado:", res.body[0].estado);
+    }
+  }
+}
+
+docs {
+  Lista las consignaciones del usuario autenticado.
+
+  En el seed dev del usuario 11111111 hay 5 consignaciones, una en cada estado:
+    PENDIENTE, EN_INSPECCION, PENDIENTE_CONFIRMACION_USUARIO, RECHAZADO, EN_SUBASTA.
+}

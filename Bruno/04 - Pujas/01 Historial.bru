@@ -1,0 +1,14 @@
+meta {
+  name: 01 Historial
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/auctions/{{auctionId}}/bids?page=0&size=50
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,0 +1,25 @@
+meta {
+  name: 03 Register Step2
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/register/step2
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "registrationToken": "PEGAR_TOKEN_DEL_MAIL",
+    "password": "miPassword123",
+    "passwordConfirm": "miPassword123"
+  }
+}
+
+docs {
+  Etapa 2: el usuario recibe el `registrationToken` por mail y elige su
+  contraseña. La respuesta incluye `accessToken` directamente para que
+  pueda entrar a la app.
+}

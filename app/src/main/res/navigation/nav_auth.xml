@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_auth"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.subastapp.fragments.LoginFragment"
+        android:label="@string/login">
+        <action
+            android:id="@+id/action_login_to_register1"
+            app:destination="@id/registerStep1Fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerStep1Fragment"
+        android:name="com.subastapp.fragments.RegisterStep1Fragment"
+        android:label="@string/register">
+        <action
+            android:id="@+id/action_register1_to_register2"
+            app:destination="@id/registerStep2Fragment"/>
+    </fragment>
+
+    <!-- Confirmación 1/2 — set password from email link -->
+    <fragment
+        android:id="@+id/registerStep2Fragment"
+        android:name="com.subastapp.fragments.RegisterStep2Fragment"
+        android:label="@string/step2_title">
+        <action
+            android:id="@+id/action_register2_to_register3"
+            app:destination="@id/registerStep3Fragment"/>
+    </fragment>
+
+    <!-- Confirmación 2/2 — método de pago + T&C -->
+    <fragment
+        android:id="@+id/registerStep3Fragment"
+        android:name="com.subastapp.fragments.RegisterStep3Fragment"
+        android:label="@string/step3_title"/>
+
+</navigation>

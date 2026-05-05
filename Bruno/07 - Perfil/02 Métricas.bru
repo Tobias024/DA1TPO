@@ -1,0 +1,14 @@
+meta {
+  name: 02 Métricas
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/users/me/metrics
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

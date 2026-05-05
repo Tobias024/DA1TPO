@@ -1,0 +1,798 @@
+openapi: 3.0.3
+info:
+  title: SubastAR API
+  description: >
+    API REST de SubastAR — app de subastas dinámicas ascendentes (TPO DA1, 1C2026).
+    Cubre el dominio descripto en TPO_DAI_1C2026.pdf: registro en dos etapas con
+    foto de DNI, gestión de medios de pago, subastas con categoría y moneda,
+    pujas con reglas de mínimo/máximo, consignaciones con inspección y póliza
+    de seguro, notificaciones, métricas y ventas.
+  version: 2.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local
+  - url: https://subastar.example.com/api/v1
+    description: Producción (entrega 3)
+
+tags:
+  - name: Auth
+    description: Registro en dos etapas y login por documento.
+  - name: Users
+    description: Perfil del usuario autenticado y métricas.
+  - name: Auctions
+    description: Subastas activas y catálogo.
+  - name: Bids
+    description: Pujas en una subasta (real-time vía WebSocket STOMP).
+  - name: PaymentMethods
+    description: Medios de pago del usuario (cuenta bancaria, tarjeta, cheque certificado).
+  - name: Consignments
+    description: Solicitudes para subastar artículos propios.
+  - name: Notifications
+    description: Centro de notificaciones del usuario.
+  - name: Sales
+    description: Historial de ventas (artículos adquiridos).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [documento, password]
+      properties:
+        documento:
+          type: string
+          example: "30123456"
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        user: { $ref: '#/components/schemas/UserSummary' }
+
+    UserSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        apellido: { type: string }
+        email: { type: string, format: email }
+        documento: { type: string }
+        categoria: { $ref: '#/components/schemas/Categoria' }
+        estado: { $ref: '#/components/schemas/EstadoUsuario' }
+
+    Categoria:
+      type: string
+      enum: [COMUN, ESPECIAL, PLATA, ORO, PLATINO]
+
+    EstadoUsuario:
+      type: string
+      enum: [PENDIENTE_VERIFICACION, APROBADO, SUSPENDIDO]
+
+    RegisterStep1Request:
+      type: object
+      required: [documento, email, nombre, apellido, domicilioLegal, paisOrigen]
+      properties:
+        documento: { type: string }
+        email: { type: string, format: email }
+        nombre: { type: string }
+        apellido: { type: string }
+        domicilioLegal: { type: string }
+        paisOrigen: { type: string, description: "ISO 3166-1 alpha-3", example: "ARG" }
+        fotoDniFrente: { type: string, format: byte }
+        fotoDniDorso: { type: string, format: byte }
+
+    RegisterStep2Request:
+      type: object
+      required: [registrationToken, password, passwordConfirm]
+      properties:
+        registrationToken: { type: string }
+        password: { type: string, format: password }
+        passwordConfirm: { type: string, format: password }
+
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        apellido: { type: string }
+        email: { type: string }
+        documento: { type: string }
+        domicilioLegal: { type: string }
+        paisOrigen: { type: string }
+        categoria: { $ref: '#/components/schemas/Categoria' }
+        estado: { $ref: '#/components/schemas/EstadoUsuario' }
+        tieneMulta: { type: boolean }
+        montoPendienteMulta: { type: number, format: double }
+        subastaActivaId: { type: string, nullable: true }
+
+    UserMetrics:
+      type: object
+      properties:
+        totalGastado: { type: number, format: double }
+        subastasParticipadas: { type: integer }
+        subastasGanadas: { type: integer }
+        tasaExito: { type: number, format: double, description: "0..1" }
+        mayorPuja: { type: number, format: double }
+        categorias:
+          type: array
+          items:
+            type: object
+            properties:
+              categoria: { $ref: '#/components/schemas/Categoria' }
+              participaciones: { type: integer }
+
+    Auction:
+      type: object
+      properties:
+        id: { type: string }
+        titulo: { type: string }
+        descripcion: { type: string }
+        fechaHoraInicio: { type: string, format: date-time }
+        ubicacion: { type: string }
+        categoriaRequerida: { $ref: '#/components/schemas/Categoria' }
+        moneda:
+          type: string
+          enum: [ARS, USD]
+        estado:
+          type: string
+          enum: [PROGRAMADA, ABIERTA, CERRADA]
+        streamingUrl: { type: string, nullable: true }
+        rematador:
+          type: object
+          properties:
+            id: { type: string }
+            nombre: { type: string }
+            matricula: { type: string }
+        usuarioPuedeParticipar: { type: boolean }
+        usuarioPuedePujar: { type: boolean }
+        motivoNoPuede: { type: string, nullable: true }
+
+    AuctionPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/Auction' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    Piece:
+      type: object
+      description: "Pieza/ítem del catálogo. Puede estar compuesta por varios elementos (ej. Juego de Té de 18 piezas)."
+      properties:
+        id: { type: string }
+        numero: { type: integer }
+        descripcion: { type: string }
+        precioBase: { type: number, format: double }
+        moneda: { type: string, enum: [ARS, USD] }
+        dueñoActualId: { type: string }
+        fotos:
+          type: array
+          items: { type: string }
+          description: "Mínimo 6 fotos por pieza."
+        obraArte:
+          $ref: '#/components/schemas/ObraArte'
+          nullable: true
+        vendido: { type: boolean }
+        precioVenta: { type: number, format: double, nullable: true }
+
+    ObraArte:
+      type: object
+      description: "Datos extra para obras de arte u objetos de diseñador."
+      properties:
+        artista: { type: string }
+        fecha: { type: string }
+        historia: { type: string }
+
+    Bid:
+      type: object
+      properties:
+        id: { type: string }
+        subastaId: { type: string }
+        piezaId: { type: string }
+        usuarioId: { type: string }
+        usuarioNombre: { type: string }
+        monto: { type: number, format: double }
+        moneda: { type: string, enum: [ARS, USD] }
+        timestamp: { type: string, format: date-time }
+        ganadora: { type: boolean }
+
+    BidRequest:
+      type: object
+      required: [piezaId, monto]
+      properties:
+        piezaId: { type: string }
+        monto: { type: number, format: double }
+        medioPagoId: { type: string }
+
+    BidPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/Bid' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+
+    MedioPago:
+      type: object
+      properties:
+        id: { type: string }
+        tipo:
+          type: string
+          enum: [CUENTA_BANCARIA, TARJETA_CREDITO, CHEQUE_CERTIFICADO]
+        proveedor: { type: string, example: "Mercado Pago / MasterCard / Banco Nación" }
+        ultimosDigitos: { type: string, maxLength: 4 }
+        verificado: { type: boolean }
+        montoGarantia:
+          type: number
+          format: double
+          nullable: true
+          description: "Sólo aplica a CHEQUE_CERTIFICADO."
+
+    AddPaymentMethodRequest:
+      type: object
+      required: [tipo, proveedor]
+      properties:
+        tipo: { type: string, enum: [CUENTA_BANCARIA, TARJETA_CREDITO, CHEQUE_CERTIFICADO] }
+        proveedor: { type: string }
+        ultimosDigitos: { type: string, maxLength: 4 }
+        montoGarantia: { type: number, format: double, nullable: true }
+
+    Consignment:
+      type: object
+      description: "Solicitud para subastar un artículo propio del usuario."
+      properties:
+        id: { type: string }
+        nombreBien: { type: string }
+        descripcionDetallada: { type: string }
+        historia: { type: string, nullable: true }
+        fotos:
+          type: array
+          items: { type: string }
+          minItems: 6
+        declaraPropiedad: { type: boolean }
+        declaraOrigenLicito: { type: boolean }
+        estado:
+          type: string
+          enum: [ENVIADA, EN_INSPECCION, ACEPTADA, RECHAZADA, EN_SUBASTA, VENDIDA]
+        # Datos completados por la empresa cuando inspecciona y propone
+        valorBaseOfrecido: { type: number, format: double, nullable: true }
+        comision: { type: number, format: double, nullable: true }
+        polizaSeguro:
+          $ref: '#/components/schemas/PolizaSeguro'
+          nullable: true
+        ubicacionDeposito: { type: string, nullable: true }
+        # Si es ACEPTADA, datos de la subasta asignada
+        subastaAsignadaId: { type: string, nullable: true }
+        fechaSubastaAsignada: { type: string, format: date-time, nullable: true }
+        # Si es RECHAZADA
+        motivoRechazo: { type: string, nullable: true }
+        gastosDevolucion: { type: number, format: double, nullable: true }
+
+    PolizaSeguro:
+      type: object
+      properties:
+        id: { type: string }
+        aseguradora: { type: string }
+        numeroPoliza: { type: string }
+        valorAsegurado: { type: number, format: double }
+        contactoAseguradora: { type: string }
+
+    CreateConsignmentRequest:
+      type: object
+      required: [nombreBien, descripcionDetallada, fotos, declaraPropiedad, declaraOrigenLicito]
+      properties:
+        nombreBien: { type: string }
+        descripcionDetallada: { type: string }
+        historia: { type: string }
+        fotos:
+          type: array
+          items: { type: string, format: byte }
+          minItems: 6
+        declaraPropiedad: { type: boolean }
+        declaraOrigenLicito: { type: boolean }
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string }
+        tipo:
+          type: string
+          enum: [SOLICITUD_ACEPTADA, SOLICITUD_RECHAZADA, NUEVA_SUBASTA, SUBASTA_ADQUIRIDA, MULTA_APLICADA]
+        titulo: { type: string }
+        mensaje: { type: string }
+        leida: { type: boolean }
+        fecha: { type: string, format: date-time }
+        # Referencia opcional al recurso al que la notificación apunta
+        referenciaId: { type: string, nullable: true }
+
+    NotificationPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/Notification' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+
+    Sale:
+      type: object
+      description: "Venta concretada (artículo adquirido por el usuario)."
+      properties:
+        id: { type: string }
+        subastaId: { type: string }
+        piezaId: { type: string }
+        nombreBien: { type: string }
+        precio: { type: number, format: double }
+        moneda: { type: string, enum: [ARS, USD] }
+        comisiones: { type: number, format: double }
+        costoEnvio: { type: number, format: double }
+        medioPago: { $ref: '#/components/schemas/MedioPago' }
+        fecha: { type: string, format: date-time }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  # ─── AUTH ──────────────────────────────────────────────────────────
+  /auth/register/step1:
+    post:
+      tags: [Auth]
+      summary: Etapa 1 — datos personales + foto DNI
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterStep1Request' }
+      responses:
+        '201': { description: Registro iniciado. Se envía mail al usuario al aprobarse. }
+        '400': { description: Datos inválidos. }
+        '409': { description: Email o documento ya registrado. }
+
+  /auth/register/step2:
+    post:
+      tags: [Auth]
+      summary: Etapa 2 — setear contraseña con token de verificación
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterStep2Request' }
+      responses:
+        '200':
+          description: Contraseña creada. Devuelve tokens.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { description: Datos inválidos. }
+        '410': { description: Token expirado. }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login por documento + contraseña
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login exitoso.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '401': { description: Credenciales incorrectas. }
+        '403': { description: Usuario suspendido o pendiente de aprobación. }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refrescar access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Nuevo access token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+        '401': { description: Refresh token inválido o expirado. }
+
+  # ─── USERS ─────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Datos del usuario autenticado
+      responses:
+        '200':
+          description: Perfil.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '401': { description: No autenticado. }
+    put:
+      tags: [Users]
+      summary: Actualizar perfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                apellido: { type: string }
+                domicilioLegal: { type: string }
+                paisOrigen: { type: string }
+      responses:
+        '200':
+          description: Perfil actualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '400': { description: Datos inválidos. }
+
+  /users/me/metrics:
+    get:
+      tags: [Users]
+      summary: Métricas del usuario (pantalla Métricas)
+      responses:
+        '200':
+          description: Métricas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserMetrics' }
+
+  # ─── AUCTIONS ──────────────────────────────────────────────────────
+  /auctions:
+    get:
+      tags: [Auctions]
+      summary: Listar subastas (filtradas por categoría del usuario)
+      parameters:
+        - in: query
+          name: estado
+          schema: { type: string, enum: [PROGRAMADA, ABIERTA, CERRADA] }
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Página de subastas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuctionPage' }
+
+  /auctions/{id}:
+    get:
+      tags: [Auctions]
+      summary: Detalle de una subasta
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Detalle.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Auction' }
+        '403': { description: Categoría insuficiente. }
+        '404': { description: No encontrada. }
+
+  /auctions/{id}/catalog:
+    get:
+      tags: [Auctions]
+      summary: Catálogo de piezas de una subasta
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de piezas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Piece' }
+        '403': { description: Categoría insuficiente. }
+        '404': { description: No encontrada. }
+
+  /auctions/{id}/join:
+    post:
+      tags: [Auctions]
+      summary: Conectarse a una subasta (sólo una activa por usuario)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Conectado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  puedePujar: { type: boolean }
+        '403':
+          description: Ya hay otra subasta activa, multa pendiente o categoría insuficiente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auctions/{id}/leave:
+    post:
+      tags: [Auctions]
+      summary: Salir de la subasta activa
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Desconectado. }
+
+  # ─── BIDS ──────────────────────────────────────────────────────────
+  /auctions/{auctionId}/bids:
+    get:
+      tags: [Bids]
+      summary: Historial de pujas de la subasta
+      parameters:
+        - in: path
+          name: auctionId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Pujas paginadas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BidPage' }
+    post:
+      tags: [Bids]
+      summary: Realizar una puja
+      description: |
+        Reglas (PDF SubastAR):
+        - `monto >= mejorOferta + 0.01 * precioBase`
+        - `monto <= ultimaOferta + 0.20 * precioBase` (excepto en subastas ORO/PLATINO)
+        - El usuario debe tener al menos un medio de pago verificado.
+        - Una sola puja por usuario en vuelo (locking en cliente STOMP hasta confirmación).
+      parameters:
+        - in: path
+          name: auctionId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BidRequest' }
+      responses:
+        '201':
+          description: Puja registrada (también se broadcast por WebSocket).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Bid' }
+        '400': { description: Monto fuera de rango (min/max). }
+        '403': { description: Sin medio de pago verificado o categoría insuficiente. }
+        '409': { description: Hay una puja del usuario aún sin confirmar. }
+
+  # ─── PAYMENT METHODS ───────────────────────────────────────────────
+  /payment-methods:
+    get:
+      tags: [PaymentMethods]
+      summary: Listar medios de pago del usuario
+      responses:
+        '200':
+          description: Lista.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MedioPago' }
+    post:
+      tags: [PaymentMethods]
+      summary: Agregar un medio de pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddPaymentMethodRequest' }
+      responses:
+        '201':
+          description: Creado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MedioPago' }
+
+  /payment-methods/{id}:
+    delete:
+      tags: [PaymentMethods]
+      summary: Eliminar un medio de pago
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: Eliminado. }
+        '404': { description: No encontrado. }
+
+  # ─── CONSIGNMENTS ──────────────────────────────────────────────────
+  /consignments:
+    get:
+      tags: [Consignments]
+      summary: Mis consignaciones (pantalla Mis Subastas)
+      responses:
+        '200':
+          description: Lista.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Consignment' }
+    post:
+      tags: [Consignments]
+      summary: Solicitar subasta de un artículo propio (Subastar algo propio)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateConsignmentRequest' }
+      responses:
+        '201':
+          description: Solicitud creada (estado ENVIADA).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Consignment' }
+        '400':
+          description: Datos inválidos (faltan declaraciones, menos de 6 fotos, etc).
+
+  /consignments/{id}:
+    get:
+      tags: [Consignments]
+      summary: Detalle de una consignación
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Detalle.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Consignment' }
+        '404': { description: No encontrada. }
+
+  /consignments/{id}/accept-offer:
+    patch:
+      tags: [Consignments]
+      summary: Aceptar la propuesta (valor base + comisiones) — pantalla Solicitud Aceptada
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Aceptado. La pieza pasa al catálogo de la subasta asignada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Consignment' }
+
+  /consignments/{id}/reject-offer:
+    patch:
+      tags: [Consignments]
+      summary: Rechazar la propuesta (se devuelve el bien con cargo)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo: { type: string }
+      responses:
+        '200':
+          description: Rechazado. Estado RECHAZADA.
+
+  # ─── NOTIFICATIONS ─────────────────────────────────────────────────
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Notificaciones del usuario
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Lista paginada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationPage' }
+
+  /notifications/{id}/read:
+    patch:
+      tags: [Notifications]
+      summary: Marcar como leída
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK. }
+        '404': { description: No encontrada. }
+
+  # ─── SALES ─────────────────────────────────────────────────────────
+  /sales:
+    get:
+      tags: [Sales]
+      summary: Mis compras (Caso Adquisición / Mis Compras)
+      responses:
+        '200':
+          description: Lista.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Sale' }

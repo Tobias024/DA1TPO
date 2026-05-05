@@ -1,0 +1,30 @@
+meta {
+  name: 02 Agregar Tarjeta
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/payment-methods
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "tipo": "TARJETA_CREDITO",
+    "moneda": "ARS",
+    "numeroTarjeta": "5500",
+    "titular": "TOBIAS DEMO",
+    "vencimiento": "12/30"
+  }
+}
+
+docs {
+  Default: queda con `verificado=true` (la verificación efectiva la hace
+  la empresa subastadora externa, fuera de scope de esta entrega).
+}

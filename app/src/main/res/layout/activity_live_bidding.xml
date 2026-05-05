@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Live Bidding — matches Figma "Lot #442: Patek Philippe" screen exactly -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/navy">
+
+    <!-- ── Top bar ───────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/navy_card">
+
+        <!-- Back -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_previous"
+            android:tint="@color/white"
+            android:contentDescription="Volver"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- App name -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_name"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            android:textStyle="bold"/>
+
+        <!-- MIEMBRO ORO badge -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            app:cardBackgroundColor="#A07830"
+            app:cardCornerRadius="2dp"
+            app:strokeWidth="0dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MIEMBRO\nORO"
+                android:textColor="@color/navy"
+                android:textSize="7sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <ImageButton
+            android:id="@+id/btn_search"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_search"
+            android:tint="@color/white"
+            android:contentDescription="Buscar"/>
+    </LinearLayout>
+
+    <!-- ── Scrollable lot content ─────────────────────────────── -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <!-- Hero image with EN VIVO badge + viewers -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="192dp">
+
+                <ImageView
+                    android:id="@+id/iv_lot_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:background="@color/navy_elevated"
+                    android:contentDescription="Lot image"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/scrim_bottom"/>
+
+                <!-- EN VIVO + viewers -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="top"
+                    android:padding="12dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tv_live_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/en_vivo_badge"
+                        android:textColor="@color/white"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.10"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:background="@drawable/bg_status_badge"
+                        android:layout_marginEnd="8dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_viewers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.0k viewers"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"/>
+
+                    <TextView
+                        android:id="@+id/tv_connected"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:textSize="10sp"
+                        android:textColor="@color/text_muted"/>
+                </LinearLayout>
+
+                <!-- Lot title over image -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_gravity="bottom"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/tv_lot_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/gold"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06"/>
+
+                    <TextView
+                        android:id="@+id/tv_auction_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:lineSpacingMultiplier="1.1"/>
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- Thumbnail strip -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_thumbnails"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:clipToPadding="false"/>
+
+            <!-- ── PROVENANCE & CONTEXT ────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/provenance_context"
+                    android:textColor="@color/gold"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.16"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tv_item_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.5"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Artist — shown only when item has an artista field -->
+                <TextView
+                    android:id="@+id/tv_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="italic"
+                    android:visibility="gone"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Technical specs card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.SubastApp.Card"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/especificaciones"
+                            android:textColor="@color/white"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="10dp"/>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_specs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- ── Bid panel ──────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="12dp">
+
+                <!-- Base value -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/valor_base"
+                        android:textColor="@color/text_muted"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.10"/>
+
+                    <TextView
+                        android:id="@+id/tv_base_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+
+                <!-- "ÚLTIMA OFERTA" label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ultima_oferta"
+                    android:textColor="@color/text_muted"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.10"
+                    android:layout_marginBottom="2dp"/>
+
+                <!-- Current offer big number -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:id="@+id/tv_current_offer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="$15.000"
+                        android:textColor="@color/gold"
+                        android:textSize="36sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/tv_currency_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="USD"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="4dp"/>
+                </LinearLayout>
+
+                <!-- "ERES EL MÁXIMO POSTOR" badge -->
+                <TextView
+                    android:id="@+id/tv_max_bidder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/eres_maximo"
+                    android:textColor="@color/gold"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06"
+                    android:visibility="gone"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Increment quick-bid buttons -->
+                <LinearLayout
+                    android:id="@+id/bid_input_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <Button
+                        android:id="@+id/btn_increment_small"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="+$100\nINCREMENTO 1%"
+                        android:textSize="10sp"
+                        android:textColor="@color/white"
+                        style="@style/Widget.SubastApp.Button.OutlinedGold"/>
+
+                    <Button
+                        android:id="@+id/btn_increment_large"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="+$2.000\nLÍMITE 30%"
+                        android:textSize="10sp"
+                        android:textColor="@color/white"
+                        style="@style/Widget.SubastApp.Button.OutlinedGold"/>
+                </LinearLayout>
+
+                <!-- Manual amount field -->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_bid_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="@string/ingresa_monto"
+                    android:inputType="numberDecimal"
+                    android:background="@drawable/bg_bid_input"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/text_muted"
+                    android:textSize="15sp"
+                    android:paddingHorizontal="16dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- REALIZAR PUJA button -->
+                <Button
+                    android:id="@+id/btn_bid"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="@string/pujar"
+                    style="@style/Widget.SubastApp.Button.Gold"/>
+
+                <!-- Limits bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+
+                    <TextView
+                        android:id="@+id/tv_limit_min"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/text_muted"
+                        android:textSize="10sp"/>
+
+                    <TextView
+                        android:id="@+id/tv_limit_max"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_muted"
+                        android:textSize="10sp"/>
+                </LinearLayout>
+
+                <!-- Watch only banner -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cv_watch_only"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginTop="12dp"
+                    style="@style/Widget.SubastApp.Card">
+                    <TextView
+                        android:id="@+id/tv_watch_only"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:textColor="@color/text_muted"
+                        android:text="@string/solo_observador"
+                        android:textAlignment="center"
+                        android:textSize="13sp"/>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- ── Bid history ────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/historial_pujas"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="10dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_bids"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

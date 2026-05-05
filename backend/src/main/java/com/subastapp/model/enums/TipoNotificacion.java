@@ -1,0 +1,13 @@
+package com.subastapp.model.enums;
+
+public enum TipoNotificacion {
+    CUENTA_APROBADA,
+    COMPLETAR_REGISTRO,
+    VENTA_GANADA,
+    PAGO_REQUERIDO,
+    MULTA_APLICADA,
+    CONSIGNACION_ACEPTADA,
+    CONSIGNACION_RECHAZADA,
+    OFERTA_BASE_PROPUESTA,
+    BIEN_DEVUELTO
+}

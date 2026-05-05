@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "SubastAR",
+    "slug": "subastar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#710000"
+    },
+    "scheme": "subastar",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.uade.subastar"
+    },
+    "android": {
+      "package": "com.uade.subastar",
+      "adaptiveIcon": {
+        "backgroundColor": "#710000"
+      }
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:8080/api/v1"
+    },
+    "experiments": {
+      "tsconfigPaths": true
+    }
+  }
+}

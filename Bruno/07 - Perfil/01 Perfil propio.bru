@@ -1,0 +1,14 @@
+meta {
+  name: 01 Perfil propio
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/users/me
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

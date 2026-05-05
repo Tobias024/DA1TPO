@@ -1,0 +1,26 @@
+meta {
+  name: 03 Rechazar
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/admin/consignments/{{consignmentId}}/reject
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "causaRechazo": "El bien no cumple los criterios de autenticidad de la subasta.",
+    "gastosDevolucion": 5000
+  }
+}
+
+docs {
+  Simula la decisión de la empresa de rechazar el bien tras la inspección.
+  Transición: EN_INSPECCION → RECHAZADO.
+
+  El cliente verá la pantalla de "Solicitud Rechazada" con el motivo y
+  los gastos de devolución.
+}

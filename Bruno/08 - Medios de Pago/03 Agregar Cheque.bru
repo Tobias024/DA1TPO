@@ -1,0 +1,29 @@
+meta {
+  name: 03 Agregar Cheque
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/payment-methods
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "tipo": "CHEQUE_CERTIFICADO",
+    "moneda": "USD",
+    "numeroCheque": "CHK-001234",
+    "montoCheque": 50000
+  }
+}
+
+docs {
+  El cheque certificado limita las compras del usuario al monto reservado.
+  El backend trackea `montoUsado` automáticamente al pujar.
+}

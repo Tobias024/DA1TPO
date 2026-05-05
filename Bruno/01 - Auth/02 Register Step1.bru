@@ -1,0 +1,28 @@
+meta {
+  name: 02 Register Step1
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register/step1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "documento": "22222222",
+    "nombre": "Lucia",
+    "apellido": "Tester",
+    "email": "lucia.tester@subastar.ar",
+    "domicilioLegal": "Calle Falsa 123",
+    "paisOrigen": "ARG"
+  }
+}
+
+docs {
+  Etapa 1 del registro. La empresa "verifica" externamente y manda un mail
+  con el `registrationToken`. En dev podés copiar ese token de los logs del
+  backend o desde la H2 console (`select registration_token from usuarios`).
+}

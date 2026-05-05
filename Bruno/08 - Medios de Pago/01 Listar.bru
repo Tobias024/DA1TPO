@@ -1,0 +1,14 @@
+meta {
+  name: 01 Listar
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/payment-methods
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,0 +1,23 @@
+meta {
+  name: 04 Aceptar Oferta
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/consignments/{{consignmentId}}/accept-offer
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Solo válido si la consignación está en PENDIENTE_CONFIRMACION_USUARIO.
+  Si no, devuelve 409.
+
+  Pasa la consignación a EN_SUBASTA y la pieza queda incluida en la
+  subasta asignada por la empresa.
+}

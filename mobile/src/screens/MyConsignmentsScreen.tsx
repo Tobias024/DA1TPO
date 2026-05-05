@@ -1,0 +1,83 @@
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Card from '@/components/Card';
+import PrimaryButton from '@/components/PrimaryButton';
+import { colors } from '@/theme/colors';
+import { consignmentsApi } from '@/api/services';
+import type { Consignment } from '@/types/api';
+import type { MainStackParamList } from '@/navigation/types';
+
+type Nav = NativeStackNavigationProp<MainStackParamList>;
+
+const ESTADO_LABEL: Record<string, string> = {
+  ENVIADA: 'Enviada — pendiente de inspección',
+  EN_INSPECCION: 'En inspección',
+  ACEPTADA: 'Aceptada — propuesta lista',
+  RECHAZADA: 'Rechazada',
+  EN_SUBASTA: 'En subasta',
+  VENDIDA: 'Vendida',
+};
+
+const ESTADO_COLOR = (s: string) => {
+  if (s === 'ACEPTADA' || s === 'EN_SUBASTA' || s === 'VENDIDA') return colors.greenLive;
+  if (s === 'RECHAZADA') return colors.redLive;
+  return colors.orangePending;
+};
+
+export default function MyConsignmentsScreen() {
+  const nav = useNavigation<Nav>();
+  const [items, setItems] = useState<Consignment[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try { setItems(await consignmentsApi.list()); } catch { setItems([]); } finally { setLoading(false); }
+  }, []);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const open = (c: Consignment) => {
+    if (c.estado === 'ACEPTADA') nav.navigate('RequestAccepted', { consignmentId: c.id });
+    else if (c.estado === 'RECHAZADA') nav.navigate('RequestRejected', { consignmentId: c.id });
+    else nav.navigate('PieceLocation', { consignmentId: c.id });
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+      <FlatList
+        data={items}
+        keyExtractor={(c) => c.id}
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+        ListEmptyComponent={<Text style={styles.empty}>{loading ? 'Cargando…' : 'Aún no enviaste artículos a subastar.'}</Text>}
+        renderItem={({ item }) => (
+          <Card onPress={() => open(item)} style={{ marginBottom: 10 }}>
+            <Text style={styles.title}>{item.nombreBien}</Text>
+            <Text style={[styles.estado, { color: ESTADO_COLOR(item.estado) }]}>
+              {ESTADO_LABEL[item.estado] ?? item.estado}
+            </Text>
+            {item.valorBaseOfrecido ? (
+              <Text style={styles.base}>Valor base: $ {item.valorBaseOfrecido.toLocaleString('es-AR')}</Text>
+            ) : null}
+            {item.polizaSeguro ? (
+              <Text style={styles.poliza}>🛡 Póliza {item.polizaSeguro.numeroPoliza}</Text>
+            ) : null}
+          </Card>
+        )}
+      />
+      <View style={styles.footer}>
+        <PrimaryButton title="Subastar algo propio" onPress={() => nav.navigate('ConsignmentForm')} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  title: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
+  estado: { fontSize: 13, marginTop: 4, fontWeight: '600' },
+  base: { fontSize: 13, color: colors.brandPrimary, marginTop: 6 },
+  poliza: { fontSize: 12, color: colors.inputHint, marginTop: 2 },
+  empty: { color: colors.inputHint, textAlign: 'center', padding: 32 },
+  footer: { padding: 16, backgroundColor: colors.surfaceCream, borderTopColor: colors.inputBorder, borderTopWidth: 1 },
+});

@@ -1,0 +1,19 @@
+meta {
+  name: 01 Iniciar Inspección
+  type: http
+  seq: 1
+}
+
+patch {
+  url: {{baseUrl}}/admin/consignments/{{consignmentId}}/start-inspection
+  body: none
+  auth: none
+}
+
+docs {
+  Simula el momento en que la empresa recibe el bien y empieza la inspección.
+  Transición: PENDIENTE → EN_INSPECCION.
+
+  ⚠ Endpoint solo activo en perfil `dev`. Usado para hacer demos del flujo
+  completo desde Bruno sin necesidad de un panel admin real.
+}

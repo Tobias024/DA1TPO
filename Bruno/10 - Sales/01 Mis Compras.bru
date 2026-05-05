@@ -1,0 +1,14 @@
+meta {
+  name: 01 Mis Compras
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/sales
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

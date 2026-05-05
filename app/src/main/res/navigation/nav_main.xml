@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/homeFragment">
+
+    <!-- ── Bottom nav: Home ─────────────────────────────────────── -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.subastapp.fragments.HomeFragment"
+        android:label="@string/home_titulo">
+        <action
+            android:id="@+id/action_home_to_auctions"
+            app:destination="@id/auctionsFragment"/>
+        <action
+            android:id="@+id/action_home_to_detail"
+            app:destination="@id/auctionDetailFragment"/>
+        <action
+            android:id="@+id/action_home_to_discover"
+            app:destination="@id/discoverFragment"/>
+    </fragment>
+
+    <!-- Bottom nav: Subastas Activas -->
+    <fragment
+        android:id="@+id/auctionsFragment"
+        android:name="com.subastapp.fragments.AuctionsFragment"
+        android:label="@string/subastas_activas">
+        <action
+            android:id="@+id/action_auctions_to_detail"
+            app:destination="@id/auctionDetailFragment"/>
+        <action
+            android:id="@+id/action_auctions_to_sold"
+            app:destination="@id/soldItemDetailFragment"/>
+    </fragment>
+
+    <!-- Bottom nav: Notificaciones -->
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.subastapp.fragments.NotificationsFragment"
+        android:label="@string/notificaciones">
+        <action
+            android:id="@+id/action_notif_to_accepted"
+            app:destination="@id/requestAcceptedFragment"/>
+        <action
+            android:id="@+id/action_notif_to_rejected"
+            app:destination="@id/requestRejectedFragment"/>
+        <action
+            android:id="@+id/action_notif_to_acquisition"
+            app:destination="@id/acquisitionFragment"/>
+    </fragment>
+
+    <!-- Bottom nav: Perfil -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.subastapp.fragments.ProfileFragment"
+        android:label="@string/perfil">
+        <action
+            android:id="@+id/action_profile_to_edit"
+            app:destination="@id/editProfileFragment"/>
+        <action
+            android:id="@+id/action_profile_to_metrics"
+            app:destination="@id/metricsFragment"/>
+        <action
+            android:id="@+id/action_profile_to_consignments"
+            app:destination="@id/consignmentListFragment"/>
+        <action
+            android:id="@+id/action_profile_to_payments"
+            app:destination="@id/paymentFragment"/>
+        <action
+            android:id="@+id/action_profile_to_notifications"
+            app:destination="@id/notificationsFragment"/>
+    </fragment>
+
+    <!-- ── Secondary destinations ──────────────────────────────── -->
+    <fragment
+        android:id="@+id/discoverFragment"
+        android:name="com.subastapp.fragments.DiscoverFragment"
+        android:label="@string/descubrir">
+        <action
+            android:id="@+id/action_discover_to_detail"
+            app:destination="@id/auctionDetailFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/auctionDetailFragment"
+        android:name="com.subastapp.fragments.AuctionDetailFragment"
+        android:label="@string/participar">
+        <argument
+            android:name="auctionId"
+            app:argType="string"/>
+        <action
+            android:id="@+id/action_detail_to_catalog"
+            app:destination="@id/catalogFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/catalogFragment"
+        android:name="com.subastapp.fragments.CatalogFragment"
+        android:label="@string/catalogo">
+        <argument
+            android:name="auctionId"
+            app:argType="string"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/soldItemDetailFragment"
+        android:name="com.subastapp.fragments.SoldItemDetailFragment"
+        android:label="@string/vendido">
+        <argument
+            android:name="auctionId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.subastapp.fragments.PaymentMethodsFragment"
+        android:label="@string/medios_pago">
+        <action
+            android:id="@+id/action_payment_to_add"
+            app:destination="@id/addPaymentFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/addPaymentFragment"
+        android:name="com.subastapp.fragments.AddPaymentMethodFragment"
+        android:label="@string/agregar_medio"/>
+
+    <fragment
+        android:id="@+id/consignmentListFragment"
+        android:name="com.subastapp.fragments.ConsignmentListFragment"
+        android:label="@string/mis_consignaciones">
+        <action
+            android:id="@+id/action_consignmentList_to_form"
+            app:destination="@id/consignmentFormFragment"/>
+        <action
+            android:id="@+id/action_consignmentList_to_location"
+            app:destination="@id/pieceLocationFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/consignmentFormFragment"
+        android:name="com.subastapp.fragments.ConsignmentFormFragment"
+        android:label="@string/consignacion">
+        <action
+            android:id="@+id/action_form_to_sent"
+            app:destination="@id/requestSentFragment"
+            app:popUpTo="@id/consignmentListFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/requestSentFragment"
+        android:name="com.subastapp.fragments.RequestSentFragment"
+        android:label="@string/solicitud_enviada_titulo"/>
+
+    <fragment
+        android:id="@+id/requestAcceptedFragment"
+        android:name="com.subastapp.fragments.RequestAcceptedFragment"
+        android:label="@string/solicitud_aceptada_titulo">
+        <argument
+            android:name="consignmentId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/requestRejectedFragment"
+        android:name="com.subastapp.fragments.RequestRejectedFragment"
+        android:label="@string/solicitud_rechazada_titulo">
+        <argument
+            android:name="consignmentId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/acquisitionFragment"
+        android:name="com.subastapp.fragments.AcquisitionFragment"
+        android:label="@string/adquisicion_titulo">
+        <argument
+            android:name="saleId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/metricsFragment"
+        android:name="com.subastapp.fragments.MetricsFragment"
+        android:label="@string/metricas"/>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.subastapp.fragments.EditProfileFragment"
+        android:label="@string/editar_perfil"/>
+
+    <fragment
+        android:id="@+id/pieceLocationFragment"
+        android:name="com.subastapp.fragments.PieceLocationFragment"
+        android:label="@string/ver_ubicacion_piezas"/>
+
+</navigation>
