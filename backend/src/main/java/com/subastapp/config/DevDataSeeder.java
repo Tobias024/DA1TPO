@@ -54,29 +54,53 @@ public class DevDataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // Cada sección se siembra solo si la tabla correspondiente está vacía.
+        // Esto hace al seeder robusto frente a renames de tablas (ej. cuando
+        // alineamos al schema legacy y Hibernate creó tablas nuevas vacías).
         seedPaises();
 
-        if (usuarios.existsByDocumento("11111111")) {
-            log.info("Seed dev: usuario de prueba ya existe, salteando.");
-            return;
-        }
+        Usuario u = obtenerOCrearUsuarioDemo();
+        sembrarMedioPagoSiHaceFalta(u);
+        sembrarSubastasSiHaceFalta();
+        sembrarConsignacionesSiHaceFalta(u);
 
-        // ── Usuario de prueba ────────────────────────────────────────
-        Usuario u = Usuario.builder()
-                .nombre("Tobias")
-                .apellido("Demo")
-                .email("test@subastar.ar")
-                .documento("11111111")
-                .password(passwordEncoder.encode("test1234"))
-                .domicilioLegal("Av. Siempre Viva 742")
-                .paisOrigen("ARG")
-                .categoria(CategoriaUsuario.ORO)
-                .estado(EstadoUsuario.APROBADO)
-                .build();
-        usuarios.save(u);
+        log.info("══════════════════════════════════════════════════");
+        log.info(" Seed dev:");
+        log.info("   • {} países", paises.count());
+        log.info("   • {} usuario(s) demo", usuarios.count());
+        log.info("   • {} medio(s) de pago", mediosPago.count());
+        log.info("   • {} subastas", subastas.count());
+        log.info("   • {} consignaciones", consignaciones.count());
+        log.info(" ");
+        log.info("   documento: 11111111");
+        log.info("   password : test1234");
+        log.info("══════════════════════════════════════════════════");
+    }
 
-        // ── Medio de pago verificado (necesario para pujar) ──────────
-        MedioPago mp = MedioPago.builder()
+    // =================================================================
+    // Bloques idempotentes
+    // =================================================================
+
+    private Usuario obtenerOCrearUsuarioDemo() {
+        return usuarios.findByDocumento("11111111").orElseGet(() -> {
+            Usuario u = Usuario.builder()
+                    .nombre("Tobias")
+                    .apellido("Demo")
+                    .email("test@subastar.ar")
+                    .documento("11111111")
+                    .password(passwordEncoder.encode("test1234"))
+                    .domicilioLegal("Av. Siempre Viva 742")
+                    .paisOrigen("ARG")
+                    .categoria(CategoriaUsuario.ORO)
+                    .estado(EstadoUsuario.APROBADO)
+                    .build();
+            return usuarios.save(u);
+        });
+    }
+
+    private void sembrarMedioPagoSiHaceFalta(Usuario u) {
+        if (!mediosPago.findByUsuarioId(u.getId()).isEmpty()) return;
+        mediosPago.save(MedioPago.builder()
                 .usuario(u)
                 .tipo(TipoMedioPago.TARJETA_CREDITO)
                 .moneda(Moneda.ARS)
@@ -85,36 +109,23 @@ public class DevDataSeeder implements CommandLineRunner {
                 .titularTarjeta("TOBIAS DEMO")
                 .vencimientoTarjeta("12/30")
                 .esInternacional(false)
-                .build();
-        mediosPago.save(mp);
+                .build());
+    }
 
-        // ── Subastas de muestra ──────────────────────────────────────
-        // Imágenes: picsum.photos con seeds estables (siempre devuelve la
-        // misma imagen para cada seed). Para reemplazar por URLs propias
-        // o de Wikimedia Commons, editá las constantes IMG_*.
-        seedArteLatinoamericano(u);
+    private void sembrarSubastasSiHaceFalta() {
+        if (subastas.count() > 0) return;
+        seedArteLatinoamericano();
         seedRelojeria();
         seedAutosClasicos();
         seedJoyasOro();
         seedAntiguedadesProgramada();
         seedColeccionPlatino();
         seedFinalizadaVendida();
+    }
 
-        // ── Consignaciones del usuario en distintos estados ──────────
-        // Para que "Mis Subastas" muestre los 5 casos del flujo PDF sin
-        // necesidad de pegarle a /admin antes.
+    private void sembrarConsignacionesSiHaceFalta(Usuario u) {
+        if (consignaciones.count() > 0) return;
         seedConsignaciones(u);
-
-        log.info("══════════════════════════════════════════════════");
-        log.info(" Seed dev cargado:");
-        log.info("   • 1 usuario de prueba");
-        log.info("   • 1 medio de pago verificado");
-        log.info("   • {} subastas con catálogo", subastas.count());
-        log.info("   • {} consignaciones de muestra (varios estados)", consignaciones.count());
-        log.info(" ");
-        log.info("   documento: 11111111");
-        log.info("   password : test1234");
-        log.info("══════════════════════════════════════════════════");
     }
 
     // =================================================================
@@ -138,7 +149,7 @@ public class DevDataSeeder implements CommandLineRunner {
     // Subastas de muestra
     // =================================================================
 
-    private void seedArteLatinoamericano(Usuario duenoDemo) {
+    private void seedArteLatinoamericano() {
         Subasta s = Subasta.builder()
                 .titulo("Arte Latinoamericano del Siglo XX")
                 .descripcion("Selección curada de óleos y esculturas de artistas argentinos, mexicanos y brasileños.")
