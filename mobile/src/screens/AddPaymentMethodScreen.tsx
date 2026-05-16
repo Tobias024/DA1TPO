@@ -23,15 +23,22 @@ export default function AddPaymentMethodScreen() {
 
   const submit = async () => {
     if (!proveedor) { Alert.alert('Falta proveedor'); return; }
+    if (tipo === 'CHEQUE_CERTIFICADO') {
+      const montoNum = Number(garantia);
+      if (!garantia || isNaN(montoNum) || montoNum <= 0) {
+        Alert.alert('Monto inválido', 'El monto de garantía del cheque debe ser mayor a cero.');
+        return;
+      }
+    }
     setLoading(true);
     try {
       await paymentsApi.add({
         tipo,
         proveedor,
         ultimosDigitos: ultimos || undefined,
-        montoGarantia: tipo === 'CHEQUE_CERTIFICADO' ? Number(garantia) || undefined : undefined,
+        montoGarantia: tipo === 'CHEQUE_CERTIFICADO' ? Number(garantia) : undefined,
       });
-      Alert.alert('Listo', 'Medio agregado. Quedará pendiente de verificación.', [
+      Alert.alert('Listo', 'Medio de pago agregado correctamente.', [
         { text: 'OK', onPress: () => nav.goBack() },
       ]);
     } catch {

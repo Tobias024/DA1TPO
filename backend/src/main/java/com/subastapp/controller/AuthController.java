@@ -33,6 +33,9 @@ public class AuthController {
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email es requerido"));
         }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Formato de email inválido"));
+        }
         if (documento == null || documento.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Documento es requerido"));
         }

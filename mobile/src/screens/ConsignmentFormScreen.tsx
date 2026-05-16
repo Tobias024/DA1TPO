@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Pressable, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -72,6 +72,16 @@ export default function ConsignmentFormScreen() {
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.section}>Fotografías</Text>
         <Text style={styles.minPhotos}>Mínimo {MIN_FOTOS} fotografías ({fotos.length}/{MIN_FOTOS})</Text>
+        {fotos.length > 0 ? (
+          <View style={styles.fotoGrid}>
+            {fotos.map((_, i) => (
+              <View key={i} style={styles.fotoPlaceholder}>
+                <Text style={styles.fotoIcon}>📷</Text>
+                <Text style={styles.fotoLabel}>Foto {i + 1}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
         <PrimaryButton title="+ Agregar foto" variant="outlined" onPress={addFoto} />
       </Card>
 
@@ -100,6 +110,14 @@ const styles = StyleSheet.create({
   intro: { fontSize: 14, color: colors.textPrimary, marginBottom: 16 },
   section: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginBottom: 12 },
   minPhotos: { fontSize: 13, color: colors.inputHint, marginBottom: 10 },
+  fotoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  fotoPlaceholder: {
+    width: 72, height: 72, borderRadius: 8,
+    backgroundColor: colors.inputBg, borderWidth: 1, borderColor: colors.inputBorder,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  fotoIcon: { fontSize: 20 },
+  fotoLabel: { fontSize: 10, color: colors.inputHint, marginTop: 2 },
   cbRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   cb: {
     width: 22, height: 22, borderRadius: 4,

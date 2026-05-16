@@ -103,6 +103,18 @@ export default function LiveBiddingScreen() {
       return;
     }
 
+    const confirmada = await new Promise<boolean>((resolve) => {
+      Alert.alert(
+        '¿Confirmar puja?',
+        `Vas a pujar ${pieza.moneda} ${m.toLocaleString('es-AR')}`,
+        [
+          { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Confirmar', onPress: () => resolve(true) },
+        ],
+      );
+    });
+    if (!confirmada) return;
+
     setPendingBid(true);
     try {
       await bidsApi.place(auctionId, { piezaId: pieza.id, monto: m, medioPagoId: verifiedPayment.id });

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,7 @@ public class PujaController {
     }
 
     @PostMapping
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ResponseEntity<?> realizarPuja(
             @PathVariable String auctionId,
             @RequestBody Map<String, Object> body,
