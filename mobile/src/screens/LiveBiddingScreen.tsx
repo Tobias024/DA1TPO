@@ -7,6 +7,7 @@ import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
 import { auctionsApi, bidsApi, paymentsApi } from '@/api/services';
+import { useSession } from '@/storage/SessionContext';
 import type { Auction, Piece, Bid, MedioPago } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
@@ -25,6 +26,7 @@ export default function LiveBiddingScreen() {
   const { params } = useRoute<Rt>();
   const nav = useNavigation();
   const { auctionId } = params;
+  const { setActiveAuction } = useSession();
 
   const [auction, setAuction] = useState<Auction | null>(null);
   const [pieza, setPieza] = useState<Piece | null>(null);
@@ -40,6 +42,7 @@ export default function LiveBiddingScreen() {
     (async () => {
       try {
         await auctionsApi.join(auctionId).catch(() => {});
+        setActiveAuction(auctionId);
         const [a, cat, hist, methods] = await Promise.all([
           auctionsApi.detail(auctionId),
           auctionsApi.catalog(auctionId).catch(() => []),
@@ -68,6 +71,7 @@ export default function LiveBiddingScreen() {
       cancelled = true;
       if (pollRef.current) clearInterval(pollRef.current);
       auctionsApi.leave(auctionId).catch(() => {});
+      setActiveAuction(null);
     };
   }, [auctionId]);
 

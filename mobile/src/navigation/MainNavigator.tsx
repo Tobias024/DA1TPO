@@ -16,6 +16,7 @@ import RequestSentScreen from '@/screens/RequestSentScreen';
 import RequestAcceptedScreen from '@/screens/RequestAcceptedScreen';
 import RequestRejectedScreen from '@/screens/RequestRejectedScreen';
 import PieceLocationScreen from '@/screens/PieceLocationScreen';
+import FineDetailScreen from '@/screens/FineDetailScreen';
 import { colors } from '@/theme/colors';
 import type { MainStackParamList } from './types';
 
@@ -47,6 +48,7 @@ export default function MainNavigator() {
       <Stack.Screen name="RequestAccepted" component={RequestAcceptedScreen} options={{ title: 'Solicitud Aceptada' }} />
       <Stack.Screen name="RequestRejected" component={RequestRejectedScreen} options={{ title: 'Solicitud Rechazada' }} />
       <Stack.Screen name="PieceLocation" component={PieceLocationScreen} options={{ title: 'Ubicación de Pieza' }} />
+      <Stack.Screen name="FineDetail" component={FineDetailScreen} options={{ title: 'Multa Aplicada' }} />
     </Stack.Navigator>
   );
 }

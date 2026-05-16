@@ -55,6 +55,9 @@ export default function NotificationsScreen() {
       case 'NUEVA_SUBASTA':
         if (n.referenciaId) nav.navigate('AuctionDetail', { auctionId: n.referenciaId });
         break;
+      case 'MULTA_APLICADA':
+        nav.navigate('FineDetail', { titulo: n.titulo, mensaje: n.mensaje });
+        break;
     }
   };
 

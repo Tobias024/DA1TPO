@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
+import TextField from '@/components/TextField';
 import { colors } from '@/theme/colors';
 import { consignmentsApi } from '@/api/services';
 import type { Consignment } from '@/types/api';
@@ -15,6 +16,8 @@ export default function RequestAcceptedScreen() {
   const { params } = useRoute<Rt>();
   const [c, setC] = useState<Consignment | null>(null);
   const [loading, setLoading] = useState(false);
+  const [cbu, setCbu] = useState('');
+  const [banco, setBanco] = useState('');
 
   useEffect(() => {
     if (!params.consignmentId) return;
@@ -23,6 +26,10 @@ export default function RequestAcceptedScreen() {
 
   const accept = async () => {
     if (!c) return;
+    if (!cbu.trim() || !banco.trim()) {
+      Alert.alert('Cuenta requerida', 'Debés declarar la cuenta bancaria destino para recibir el producido de la venta antes del inicio de la subasta.');
+      return;
+    }
     setLoading(true);
     try {
       await consignmentsApi.acceptOffer(c.id);
@@ -56,6 +63,13 @@ export default function RequestAcceptedScreen() {
         ) : null}
       </Card>
 
+      <Text style={styles.sectionTitle}>Cuenta para cobros</Text>
+      <Text style={styles.sectionHint}>
+        Declarás la cuenta a la vista donde recibirás el producido de la venta. Puede ser del exterior y debe declararse antes del inicio de la subasta.
+      </Text>
+      <TextField label="CBU / IBAN / Cuenta" value={cbu} onChangeText={setCbu} />
+      <TextField label="Banco o entidad" value={banco} onChangeText={setBanco} />
+
       <PrimaryButton title="Aceptar Propuesta" onPress={accept} loading={loading} style={{ marginTop: 16 }} />
       <PrimaryButton title="Rechazar" variant="outlined" onPress={reject} loading={loading} style={{ marginTop: 8 }} />
     </ScrollView>
@@ -74,6 +88,8 @@ function Row({ k, v, highlight }: { k: string; v: string; highlight?: boolean })
 const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '700', color: colors.brandPrimary, marginBottom: 12 },
   intro: { fontSize: 14, color: colors.textPrimary, marginBottom: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.brandPrimary, marginTop: 20, marginBottom: 4 },
+  sectionHint: { fontSize: 13, color: colors.inputHint, marginBottom: 12 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   rowKey: { color: colors.inputHint, fontSize: 14 },
   rowVal: { color: colors.textPrimary, fontSize: 14, fontWeight: '600', flexShrink: 1, textAlign: 'right' },

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Linking, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Linking, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors, categoriaColor } from '@/theme/colors';
 import { auctionsApi } from '@/api/services';
+import { useSession } from '@/storage/SessionContext';
 import type { Auction, Piece } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
@@ -16,6 +17,7 @@ export default function AuctionDetailScreen() {
   const nav = useNavigation<Nav>();
   const { params } = useRoute<Rt>();
   const { auctionId } = params;
+  const { activeAuctionId } = useSession();
 
   const [auction, setAuction] = useState<Auction | null>(null);
   const [catalog, setCatalog] = useState<Piece[]>([]);
@@ -95,7 +97,16 @@ export default function AuctionDetailScreen() {
       <View style={{ padding: 16 }}>
         <PrimaryButton
           title="Participar"
-          onPress={() => nav.navigate('LiveBidding', { auctionId })}
+          onPress={() => {
+            if (activeAuctionId && activeAuctionId !== auctionId) {
+              Alert.alert(
+                'Ya estás en otra subasta',
+                'Solo podés estar conectado en una subasta a la vez. Salí de la subasta actual antes de unirte a esta.',
+              );
+              return;
+            }
+            nav.navigate('LiveBidding', { auctionId });
+          }}
           disabled={!auction.usuarioPuedeParticipar}
         />
         {auction.streamingUrl ? (
