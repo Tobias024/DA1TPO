@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
 import { paymentsApi } from '@/api/services';
@@ -78,7 +79,7 @@ export default function RegisterStep3Screen() {
 
         <Pressable onPress={() => setTyc((v) => !v)} style={styles.tycRow}>
           <View style={[styles.checkbox, tyc && styles.checkboxOn]}>
-            {tyc ? <Text style={styles.checkboxTick}>✓</Text> : null}
+            {tyc ? <Ionicons name="checkmark" size={14} color={colors.onPrimary} /> : null}
           </View>
           <Text style={styles.tycText}>Acepto los Términos y Condiciones</Text>
         </Pressable>
@@ -129,6 +130,5 @@ const styles = StyleSheet.create({
     borderColor: colors.brandPrimary,
     backgroundColor: colors.brandPrimary,
   },
-  checkboxTick: { color: colors.onPrimary, fontWeight: '700' },
   tycText: { color: colors.textPrimary, fontSize: 15 },
 });

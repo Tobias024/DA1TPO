@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors, categoriaColor } from '@/theme/colors';
@@ -11,11 +12,17 @@ import type { MainStackParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-const MENU = [
-  { key: 'EditProfile' as const, icon: '✏', label: 'Editar Perfil' },
-  { key: 'Metrics' as const, icon: '📊', label: 'Métricas' },
-  { key: 'MyConsignments' as const, icon: '🏛', label: 'Mis Subastas' },
-  { key: 'PaymentMethods' as const, icon: '💳', label: 'Medios de Pago' },
+type MenuItem = {
+  key: 'EditProfile' | 'Metrics' | 'MyConsignments' | 'PaymentMethods';
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  label: string;
+};
+
+const MENU: readonly MenuItem[] = [
+  { key: 'EditProfile', icon: 'create-outline', label: 'Editar Perfil' },
+  { key: 'Metrics', icon: 'stats-chart-outline', label: 'Métricas' },
+  { key: 'MyConsignments', icon: 'business-outline', label: 'Mis Subastas' },
+  { key: 'PaymentMethods', icon: 'card-outline', label: 'Medios de Pago' },
 ] as const;
 
 export default function ProfileScreen() {
@@ -50,9 +57,9 @@ export default function ProfileScreen() {
         {MENU.map((m) => (
           <Card key={m.key} onPress={() => nav.navigate(m.key)} style={styles.menuItem}>
             <View style={styles.menuRow}>
-              <Text style={styles.menuIcon}>{m.icon}</Text>
+              <Ionicons name={m.icon} size={22} color={colors.brandPrimary} style={{ marginRight: 12 }} />
               <Text style={styles.menuLabel}>{m.label}</Text>
-              <Text style={styles.menuArrow}>›</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.inputHint} />
             </View>
           </Card>
         ))}
@@ -90,7 +97,5 @@ const styles = StyleSheet.create({
 
   menuItem: { marginBottom: 10, padding: 0 },
   menuRow: { flexDirection: 'row', alignItems: 'center', padding: 16 },
-  menuIcon: { fontSize: 18, marginRight: 12 },
   menuLabel: { flex: 1, fontSize: 16, color: colors.textPrimary },
-  menuArrow: { color: colors.inputHint, fontSize: 22 },
 });

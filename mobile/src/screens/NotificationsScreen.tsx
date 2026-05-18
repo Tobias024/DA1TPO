@@ -2,22 +2,31 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 import { colors } from '@/theme/colors';
 import { notificationsApi } from '@/api/services';
-import type { Notification } from '@/types/api';
+import type { Notification, TipoNotificacion } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-const ICON: Record<string, string> = {
-  SOLICITUD_ACEPTADA: '✅',
-  SOLICITUD_RECHAZADA: '❌',
-  NUEVA_SUBASTA: '🆕',
-  SUBASTA_ADQUIRIDA: '🏆',
-  MULTA_APLICADA: '⚠️',
+type IconSpec = { name: React.ComponentProps<typeof Ionicons>['name']; color: string };
+
+const ICON: Record<TipoNotificacion, IconSpec> = {
+  CONSIGNACION_ACEPTADA: { name: 'checkmark-circle', color: colors.greenLive },
+  CONSIGNACION_RECHAZADA: { name: 'close-circle', color: colors.redLive },
+  OFERTA_BASE_PROPUESTA: { name: 'pricetag', color: colors.brandPrimary },
+  VENTA_GANADA: { name: 'trophy', color: colors.catOro },
+  PAGO_REQUERIDO: { name: 'card', color: colors.brandPrimary },
+  MULTA_APLICADA: { name: 'warning', color: colors.orangePending },
+  CUENTA_APROBADA: { name: 'shield-checkmark', color: colors.greenLive },
+  COMPLETAR_REGISTRO: { name: 'person-add', color: colors.brandPrimary },
+  BIEN_DEVUELTO: { name: 'return-down-back', color: colors.inputHint },
 };
+
+const FALLBACK_ICON: IconSpec = { name: 'notifications-outline', color: colors.inputHint };
 
 export default function NotificationsScreen() {
   const nav = useNavigation<Nav>();
@@ -43,17 +52,15 @@ export default function NotificationsScreen() {
       notificationsApi.markRead(n.id).catch(() => {});
     }
     switch (n.tipo) {
-      case 'SOLICITUD_ACEPTADA':
-        nav.navigate('RequestAccepted', { consignmentId: n.referenciaId ?? '' });
+      case 'CONSIGNACION_ACEPTADA':
+      case 'OFERTA_BASE_PROPUESTA':
+        if (n.referenciaId) nav.navigate('RequestAccepted', { consignmentId: n.referenciaId });
         break;
-      case 'SOLICITUD_RECHAZADA':
-        nav.navigate('RequestRejected', { consignmentId: n.referenciaId ?? '' });
+      case 'CONSIGNACION_RECHAZADA':
+        if (n.referenciaId) nav.navigate('RequestRejected', { consignmentId: n.referenciaId });
         break;
-      case 'SUBASTA_ADQUIRIDA':
-        nav.navigate('Acquisition', { saleId: n.referenciaId ?? '' });
-        break;
-      case 'NUEVA_SUBASTA':
-        if (n.referenciaId) nav.navigate('AuctionDetail', { auctionId: n.referenciaId });
+      case 'VENTA_GANADA':
+        if (n.referenciaId) nav.navigate('Acquisition', { saleId: n.referenciaId });
         break;
       case 'MULTA_APLICADA':
         nav.navigate('FineDetail', { titulo: n.titulo, mensaje: n.mensaje });
@@ -72,18 +79,21 @@ export default function NotificationsScreen() {
         ListEmptyComponent={
           <Text style={styles.empty}>{loading ? 'Cargando…' : 'No tenés notificaciones.'}</Text>
         }
-        renderItem={({ item }) => (
-          <Card onPress={() => open(item)} style={[styles.card, !item.leida && styles.unread]}>
-            <View style={styles.row}>
-              <Text style={styles.icon}>{ICON[item.tipo] ?? '🔔'}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{item.titulo}</Text>
-                <Text style={styles.msg}>{item.mensaje}</Text>
-                <Text style={styles.fecha}>{new Date(item.fecha).toLocaleString('es-AR')}</Text>
+        renderItem={({ item }) => {
+          const ic = ICON[item.tipo] ?? FALLBACK_ICON;
+          return (
+            <Card onPress={() => open(item)} style={[styles.card, !item.leida && styles.unread]}>
+              <View style={styles.row}>
+                <Ionicons name={ic.name} size={24} color={ic.color} style={styles.icon} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.title}>{item.titulo}</Text>
+                  <Text style={styles.msg}>{item.mensaje}</Text>
+                  <Text style={styles.fecha}>{new Date(item.fecha).toLocaleString('es-AR')}</Text>
+                </View>
               </View>
-            </View>
-          </Card>
-        )}
+            </Card>
+          );
+        }}
       />
     </View>
   );
@@ -93,7 +103,7 @@ const styles = StyleSheet.create({
   card: { marginBottom: 10 },
   unread: { borderLeftWidth: 4, borderLeftColor: colors.brandPrimary },
   row: { flexDirection: 'row', alignItems: 'flex-start' },
-  icon: { fontSize: 22, marginRight: 12 },
+  icon: { marginRight: 12, marginTop: 2 },
   title: { fontSize: 16, color: colors.textPrimary, fontWeight: '700' },
   msg: { fontSize: 14, color: colors.textPrimary, marginTop: 2 },
   fecha: { fontSize: 12, color: colors.inputHint, marginTop: 6 },

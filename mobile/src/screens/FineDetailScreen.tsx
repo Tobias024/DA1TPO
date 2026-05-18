@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
@@ -15,7 +16,7 @@ export default function FineDetailScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
       <View style={styles.head}>
-        <Text style={styles.icon}>⚠</Text>
+        <Ionicons name="warning" size={48} color={colors.textOnDark} />
         <Text style={styles.title}>{params.titulo}</Text>
       </View>
 
@@ -47,7 +48,6 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
   },
-  icon: { fontSize: 48, color: colors.textOnDark },
   title: { fontSize: 22, fontWeight: '700', color: colors.textOnDark, marginTop: 8, textAlign: 'center' },
   mensajeLabel: { fontSize: 12, color: colors.inputHint, fontWeight: '700', marginBottom: 6 },
   mensaje: { fontSize: 15, color: colors.textPrimary, lineHeight: 22 },

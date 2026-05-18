@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, Alert } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
@@ -55,9 +56,17 @@ export default function PaymentMethodsScreen() {
             <Text style={styles.proveedor}>
               {item.proveedor}{item.ultimosDigitos ? `  ····${item.ultimosDigitos}` : ''}
             </Text>
-            <Text style={[styles.estado, { color: item.verificado ? colors.greenLive : colors.orangePending }]}>
-              {item.verificado ? '✓ Verificado' : '⏳ Pendiente de verificación'}
-            </Text>
+            <View style={styles.estadoRow}>
+              <Ionicons
+                name={item.verificado ? 'checkmark-circle' : 'time-outline'}
+                size={14}
+                color={item.verificado ? colors.greenLive : colors.orangePending}
+                style={{ marginRight: 4 }}
+              />
+              <Text style={[styles.estado, { color: item.verificado ? colors.greenLive : colors.orangePending }]}>
+                {item.verificado ? 'Verificado' : 'Pendiente de verificación'}
+              </Text>
+            </View>
             {item.tipo === 'CHEQUE_CERTIFICADO' && item.montoGarantia ? (
               <Text style={styles.garantia}>Garantía: $ {item.montoGarantia.toLocaleString('es-AR')}</Text>
             ) : null}
@@ -75,7 +84,8 @@ const styles = StyleSheet.create({
   empty: { color: colors.inputHint, textAlign: 'center', padding: 32 },
   tipo: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   proveedor: { fontSize: 14, color: colors.textPrimary, marginTop: 2 },
-  estado: { fontSize: 13, marginTop: 6 },
+  estadoRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
+  estado: { fontSize: 13 },
   garantia: { fontSize: 13, color: colors.brandPrimary, marginTop: 4, fontWeight: '600' },
   footer: { padding: 16, backgroundColor: colors.surfaceCream, borderTopColor: colors.inputBorder, borderTopWidth: 1 },
 });

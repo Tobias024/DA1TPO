@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import PrimaryButton from '@/components/PrimaryButton';
 import TextField from '@/components/TextField';
 import { colors } from '@/theme/colors';
@@ -111,7 +112,13 @@ function PhotoPicker({ label, uri, onPick }: { label: string; uri: string | null
   return (
     <View style={pickerStyles.wrapper}>
       <TouchableOpacity style={[pickerStyles.btn, !!uri && pickerStyles.btnDone]} onPress={onPick} activeOpacity={0.7}>
-        <Text style={pickerStyles.btnText}>{uri ? `✓  ${label}` : `+ ${label}`}</Text>
+        <Ionicons
+          name={uri ? 'checkmark-circle' : 'add-circle-outline'}
+          size={18}
+          color={colors.brandPrimary}
+          style={{ marginRight: 6 }}
+        />
+        <Text style={pickerStyles.btnText}>{label}</Text>
       </TouchableOpacity>
       {uri ? <Image source={{ uri }} style={pickerStyles.preview} resizeMode="cover" /> : null}
     </View>
@@ -137,12 +144,14 @@ const styles = StyleSheet.create({
 const pickerStyles = StyleSheet.create({
   wrapper: { marginBottom: 12 },
   btn: {
+    flexDirection: 'row',
     borderWidth: 1.5,
     borderColor: colors.brandPrimary,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   btnDone: { backgroundColor: '#F0E8E8', borderColor: colors.brandPrimaryLight },
   btnText: { color: colors.brandPrimary, fontWeight: '700', fontSize: 14 },

@@ -3,6 +3,7 @@ import {
   ScrollView, View, Text, StyleSheet, Alert, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
@@ -142,7 +143,10 @@ export default function LiveBiddingScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
       <View style={styles.head}>
-        <Text style={styles.kicker}>● EN VIVO</Text>
+        <View style={styles.liveRow}>
+          <Ionicons name="ellipse" size={10} color={colors.onPrimary} style={{ marginRight: 6 }} />
+          <Text style={styles.kicker}>EN VIVO</Text>
+        </View>
         <Text style={styles.title}>{pieza.descripcion}</Text>
       </View>
 
@@ -178,7 +182,10 @@ export default function LiveBiddingScreen() {
           disabled={!verifiedPayment}
         />
         {!verifiedPayment ? (
-          <Text style={styles.observerHint}>👁 Sin medio verificado: solo podés observar.</Text>
+          <View style={styles.observerRow}>
+            <Ionicons name="eye-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
+            <Text style={styles.observerHint}>Sin medio verificado: solo podés observar.</Text>
+          </View>
         ) : null}
       </Card>
 
@@ -203,6 +210,7 @@ export default function LiveBiddingScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceCream },
   head: { backgroundColor: colors.brandPrimary, padding: 20 },
+  liveRow: { flexDirection: 'row', alignItems: 'center' },
   kicker: { color: colors.onPrimary, fontSize: 12, fontWeight: '700', letterSpacing: 0.16 },
   title: { color: colors.textOnDark, fontSize: 24, fontWeight: '700', marginTop: 4 },
   lblBid: { color: colors.inputHint, fontSize: 12, fontWeight: '700', letterSpacing: 0.12 },
@@ -222,7 +230,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 12,
   },
-  observerHint: { fontSize: 12, color: colors.orangePending, marginTop: 8, textAlign: 'center' },
+  observerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  observerHint: { fontSize: 12, color: colors.orangePending },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 16 },
   histRow: { flexDirection: 'row', justifyContent: 'space-between' },

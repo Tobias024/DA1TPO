@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Linking, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors, categoriaColor } from '@/theme/colors';
@@ -74,7 +75,10 @@ export default function AuctionDetailScreen() {
         {auction.rematador ? <Row k="Rematador" v={auction.rematador.nombre} /> : null}
         {auction.descripcion ? <Row k="Descripción" v={auction.descripcion} /> : null}
         {auction.motivoNoPuede ? (
-          <Text style={styles.warning}>⚠ {auction.motivoNoPuede}</Text>
+          <View style={styles.warningRow}>
+            <Ionicons name="warning" size={16} color={colors.orangePending} style={{ marginRight: 6 }} />
+            <Text style={styles.warning}>{auction.motivoNoPuede}</Text>
+          </View>
         ) : null}
       </Card>
 
@@ -88,7 +92,12 @@ export default function AuctionDetailScreen() {
             <Text style={styles.pieceBase}>
               Precio base: {p.moneda} {p.precioBase.toLocaleString('es-AR')}
             </Text>
-            {p.obraArte?.artista ? <Text style={styles.pieceArtist}>🎨 {p.obraArte.artista}</Text> : null}
+            {p.obraArte?.artista ? (
+              <View style={styles.artistRow}>
+                <Ionicons name="color-palette-outline" size={13} color={colors.inputHint} style={{ marginRight: 4 }} />
+                <Text style={styles.pieceArtist}>{p.obraArte.artista}</Text>
+              </View>
+            ) : null}
           </Card>
         ))}
         {catalog.length === 0 ? <Text style={styles.empty}>Catálogo no disponible aún.</Text> : null}
@@ -146,10 +155,12 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', marginBottom: 8 },
   rowKey: { width: 110, color: colors.inputHint, fontSize: 13 },
   rowVal: { flex: 1, color: colors.textPrimary, fontSize: 14 },
-  warning: { color: colors.orangePending, fontSize: 13, marginTop: 8 },
+  warningRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  warning: { color: colors.orangePending, fontSize: 13, flex: 1 },
+  artistRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginVertical: 8 },
   pieceTitle: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   pieceBase: { fontSize: 14, color: colors.brandPrimary, marginTop: 4 },
-  pieceArtist: { fontSize: 12, color: colors.inputHint, marginTop: 4 },
+  pieceArtist: { fontSize: 12, color: colors.inputHint },
   empty: { color: colors.inputHint, padding: 16, textAlign: 'center' },
 });

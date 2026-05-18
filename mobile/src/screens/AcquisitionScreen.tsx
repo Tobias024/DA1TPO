@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import { colors } from '@/theme/colors';
 import { salesApi } from '@/api/services';
@@ -45,7 +46,7 @@ export default function AcquisitionScreen() {
   if (!sale) {
     return (
       <View style={styles.center}>
-        <Text style={styles.trophy}>🏆</Text>
+        <Ionicons name="trophy" size={64} color={colors.catOro} />
         <Text style={styles.title}>¡Felicitaciones!</Text>
         <Text style={styles.subtitle}>Detalle de adquisición no disponible.</Text>
       </View>
@@ -57,7 +58,7 @@ export default function AcquisitionScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
       <View style={styles.hero}>
-        <Text style={styles.trophy}>🏆</Text>
+        <Ionicons name="trophy" size={64} color={colors.catOro} />
         <Text style={styles.title}>¡Has ganado!</Text>
       </View>
 
@@ -90,9 +91,10 @@ export default function AcquisitionScreen() {
           />
         </View>
         {delivery === 'retiro' ? (
-          <Text style={styles.retiroWarning}>
-            ⚠ Al retirar personalmente el bien perdés la cobertura del seguro.
-          </Text>
+          <View style={styles.retiroRow}>
+            <Ionicons name="warning" size={16} color={colors.orangePending} style={{ marginRight: 6 }} />
+            <Text style={styles.retiroWarning}>Al retirar personalmente el bien perdés la cobertura del seguro.</Text>
+          </View>
         ) : null}
       </View>
     </ScrollView>
@@ -123,7 +125,6 @@ function Row({ k, v, highlight }: { k: string; v: string; highlight?: boolean })
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: colors.surfaceCream },
   hero: { padding: 24, alignItems: 'center' },
-  trophy: { fontSize: 64 },
   title: { fontSize: 28, fontWeight: '700', color: colors.brandPrimary, marginTop: 8 },
   subtitle: { fontSize: 14, color: colors.inputHint, marginTop: 4 },
   bien: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, marginBottom: 12 },
@@ -133,7 +134,8 @@ const styles = StyleSheet.create({
   highlight: { color: colors.brandPrimary, fontSize: 18, fontWeight: '700' },
   deliveryTitle: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginBottom: 10 },
   deliveryRow: { flexDirection: 'row', gap: 10 },
-  retiroWarning: { fontSize: 13, color: colors.orangePending, marginTop: 10 },
+  retiroRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 10 },
+  retiroWarning: { fontSize: 13, color: colors.orangePending, flex: 1 },
 });
 
 const deliveryStyles = StyleSheet.create({

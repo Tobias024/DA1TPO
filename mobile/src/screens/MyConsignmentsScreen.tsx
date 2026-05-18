@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
@@ -61,7 +62,10 @@ export default function MyConsignmentsScreen() {
               <Text style={styles.base}>Valor base: $ {item.valorBaseOfrecido.toLocaleString('es-AR')}</Text>
             ) : null}
             {item.polizaSeguro ? (
-              <Text style={styles.poliza}>🛡 Póliza {item.polizaSeguro.numeroPoliza}</Text>
+              <View style={styles.polizaRow}>
+                <Ionicons name="shield-checkmark-outline" size={13} color={colors.inputHint} style={{ marginRight: 4 }} />
+                <Text style={styles.poliza}>Póliza {item.polizaSeguro.numeroPoliza}</Text>
+              </View>
             ) : null}
           </Card>
         )}
@@ -77,7 +81,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   estado: { fontSize: 13, marginTop: 4, fontWeight: '600' },
   base: { fontSize: 13, color: colors.brandPrimary, marginTop: 6 },
-  poliza: { fontSize: 12, color: colors.inputHint, marginTop: 2 },
+  polizaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  poliza: { fontSize: 12, color: colors.inputHint },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 32 },
   footer: { padding: 16, backgroundColor: colors.surfaceCream, borderTopColor: colors.inputBorder, borderTopWidth: 1 },
 });

@@ -2,10 +2,13 @@ package com.subastapp.config;
 
 import com.subastapp.model.Consignacion;
 import com.subastapp.model.MedioPago;
+import com.subastapp.model.Notificacion;
 import com.subastapp.model.Pais;
 import com.subastapp.model.Pieza;
+import com.subastapp.model.Puja;
 import com.subastapp.model.Subasta;
 import com.subastapp.model.Usuario;
+import com.subastapp.model.Venta;
 import com.subastapp.model.enums.CategoriaUsuario;
 import com.subastapp.model.enums.EstadoConsignacion;
 import com.subastapp.model.enums.EstadoPieza;
@@ -13,11 +16,15 @@ import com.subastapp.model.enums.EstadoSubasta;
 import com.subastapp.model.enums.EstadoUsuario;
 import com.subastapp.model.enums.Moneda;
 import com.subastapp.model.enums.TipoMedioPago;
+import com.subastapp.model.enums.TipoNotificacion;
 import com.subastapp.repository.ConsignacionRepository;
 import com.subastapp.repository.MedioPagoRepository;
+import com.subastapp.repository.NotificacionRepository;
 import com.subastapp.repository.PaisRepository;
+import com.subastapp.repository.PujaRepository;
 import com.subastapp.repository.SubastaRepository;
 import com.subastapp.repository.UsuarioRepository;
+import com.subastapp.repository.VentaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -50,6 +57,9 @@ public class DevDataSeeder implements CommandLineRunner {
     private final SubastaRepository subastas;
     private final PaisRepository paises;
     private final ConsignacionRepository consignaciones;
+    private final PujaRepository pujas;
+    private final VentaRepository ventas;
+    private final NotificacionRepository notificaciones;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -63,6 +73,9 @@ public class DevDataSeeder implements CommandLineRunner {
         sembrarMedioPagoSiHaceFalta(u);
         sembrarSubastasSiHaceFalta();
         sembrarConsignacionesSiHaceFalta(u);
+        sembrarPujasSiHaceFalta(u);
+        sembrarVentasSiHaceFalta(u);
+        sembrarNotificacionesSiHaceFalta(u);
 
         log.info("══════════════════════════════════════════════════");
         log.info(" Seed dev:");
@@ -71,6 +84,9 @@ public class DevDataSeeder implements CommandLineRunner {
         log.info("   • {} medio(s) de pago", mediosPago.count());
         log.info("   • {} subastas", subastas.count());
         log.info("   • {} consignaciones", consignaciones.count());
+        log.info("   • {} pujas", pujas.count());
+        log.info("   • {} ventas", ventas.count());
+        log.info("   • {} notificaciones", notificaciones.count());
         log.info(" ");
         log.info("   documento: 11111111");
         log.info("   password : test1234");
@@ -100,6 +116,7 @@ public class DevDataSeeder implements CommandLineRunner {
 
     private void sembrarMedioPagoSiHaceFalta(Usuario u) {
         if (!mediosPago.findByUsuarioId(u.getId()).isEmpty()) return;
+        // Tarjeta de crédito local
         mediosPago.save(MedioPago.builder()
                 .usuario(u)
                 .tipo(TipoMedioPago.TARJETA_CREDITO)
@@ -109,6 +126,27 @@ public class DevDataSeeder implements CommandLineRunner {
                 .titularTarjeta("TOBIAS DEMO")
                 .vencimientoTarjeta("12/30")
                 .esInternacional(false)
+                .build());
+        // Cuenta bancaria local
+        mediosPago.save(MedioPago.builder()
+                .usuario(u)
+                .tipo(TipoMedioPago.CUENTA_BANCARIA)
+                .moneda(Moneda.ARS)
+                .verificado(true)
+                .banco("Banco Nación")
+                .numeroCuenta("000123456789")
+                .cbu("0110000000000123456789")
+                .build());
+        // Cheque certificado con monto disponible
+        mediosPago.save(MedioPago.builder()
+                .usuario(u)
+                .tipo(TipoMedioPago.CHEQUE_CERTIFICADO)
+                .moneda(Moneda.ARS)
+                .verificado(true)
+                .banco("Banco Provincia")
+                .numeroCheque("CHQ-2026-00042")
+                .montoCheque(new BigDecimal("500000"))
+                .montoUsado(BigDecimal.ZERO)
                 .build());
     }
 
@@ -153,11 +191,11 @@ public class DevDataSeeder implements CommandLineRunner {
         Subasta s = Subasta.builder()
                 .titulo("Arte Latinoamericano del Siglo XX")
                 .descripcion("Selección curada de óleos y esculturas de artistas argentinos, mexicanos y brasileños.")
-                .fechaHoraInicio(LocalDateTime.now().plusHours(2))
+                .fechaHoraInicio(LocalDateTime.now().minusMinutes(15))
                 .ubicacion("Buenos Aires — Sala Principal")
                 .categoriaRequerida(CategoriaUsuario.COMUN)
                 .moneda(Moneda.ARS)
-                .estado(EstadoSubasta.ABIERTA)
+                .estado(EstadoSubasta.EN_CURSO)
                 .streamingUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
                 .build();
 
@@ -444,6 +482,161 @@ public class DevDataSeeder implements CommandLineRunner {
                 .estado(EstadoConsignacion.EN_SUBASTA)
                 .precioBaseOfrecido(new BigDecimal("520000"))
                 .comision(new BigDecimal("0.12"))
+                .build());
+    }
+
+    // =================================================================
+    // Pujas / Ventas / Notificaciones
+    // =================================================================
+
+    private void sembrarPujasSiHaceFalta(Usuario u) {
+        if (pujas.count() > 0) return;
+        MedioPago medio = mediosPago.findByUsuarioId(u.getId()).stream()
+                .filter(MedioPago::isVerificado).findFirst().orElse(null);
+        if (medio == null) return;
+
+        // Pujas para la subasta EN_CURSO (Arte Latinoamericano) — pieza activa
+        subastas.findAll().stream()
+                .filter(s -> s.getEstado() == EstadoSubasta.EN_CURSO)
+                .findFirst()
+                .ifPresent(s -> {
+                    Pieza p = s.getItemActual();
+                    if (p == null) return;
+                    BigDecimal[] montos = { new BigDecimal("252500"), new BigDecimal("255000"), new BigDecimal("257500") };
+                    LocalDateTime t = LocalDateTime.now().minusMinutes(10);
+                    for (BigDecimal monto : montos) {
+                        Puja puja = Puja.builder()
+                                .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
+                                .build();
+                        Puja saved = pujas.save(puja); // @PrePersist setea timestamp = now()
+                        saved.setTimestamp(t);          // override con timestamp histórico
+                        pujas.save(saved);              // UPDATE
+                        t = t.plusMinutes(2);
+                    }
+                    p.setMejorOferta(montos[montos.length - 1]);
+                    p.setMejorPostor(u);
+                    subastas.save(s);
+                });
+
+        // Pujas históricas para la subasta CERRADA
+        subastas.findAll().stream()
+                .filter(s -> s.getEstado() == EstadoSubasta.CERRADA)
+                .findFirst()
+                .ifPresent(s -> {
+                    Pieza p = s.getCatalogo().isEmpty() ? null : s.getCatalogo().get(0);
+                    if (p == null) return;
+                    BigDecimal[] montos = {
+                            new BigDecimal("450000"), new BigDecimal("550000"),
+                            new BigDecimal("625000"), new BigDecimal("675000")
+                    };
+                    LocalDateTime t = LocalDateTime.now().minusDays(30).plusHours(1);
+                    for (BigDecimal monto : montos) {
+                        Puja puja = Puja.builder()
+                                .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
+                                .build();
+                        Puja saved = pujas.save(puja);
+                        saved.setTimestamp(t);
+                        pujas.save(saved);
+                        t = t.plusMinutes(3);
+                    }
+                });
+    }
+
+    private void sembrarVentasSiHaceFalta(Usuario u) {
+        if (ventas.count() > 0) return;
+        MedioPago medio = mediosPago.findByUsuarioId(u.getId()).stream()
+                .filter(m -> m.getTipo() == TipoMedioPago.TARJETA_CREDITO)
+                .findFirst().orElse(null);
+        if (medio == null) return;
+
+        subastas.findAll().stream()
+                .filter(s -> s.getEstado() == EstadoSubasta.CERRADA)
+                .findFirst()
+                .ifPresent(s -> {
+                    Pieza p = s.getCatalogo().isEmpty() ? null : s.getCatalogo().get(0);
+                    if (p == null) return;
+                    BigDecimal precio = new BigDecimal("675000");
+                    BigDecimal comision = new BigDecimal("67500");   // 10%
+                    BigDecimal envio = new BigDecimal("5000");
+                    Venta v = Venta.builder()
+                            .pieza(p)
+                            .comprador(u)
+                            .subasta(s)
+                            .medioPago(medio)
+                            .montoOfertado(precio)
+                            .comision(comision)
+                            .costoEnvio(envio)
+                            .totalAPagar(precio.add(comision).add(envio))
+                            .moneda(Moneda.ARS)
+                            .estadoPago("PAGADO")
+                            .build();
+                    Venta saved = ventas.save(v);          // @PrePersist setea fechaVenta = now()
+                    saved.setFechaVenta(LocalDateTime.now().minusDays(29));
+                    ventas.save(saved);                     // UPDATE
+                });
+    }
+
+    private void sembrarNotificacionesSiHaceFalta(Usuario u) {
+        if (notificaciones.count() > 0) return;
+
+        // Buscar referencias para que el routing del mobile funcione
+        String consAceptadaId = consignaciones.findAll().stream()
+                .filter(c -> c.getEstado() == EstadoConsignacion.PENDIENTE_CONFIRMACION_USUARIO)
+                .map(Consignacion::getId).findFirst().orElse(null);
+        String consRechazadaId = consignaciones.findAll().stream()
+                .filter(c -> c.getEstado() == EstadoConsignacion.RECHAZADO)
+                .map(Consignacion::getId).findFirst().orElse(null);
+        String ventaId = ventas.findByCompradorIdOrderByFechaVentaDesc(u.getId()).stream()
+                .findFirst().map(Venta::getId).orElse(null);
+
+        // 1. CONSIGNACION_ACEPTADA (oferta lista para confirmar)
+        if (consAceptadaId != null) {
+            notificaciones.save(Notificacion.builder()
+                    .usuario(u)
+                    .tipo(TipoNotificacion.CONSIGNACION_ACEPTADA)
+                    .asunto("Tu artículo fue aceptado")
+                    .cuerpo("La vajilla de porcelana fue aceptada tras la inspección. Revisá la propuesta de valor base y comisión.")
+                    .referenciaId(consAceptadaId)
+                    .build());
+        }
+
+        // 2. CONSIGNACION_RECHAZADA
+        if (consRechazadaId != null) {
+            notificaciones.save(Notificacion.builder()
+                    .usuario(u)
+                    .tipo(TipoNotificacion.CONSIGNACION_RECHAZADA)
+                    .asunto("Solicitud rechazada")
+                    .cuerpo("Tu cuadro decorativo no superó la inspección. Podés ver el motivo y los gastos de devolución.")
+                    .referenciaId(consRechazadaId)
+                    .build());
+        }
+
+        // 3. VENTA_GANADA
+        if (ventaId != null) {
+            notificaciones.save(Notificacion.builder()
+                    .usuario(u)
+                    .tipo(TipoNotificacion.VENTA_GANADA)
+                    .asunto("¡Ganaste una subasta!")
+                    .cuerpo("Adquiriste la Vasija precolombina por $ 675.000. Revisá los detalles de pago y envío.")
+                    .referenciaId(ventaId)
+                    .build());
+        }
+
+        // 4. MULTA_APLICADA (informativa, no bloquea login)
+        notificaciones.save(Notificacion.builder()
+                .usuario(u)
+                .tipo(TipoNotificacion.MULTA_APLICADA)
+                .asunto("Multa pendiente")
+                .cuerpo("Se te aplicó una multa equivalente al 10% del valor ofertado por incumplimiento de pago. Tenés 72 hs. para regularizar la situación antes de poder participar nuevamente.")
+                .build());
+
+        // 5. CUENTA_APROBADA (bienvenida)
+        notificaciones.save(Notificacion.builder()
+                .usuario(u)
+                .tipo(TipoNotificacion.CUENTA_APROBADA)
+                .asunto("Cuenta verificada")
+                .cuerpo("Tu cuenta fue verificada y aprobada. Ya podés participar en subastas de tu categoría.")
+                .leido(true)
                 .build());
     }
 

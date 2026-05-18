@@ -1,5 +1,8 @@
 package com.subastapp.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,14 +19,17 @@ public class Venta {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pieza_id", nullable = false)
     private Pieza pieza;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comprador_id", nullable = false)
     private Usuario comprador;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subasta_id", nullable = false)
     private Subasta subasta;
@@ -32,9 +38,11 @@ public class Venta {
     @JoinColumn(name = "medio_pago_id", nullable = false)
     private MedioPago medioPago;
 
+    @JsonProperty("precio")
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal montoOfertado;
 
+    @JsonProperty("comisiones")
     @Column(precision = 19, scale = 2)
     private BigDecimal comision;
 
@@ -58,8 +66,25 @@ public class Venta {
     @Column(precision = 19, scale = 2)
     private BigDecimal multa;
 
+    @JsonProperty("fecha")
     private LocalDateTime fechaVenta;
 
     @PrePersist
     protected void onCreate() { this.fechaVenta = LocalDateTime.now(); }
+
+    // Campos derivados que el mobile consume directamente desde el JSON.
+    @JsonGetter("nombreBien")
+    public String getNombreBienJson() {
+        return pieza != null ? pieza.getDescripcion() : null;
+    }
+
+    @JsonGetter("subastaId")
+    public String getSubastaIdJson() {
+        return subasta != null ? subasta.getId() : null;
+    }
+
+    @JsonGetter("piezaId")
+    public String getPiezaIdJson() {
+        return pieza != null ? pieza.getId() : null;
+    }
 }

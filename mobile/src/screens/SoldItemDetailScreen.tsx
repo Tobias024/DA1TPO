@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import { colors } from '@/theme/colors';
 import { auctionsApi, bidsApi } from '@/api/services';
@@ -51,7 +52,10 @@ export default function SoldItemDetailScreen() {
             {p.moneda} {(p.precioVenta ?? 0).toLocaleString('es-AR')}
           </Text>
           {p.obraArte ? (
-            <Text style={styles.artist}>🎨 {p.obraArte.artista} {p.obraArte.fecha ? `· ${p.obraArte.fecha}` : ''}</Text>
+            <View style={styles.artistRow}>
+              <Ionicons name="color-palette-outline" size={13} color={colors.inputHint} style={{ marginRight: 4 }} />
+              <Text style={styles.artist}>{p.obraArte.artista} {p.obraArte.fecha ? `· ${p.obraArte.fecha}` : ''}</Text>
+            </View>
           ) : null}
         </Card>
       ))}
@@ -96,7 +100,8 @@ const styles = StyleSheet.create({
   pieceTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
   priceLabel: { fontSize: 12, color: colors.inputHint, marginTop: 8 },
   priceVal: { fontSize: 28, fontWeight: '700', color: colors.brandPrimary },
-  artist: { fontSize: 13, color: colors.inputHint, marginTop: 6 },
+  artist: { fontSize: 13, color: colors.inputHint },
+  artistRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 8, marginTop: 8 },
   companyLabel: { fontSize: 12, color: colors.inputHint, marginTop: 4 },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 24 },
