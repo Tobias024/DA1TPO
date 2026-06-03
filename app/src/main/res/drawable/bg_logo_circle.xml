@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Logo circle — bordó border on cream (SubastAR) -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="@color/surface_cream"/>
-    <stroke android:width="1.5dp" android:color="@color/brand_primary"/>
-</shape>
