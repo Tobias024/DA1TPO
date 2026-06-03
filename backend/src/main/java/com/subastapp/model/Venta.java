@@ -60,6 +60,7 @@ public class Venta {
 
     // Shipping address
     private String direccionEnvio;
+    @lombok.Builder.Default
     private boolean retiraPersonalmente = false;
 
     // Penalty amount if applicable

@@ -30,12 +30,14 @@ public class Pieza {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private EstadoPieza estado = EstadoPieza.EN_DEPOSITO;
 
     // Images stored as comma-separated URLs or JSON array
     @ElementCollection
     @CollectionTable(name = "pieza_imagenes", joinColumns = @JoinColumn(name = "pieza_id"))
     @Column(name = "imagen_url")
+    @Builder.Default
     private List<String> imagenes = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -34,6 +34,7 @@ public class MedioPago {
      * scope de esta entrega). En la app móvil se asume verificado por default
      * — el lado servidor podrá invalidarlo cuando exista la integración.
      */
+    @lombok.Builder.Default
     private boolean verificado = true;
 
     // CUENTA_BANCARIA fields

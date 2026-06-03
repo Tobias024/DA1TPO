@@ -49,10 +49,12 @@ public class Consignacion {
     @ElementCollection
     @CollectionTable(name = "consignacion_fotos", joinColumns = @JoinColumn(name = "consignacion_id"))
     @Column(name = "foto_url")
+    @Builder.Default
     private List<String> fotos = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private EstadoConsignacion estado = EstadoConsignacion.PENDIENTE;
 
     // When accepted: proposed price and commission

@@ -34,6 +34,7 @@ public class Notificacion {
     private String cuerpo;
 
     @JsonProperty("leida")
+    @lombok.Builder.Default
     private boolean leido = false;
 
     @JsonProperty("fecha")
