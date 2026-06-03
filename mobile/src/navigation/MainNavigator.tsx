@@ -3,9 +3,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabs from './MainTabs';
 import DiscoverScreen from '@/screens/DiscoverScreen';
 import AuctionDetailScreen from '@/screens/AuctionDetailScreen';
+import ItemDetailScreen from '@/screens/ItemDetailScreen';
 import LiveBiddingScreen from '@/screens/LiveBiddingScreen';
 import SoldItemDetailScreen from '@/screens/SoldItemDetailScreen';
 import AcquisitionScreen from '@/screens/AcquisitionScreen';
+import WonItemsScreen from '@/screens/WonItemsScreen';
 import EditProfileScreen from '@/screens/EditProfileScreen';
 import MetricsScreen from '@/screens/MetricsScreen';
 import PaymentMethodsScreen from '@/screens/PaymentMethodsScreen';
@@ -35,8 +37,10 @@ export default function MainNavigator() {
       <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name="Discover" component={DiscoverScreen} options={{ title: 'Descubrir' }} />
       <Stack.Screen name="AuctionDetail" component={AuctionDetailScreen} options={{ title: 'Detalle de Subasta' }} />
+      <Stack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: 'Detalle del Item' }} />
       <Stack.Screen name="LiveBidding" component={LiveBiddingScreen} options={{ title: 'Participar' }} />
       <Stack.Screen name="SoldItemDetail" component={SoldItemDetailScreen} options={{ title: 'Item Vendido' }} />
+      <Stack.Screen name="WonItems" component={WonItemsScreen} options={{ title: 'Mis Compras' }} />
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} options={{ title: 'Caso Adquisición' }} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar Perfil' }} />
       <Stack.Screen name="Metrics" component={MetricsScreen} options={{ title: 'Métricas' }} />

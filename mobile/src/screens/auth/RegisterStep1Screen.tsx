@@ -60,11 +60,10 @@ export default function RegisterStep1Screen({ navigation }: Props) {
       const res = await authApi.registerStep1({
         documento, nombre, apellido, email, domicilioLegal, paisOrigen,
       });
-      Alert.alert(
-        'Solicitud enviada',
-        'Te enviamos un mail con un código para completar el registro.',
-        [{ text: 'OK', onPress: () => navigation.navigate('RegisterStep2', { registrationId: res.registrationId }) }],
-      );
+      navigation.navigate('RegisterWaiting', {
+        registrationId: res.registrationId,
+        registrationToken: res.registrationToken,
+      });
     } catch (e: any) {
       const msg = e?.response?.data?.error ?? 'No se pudo enviar la solicitud';
       Alert.alert('Error', msg);

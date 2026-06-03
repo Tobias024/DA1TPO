@@ -57,11 +57,15 @@ export default function LiveBiddingScreen() {
         setVerifiedPayment((methods ?? []).find((m) => m.verificado) ?? null);
         setBootstrapping(false);
 
-        // Poll del historial (placeholder de WebSocket — STOMP queda como mejora futura).
+        // Poll del historial + oferta actual (placeholder de WebSocket — STOMP queda como mejora futura).
         pollRef.current = setInterval(async () => {
           try {
-            const r = await bidsApi.history(auctionId);
+            const [r, cat] = await Promise.all([
+              bidsApi.history(auctionId),
+              auctionsApi.catalog(auctionId).catch(() => null),
+            ]);
             setHistory(r.content ?? []);
+            if (cat) setPieza((prev) => (prev ? cat.find((p) => p.id === prev.id) ?? prev : cat[0] ?? null));
           } catch {}
         }, 4000);
       } catch {
@@ -107,7 +111,7 @@ export default function LiveBiddingScreen() {
     const confirmada = await new Promise<boolean>((resolve) => {
       Alert.alert(
         '¿Confirmar puja?',
-        `Vas a pujar ${pieza.moneda} ${m.toLocaleString('es-AR')}`,
+        `Vas a pujar ${auction?.moneda ?? ''} ${m.toLocaleString('es-AR')}`,
         [
           { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
           { text: 'Confirmar', onPress: () => resolve(true) },
@@ -120,8 +124,12 @@ export default function LiveBiddingScreen() {
     try {
       await bidsApi.place(auctionId, { piezaId: pieza.id, monto: m, medioPagoId: verifiedPayment.id });
       setAmount('');
-      const r = await bidsApi.history(auctionId);
+      const [r, cat] = await Promise.all([
+        bidsApi.history(auctionId),
+        auctionsApi.catalog(auctionId).catch(() => null),
+      ]);
       setHistory(r.content ?? []);
+      if (cat) setPieza((prev) => (prev ? cat.find((p) => p.id === prev.id) ?? prev : prev));
     } catch (e: any) {
       const status = e?.response?.status;
       if (status === 423) Alert.alert('Espera', 'Tu puja anterior aún se está procesando.');
@@ -153,10 +161,10 @@ export default function LiveBiddingScreen() {
       <Card style={{ margin: 16 }}>
         <Text style={styles.lblBid}>OFERTA ACTUAL</Text>
         <Text style={styles.bidVal}>
-          {pieza.moneda} {(pieza.mejorOferta ?? pieza.precioBase).toLocaleString('es-AR')}
+          {auction.moneda} {(pieza.mejorOferta ?? pieza.precioBase).toLocaleString('es-AR')}
         </Text>
         <Text style={styles.lblBaseline}>
-          Precio base: {pieza.moneda} {pieza.precioBase.toLocaleString('es-AR')}
+          Precio base: {auction.moneda} {pieza.precioBase.toLocaleString('es-AR')}
         </Text>
 
         <View style={styles.limits}>
@@ -180,6 +188,7 @@ export default function LiveBiddingScreen() {
           onPress={placeBid}
           loading={pendingBid}
           disabled={!verifiedPayment}
+          style={styles.pujaBtn}
         />
         {!verifiedPayment ? (
           <View style={styles.observerRow}>
@@ -230,6 +239,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 12,
   },
+  pujaBtn: { minHeight: 60, borderRadius: 10 },
   observerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 },
   observerHint: { fontSize: 12, color: colors.orangePending },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },

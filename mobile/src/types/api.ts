@@ -2,7 +2,8 @@
 
 export type Categoria = 'COMUN' | 'ESPECIAL' | 'PLATA' | 'ORO' | 'PLATINO';
 export type Moneda = 'ARS' | 'USD';
-export type EstadoSubasta = 'PROGRAMADA' | 'ABIERTA' | 'CERRADA' | 'EN_CURSO';
+export type EstadoSubasta = 'PROXIMA' | 'ABIERTA' | 'EN_CURSO' | 'CERRADA' | 'CANCELADA';
+export type EstadoPieza = 'EN_DEPOSITO' | 'EN_EXHIBICION' | 'EN_SUBASTA' | 'VENDIDO' | 'DEVUELTO' | 'RETIRADO';
 export type EstadoUsuario = 'PENDIENTE_VERIFICACION' | 'APROBADO' | 'SUSPENDIDO';
 export type TipoMedioPago = 'CUENTA_BANCARIA' | 'TARJETA_CREDITO' | 'CHEQUE_CERTIFICADO';
 export type TipoNotificacion =
@@ -93,15 +94,27 @@ export interface ObraArte {
 
 export interface Piece {
   id: string;
-  numero?: number;
   descripcion: string;
   precioBase: number;
-  moneda: Moneda;
-  fotos: string[];
+  // Campos reales del backend (Pieza):
+  numeroItem?: number;
+  estado?: EstadoPieza;
+  imagenes?: string[];
+  mejorOferta?: number;
+  // ObraArte: cuando la pieza es una obra de arte, estos campos vienen inline.
+  artista?: string;
+  fechaObra?: string;
+  historia?: string;
+  depositoNombre?: string;
+  depositoDireccion?: string;
+  depositoSector?: string;
+  // Opcionales/legacy usados por algunas pantallas (no siempre presentes):
+  numero?: number;
+  moneda?: Moneda;
+  fotos?: string[];
   obraArte?: ObraArte | null;
   vendido?: boolean;
   precioVenta?: number | null;
-  mejorOferta?: number;
 }
 
 export interface Bid {
@@ -207,6 +220,40 @@ export interface Sale {
   moneda: Moneda;
   comisiones: number;
   costoEnvio: number;
+  total?: number;
+  estadoPago?: string;
+  retiraPersonalmente?: boolean;
+  direccionEnvio?: string | null;
   medioPago?: MedioPago;
   fecha: string;
+}
+
+/** Pieza ganada por el usuario (GET /sales/won). */
+export interface WonItem {
+  piezaId: string;
+  subastaId: string;
+  descripcion: string;
+  imagen?: string | null;
+  montoGanador: number;
+  moneda: Moneda;
+  estadoPago: string;
+}
+
+/** Detalle de checkout de una pieza ganada (GET /sales/won/{piezaId}/checkout). */
+export interface CheckoutDetail {
+  piezaId: string;
+  descripcion: string;
+  moneda: Moneda;
+  precioFinal: number;
+  comision: number;
+  costoEnvio: number;
+  totalEnvio: number;
+  totalRetiro: number;
+  estadoPago: string;
+}
+
+export interface PayRequest {
+  medioPagoId: string;
+  retiraPersonalmente: boolean;
+  direccionEnvio?: string;
 }

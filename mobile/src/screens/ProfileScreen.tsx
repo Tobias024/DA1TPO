@@ -13,7 +13,7 @@ import type { MainStackParamList } from '@/navigation/types';
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 type MenuItem = {
-  key: 'EditProfile' | 'Metrics' | 'MyConsignments' | 'PaymentMethods';
+  key: 'EditProfile' | 'Metrics' | 'MyConsignments' | 'WonItems' | 'PaymentMethods';
   icon: React.ComponentProps<typeof Ionicons>['name'];
   label: string;
 };
@@ -22,6 +22,7 @@ const MENU: readonly MenuItem[] = [
   { key: 'EditProfile', icon: 'create-outline', label: 'Editar Perfil' },
   { key: 'Metrics', icon: 'stats-chart-outline', label: 'Métricas' },
   { key: 'MyConsignments', icon: 'business-outline', label: 'Mis Subastas' },
+  { key: 'WonItems', icon: 'trophy-outline', label: 'Mis Compras' },
   { key: 'PaymentMethods', icon: 'card-outline', label: 'Medios de Pago' },
 ] as const;
 

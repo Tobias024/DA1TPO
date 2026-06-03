@@ -12,7 +12,8 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Login: undefined;
   RegisterStep1: undefined;
-  RegisterStep2: { registrationId?: string } | undefined;
+  RegisterWaiting: { registrationId: string; registrationToken?: string };
+  RegisterStep2: { registrationId?: string; registrationToken?: string } | undefined;
   RegisterStep3: undefined;
 };
 
@@ -27,9 +28,11 @@ export type MainStackParamList = {
   Tabs: undefined;
   Discover: undefined;
   AuctionDetail: { auctionId: string };
+  ItemDetail: { auctionId: string; pieceId: string };
   LiveBidding: { auctionId: string };
   SoldItemDetail: { auctionId: string; pieceId?: string };
-  Acquisition: { saleId: string };
+  WonItems: undefined;
+  Acquisition: { saleId?: string; piezaId?: string };
   EditProfile: undefined;
   Metrics: undefined;
   PaymentMethods: undefined;

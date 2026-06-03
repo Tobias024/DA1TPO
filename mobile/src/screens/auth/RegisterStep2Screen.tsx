@@ -11,9 +11,9 @@ import type { AuthStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'RegisterStep2'>;
 
-export default function RegisterStep2Screen({ navigation }: Props) {
+export default function RegisterStep2Screen({ navigation, route }: Props) {
   const { refreshUser } = useSession();
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(route.params?.registrationToken ?? '');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export default function RegisterStep2Screen({ navigation }: Props) {
         <Text style={styles.kicker}>Confirmación 1 / 2</Text>
         <Text style={styles.title}>Completar Registro</Text>
         <Text style={styles.intro}>
-          Ingresá el código que te enviamos al mail y elegí tu contraseña personal.
+          ¡Tu cuenta fue verificada! Elegí tu contraseña personal para completar el registro.
         </Text>
 
         <TextField label="Código de verificación" value={token} onChangeText={setToken} autoCapitalize="none" />
