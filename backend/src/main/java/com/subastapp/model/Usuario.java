@@ -1,5 +1,6 @@
 package com.subastapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.subastapp.model.enums.CategoriaUsuario;
 import com.subastapp.model.enums.EstadoUsuario;
 import jakarta.persistence.*;
@@ -32,6 +33,7 @@ public class Usuario implements UserDetails {
     @Column(unique = true)
     private String documento;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 

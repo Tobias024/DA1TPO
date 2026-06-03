@@ -410,7 +410,18 @@ public class DevDataSeeder implements CommandLineRunner {
                 .mejorOferta(new BigDecimal("675000"))
                 .build();
 
-        attach(s, p1);
+        // Segunda pieza ganada por el usuario demo pero AÚN SIN PAGAR —
+        // habilita demostrar el flujo de checkout/pago (VentaController).
+        Pieza p2 = Pieza.builder()
+                .numeroItem(2)
+                .descripcion("Máscara ceremonial de madera — Cultura Mapuche, c. siglo XIX")
+                .precioBase(new BigDecimal("300000"))
+                .estado(EstadoPieza.EN_SUBASTA)
+                .imagenes(images("vendido-02a"))
+                .mejorOferta(new BigDecimal("455000"))
+                .build();
+
+        attach(s, p1, p2);
         subastas.save(s);
     }
 
@@ -541,6 +552,13 @@ public class DevDataSeeder implements CommandLineRunner {
                         pujas.save(saved);
                         t = t.plusMinutes(3);
                     }
+                    // El usuario demo es el ganador de las piezas de la subasta cerrada.
+                    // p[0] queda pagada (tiene Venta en sembrarVentas); el resto, sin pagar
+                    // (para demostrar el checkout). mejorOferta ya viene del seed de cada pieza.
+                    for (Pieza ganada : s.getCatalogo()) {
+                        ganada.setMejorPostor(u);
+                    }
+                    subastas.save(s);
                 });
     }
 

@@ -91,6 +91,10 @@ public class SubastaController {
     @PostMapping("/{id}/join")
     public ResponseEntity<?> unirseSubasta(@PathVariable String id,
                                              @AuthenticationPrincipal Usuario usuario) {
+        if (usuario.isTieneMulta()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Tenés una multa pendiente. Regularizá tu situación para continuar."));
+        }
         if (usuario.getSubastaActivaId() != null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Ya está conectado a otra subasta. Debe desconectarse primero."));

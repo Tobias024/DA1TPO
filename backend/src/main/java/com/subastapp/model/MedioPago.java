@@ -1,5 +1,6 @@
 package com.subastapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.subastapp.model.enums.Moneda;
 import com.subastapp.model.enums.TipoMedioPago;
 import jakarta.persistence.*;
@@ -17,6 +18,7 @@ public class MedioPago {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;

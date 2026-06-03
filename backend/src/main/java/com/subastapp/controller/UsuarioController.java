@@ -1,17 +1,23 @@
 package com.subastapp.controller;
 
+import com.subastapp.model.MedioPago;
 import com.subastapp.model.Notificacion;
 import com.subastapp.model.Usuario;
+import com.subastapp.repository.MedioPagoRepository;
 import com.subastapp.repository.NotificacionRepository;
+import com.subastapp.repository.UsuarioRepository;
 import com.subastapp.repository.VentaRepository;
 import com.subastapp.repository.PujaRepository;
+import com.subastapp.util.VentaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -22,20 +28,48 @@ public class UsuarioController {
     private final NotificacionRepository notificacionRepository;
     private final VentaRepository ventaRepository;
     private final PujaRepository pujaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final MedioPagoRepository medioPagoRepository;
 
     @GetMapping("/users/me")
     public ResponseEntity<?> perfil(@AuthenticationPrincipal Usuario usuario) {
-        return ResponseEntity.ok(Map.of(
-                "id", usuario.getId(),
-                "nombre", usuario.getNombre(),
-                "apellido", usuario.getApellido(),
-                "email", usuario.getEmail(),
-                "domicilioLegal", usuario.getDomicilioLegal(),
-                "paisOrigen", usuario.getPaisOrigen(),
-                "categoria", usuario.getCategoria(),
-                "estado", usuario.getEstado(),
-                "tieneMulta", usuario.isTieneMulta()
-        ));
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("id", usuario.getId());
+        resp.put("nombre", usuario.getNombre());
+        resp.put("apellido", usuario.getApellido());
+        resp.put("email", usuario.getEmail());
+        resp.put("domicilioLegal", usuario.getDomicilioLegal());
+        resp.put("paisOrigen", usuario.getPaisOrigen());
+        resp.put("categoria", usuario.getCategoria());
+        resp.put("estado", usuario.getEstado());
+        resp.put("tieneMulta", usuario.isTieneMulta());
+        resp.put("montoPendienteMulta", usuario.getMontoPendienteMulta());
+        return ResponseEntity.ok(resp);
+    }
+
+    /** Regulariza/paga la multa pendiente del usuario (libera el bloqueo para pujar/unirse). */
+    @PostMapping("/users/me/fine/pay")
+    public ResponseEntity<?> pagarMulta(@AuthenticationPrincipal Usuario usuario,
+                                        @RequestBody(required = false) Map<String, Object> body) {
+        if (!usuario.isTieneMulta()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "No tenés multa pendiente"));
+        }
+        if (body != null) {
+            String medioPagoId = (String) body.get("medioPagoId");
+            if (medioPagoId != null && !medioPagoId.isBlank()) {
+                MedioPago medio = medioPagoRepository.findById(medioPagoId).orElse(null);
+                if (medio == null || medio.getUsuario() == null
+                        || !medio.getUsuario().getId().equals(usuario.getId())) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(Map.of("error", "Medio de pago inválido"));
+                }
+            }
+        }
+        usuario.setTieneMulta(false);
+        usuario.setMontoPendienteMulta(null);
+        usuarioRepository.save(usuario);
+        return ResponseEntity.ok(Map.of("message", "Multa regularizada", "tieneMulta", false));
     }
 
     @GetMapping("/users/me/metrics")
@@ -50,7 +84,7 @@ public class UsuarioController {
         return ResponseEntity.ok(Map.of(
                 "totalSubastasGanadas", ganadas,
                 "importeTotalPagado", totalPagado,
-                "historialCompras", ventas
+                "historialCompras", VentaMapper.toDtoList(ventas)
         ));
     }
 
@@ -81,6 +115,7 @@ public class UsuarioController {
     // ----- SALES / PURCHASE HISTORY -----
     @GetMapping("/sales")
     public ResponseEntity<?> misCompras(@AuthenticationPrincipal Usuario usuario) {
-        return ResponseEntity.ok(ventaRepository.findByCompradorIdOrderByFechaVentaDesc(usuario.getId()));
+        return ResponseEntity.ok(VentaMapper.toDtoList(
+                ventaRepository.findByCompradorIdOrderByFechaVentaDesc(usuario.getId())));
     }
 }

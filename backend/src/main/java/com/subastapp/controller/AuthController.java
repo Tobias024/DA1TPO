@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -61,13 +62,35 @@ public class AuthController {
                 .estado(EstadoUsuario.PENDIENTE_VERIFICACION)
                 .build();
 
+        // Verificación externa de la empresa (sistema legacy fuera de scope): se simula
+        // de forma instantánea — se emite el token de registro y se habilita el paso 2.
+        usuario.setEstado(EstadoUsuario.PENDIENTE_COMPLETAR_REGISTRO);
+        usuario.setRegistrationToken(UUID.randomUUID().toString());
+        usuario.setRegistrationTokenExpiry(LocalDateTime.now().plusHours(24));
+
         usuarioRepository.save(usuario);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
-                        "message", "Registro iniciado. Recibirá un email cuando su cuenta sea aprobada.",
-                        "registrationId", usuario.getId()
+                        "message", "Registro iniciado. Tu cuenta está en verificación.",
+                        "registrationId", usuario.getId(),
+                        "registrationToken", usuario.getRegistrationToken()
                 ));
+    }
+
+    /** Estado del registro — el mobile lo consulta desde la pantalla "esperando verificación". */
+    @GetMapping("/register/{registrationId}/status")
+    public ResponseEntity<?> registerStatus(@PathVariable String registrationId) {
+        return usuarioRepository.findById(registrationId)
+                .map(usuario -> {
+                    boolean listo = usuario.getEstado() == EstadoUsuario.PENDIENTE_COMPLETAR_REGISTRO;
+                    Map<String, Object> resp = new HashMap<>();
+                    resp.put("estado", usuario.getEstado());
+                    resp.put("listoParaCompletar", listo);
+                    resp.put("registrationToken", listo ? usuario.getRegistrationToken() : null);
+                    return ResponseEntity.ok(resp);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /** STEP 2: Set password after email approval (uses registration token) */
@@ -86,7 +109,12 @@ public class AuthController {
 
         return usuarioRepository.findByRegistrationToken(token)
                 .map(usuario -> {
-                    if (usuario.getRegistrationTokenExpiry().isBefore(LocalDateTime.now())) {
+                    if (usuario.getEstado() != EstadoUsuario.PENDIENTE_COMPLETAR_REGISTRO) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(Map.of("error", "El registro no está listo para completarse"));
+                    }
+                    if (usuario.getRegistrationTokenExpiry() == null
+                            || usuario.getRegistrationTokenExpiry().isBefore(LocalDateTime.now())) {
                         return ResponseEntity.status(HttpStatus.GONE)
                                 .body(Map.of("error", "El token ha expirado"));
                     }
