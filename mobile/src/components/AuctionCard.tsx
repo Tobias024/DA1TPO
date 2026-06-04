@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from './Card';
 import { colors, categoriaColor } from '@/theme/colors';
@@ -41,36 +41,43 @@ export default function AuctionCard({ auction, onPress, dimmed }: Props) {
   }, [auction.id]);
 
   return (
-    <Card onPress={onPress} style={[styles.card, dimmed && styles.dimmed]}>
-      <View style={styles.row}>
-        <View style={styles.statusRow}>
-          {badge.icon ? <Ionicons name={badge.icon} size={14} color={badge.color} style={{ marginRight: 4 }} /> : null}
-          <Text style={[styles.status, { color: badge.color }]}>{badge.label}</Text>
+    <Card style={[styles.card, dimmed && styles.dimmed]}>
+      {/* Header tocable: abre la subasta. */}
+      <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+        <View style={styles.row}>
+          <View style={styles.statusRow}>
+            {badge.icon ? <Ionicons name={badge.icon} size={14} color={badge.color} style={{ marginRight: 4 }} /> : null}
+            <Text style={[styles.status, { color: badge.color }]}>{badge.label}</Text>
+          </View>
+          <View style={[styles.chip, { backgroundColor: categoriaColor(auction.categoriaRequerida) }]}>
+            <Text style={styles.chipText}>{auction.categoriaRequerida}</Text>
+          </View>
         </View>
-        <View style={[styles.chip, { backgroundColor: categoriaColor(auction.categoriaRequerida) }]}>
-          <Text style={styles.chipText}>{auction.categoriaRequerida}</Text>
-        </View>
-      </View>
-      <Text numberOfLines={2} style={styles.title}>{auction.titulo}</Text>
+        <Text numberOfLines={2} style={styles.title}>{auction.titulo}</Text>
+      </TouchableOpacity>
 
-      {/* Carrusel: un ítem a la vez, deslizable, sin entrar a la subasta. */}
+      {/* Carrusel: un ítem a la vez, deslizable. Fuera del área tocable para no
+          robarle el gesto horizontal. */}
       {items.length > 0 ? <ItemsCarousel items={items} moneda={auction.moneda} /> : null}
 
-      {auction.ubicacion ? (
-        <View style={styles.iconRow}>
-          <Ionicons name="location-outline" size={14} color={colors.inputHint} style={{ marginRight: 4 }} />
-          <Text style={styles.location}>{auction.ubicacion}</Text>
-        </View>
-      ) : null}
-      <View style={styles.row}>
-        <Text style={styles.currency}>{auction.moneda}</Text>
-        {auction.rematador ? (
+      {/* Pie tocable: también abre la subasta. */}
+      <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+        {auction.ubicacion ? (
           <View style={styles.iconRow}>
-            <Ionicons name="briefcase-outline" size={13} color={colors.inputHint} style={{ marginRight: 4 }} />
-            <Text style={styles.auctioneer}>{auction.rematador.nombre}</Text>
+            <Ionicons name="location-outline" size={14} color={colors.inputHint} style={{ marginRight: 4 }} />
+            <Text style={styles.location}>{auction.ubicacion}</Text>
           </View>
         ) : null}
-      </View>
+        <View style={styles.row}>
+          <Text style={styles.currency}>{auction.moneda}</Text>
+          {auction.rematador ? (
+            <View style={styles.iconRow}>
+              <Ionicons name="briefcase-outline" size={13} color={colors.inputHint} style={{ marginRight: 4 }} />
+              <Text style={styles.auctioneer}>{auction.rematador.nombre}</Text>
+            </View>
+          ) : null}
+        </View>
+      </TouchableOpacity>
     </Card>
   );
 }
@@ -86,6 +93,7 @@ function ItemsCarousel({ items, moneda }: { items: Piece[]; moneda: Moneda }) {
         <ScrollView
           horizontal
           pagingEnabled
+          nestedScrollEnabled
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={(e) => setIdx(Math.round(e.nativeEvent.contentOffset.x / w))}
         >
