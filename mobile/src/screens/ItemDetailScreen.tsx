@@ -95,9 +95,9 @@ export default function ItemDetailScreen() {
 
         {enCurso ? (
           <PrimaryButton
-            title="Participar"
+            title="Pujar por este item"
             style={{ marginTop: 16 }}
-            onPress={() => nav.navigate('LiveBidding', { auctionId })}
+            onPress={() => nav.navigate('LiveBidding', { auctionId, pieceId })}
             disabled={auction?.usuarioPuedeParticipar === false}
           />
         ) : null}

@@ -56,9 +56,9 @@ export default function ConsignmentFormScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
-      <Text style={styles.kicker}>SUBASTAR ALGO PROPIO</Text>
-      <Text style={styles.title}>Subastar algo propio</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
+      <Text style={styles.kicker}>NUEVA SOLICITUD</Text>
+      <Text style={styles.title}>Nueva solicitud</Text>
       <Text style={styles.intro}>
         Completá los datos. Si la empresa lo aprueba, te avisaremos para enviarlo a inspección.
       </Text>

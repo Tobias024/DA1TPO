@@ -47,7 +47,7 @@ export default function MainNavigator() {
       <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} options={{ title: 'Medios de Pago' }} />
       <Stack.Screen name="AddPaymentMethod" component={AddPaymentMethodScreen} options={{ title: 'Agregar Método' }} />
       <Stack.Screen name="MyConsignments" component={MyConsignmentsScreen} options={{ title: 'Mis Subastas' }} />
-      <Stack.Screen name="ConsignmentForm" component={ConsignmentFormScreen} options={{ title: 'Subastar algo propio' }} />
+      <Stack.Screen name="ConsignmentForm" component={ConsignmentFormScreen} options={{ title: 'Nueva solicitud' }} />
       <Stack.Screen name="RequestSent" component={RequestSentScreen} options={{ title: 'Solicitud Enviada' }} />
       <Stack.Screen name="RequestAccepted" component={RequestAcceptedScreen} options={{ title: 'Solicitud Aceptada' }} />
       <Stack.Screen name="RequestRejected" component={RequestRejectedScreen} options={{ title: 'Solicitud Rechazada' }} />

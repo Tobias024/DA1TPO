@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
@@ -31,6 +32,7 @@ const ESTADO_COLOR = (s: string) => {
 
 export default function MyConsignmentsScreen() {
   const nav = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const [items, setItems] = useState<Consignment[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -76,8 +78,8 @@ export default function MyConsignmentsScreen() {
           </Card>
         )}
       />
-      <View style={styles.footer}>
-        <PrimaryButton title="Subastar algo propio" onPress={() => nav.navigate('ConsignmentForm')} />
+      <View style={[styles.footer, { paddingBottom: 16 + insets.bottom }]}>
+        <PrimaryButton title="Nueva solicitud" onPress={() => nav.navigate('ConsignmentForm')} />
       </View>
     </View>
   );

@@ -27,8 +27,9 @@ export default function RegisterStep3Screen() {
     }
     setLoading(true);
     try {
-      // Crea el medio de pago inicial. La verificación la hace la empresa.
-      await paymentsApi.add({ tipo, proveedor: '—' });
+      // Crea el medio de pago inicial (placeholder). El usuario completa el detalle
+      // luego desde "Medios de pago". La verificación la hace la empresa.
+      await paymentsApi.add({ tipo });
     } catch {
       // No bloqueamos el alta de la cuenta si falla; el usuario puede agregarlo luego.
     } finally {

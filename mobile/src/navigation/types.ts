@@ -20,6 +20,7 @@ export type AuthStackParamList = {
 export type MainTabParamList = {
   Home: undefined;
   Auctions: undefined;
+  NuevaSolicitud: undefined;
   Notifications: undefined;
   Profile: undefined;
 };
@@ -29,7 +30,7 @@ export type MainStackParamList = {
   Discover: undefined;
   AuctionDetail: { auctionId: string };
   ItemDetail: { auctionId: string; pieceId: string };
-  LiveBidding: { auctionId: string };
+  LiveBidding: { auctionId: string; pieceId?: string };
   SoldItemDetail: { auctionId: string; pieceId?: string };
   WonItems: undefined;
   Acquisition: { saleId?: string; piezaId?: string };

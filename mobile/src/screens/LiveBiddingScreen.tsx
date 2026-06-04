@@ -26,7 +26,7 @@ type Rt = RouteProp<MainStackParamList, 'LiveBidding'>;
 export default function LiveBiddingScreen() {
   const { params } = useRoute<Rt>();
   const nav = useNavigation();
-  const { auctionId } = params;
+  const { auctionId, pieceId } = params;
   const { setActiveAuction } = useSession();
 
   const [auction, setAuction] = useState<Auction | null>(null);
@@ -52,7 +52,14 @@ export default function LiveBiddingScreen() {
         ]);
         if (cancelled) return;
         setAuction(a);
-        setPieza((cat ?? [])[0] ?? null);
+        // Pieza a pujar: la elegida (pieceId), si no la primera no vendida, si no la primera.
+        const lista = cat ?? [];
+        const elegida =
+          (pieceId ? lista.find((p) => p.id === pieceId) : undefined)
+          ?? lista.find((p) => p.estado !== 'VENDIDO')
+          ?? lista[0]
+          ?? null;
+        setPieza(elegida);
         setHistory(hist.content ?? []);
         setVerifiedPayment((methods ?? []).find((m) => m.verificado) ?? null);
         setBootstrapping(false);

@@ -15,18 +15,33 @@ const TIPOS: { v: TipoMedioPago; label: string }[] = [
 
 export default function AddPaymentMethodScreen() {
   const nav = useNavigation();
-  const [tipo, setTipo] = useState<TipoMedioPago>('CUENTA_BANCARIA');
-  const [proveedor, setProveedor] = useState('');
-  const [ultimos, setUltimos] = useState('');
+  const [tipo, setTipo] = useState<TipoMedioPago>('TARJETA_CREDITO');
+  // tarjeta
+  const [titular, setTitular] = useState('');
+  const [numero, setNumero] = useState('');
+  const [vencimiento, setVencimiento] = useState('');
+  // cuenta
+  const [banco, setBanco] = useState('');
+  const [numeroCuenta, setNumeroCuenta] = useState('');
+  const [cbu, setCbu] = useState('');
+  // cheque
+  const [numeroCheque, setNumeroCheque] = useState('');
   const [garantia, setGarantia] = useState('');
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
-    if (!proveedor) { Alert.alert('Falta proveedor'); return; }
+    if (tipo === 'TARJETA_CREDITO' && (!titular || !numero)) {
+      Alert.alert('Faltan datos', 'Completá titular y los últimos 4 dígitos.');
+      return;
+    }
+    if (tipo === 'CUENTA_BANCARIA' && (!banco || !numeroCuenta)) {
+      Alert.alert('Faltan datos', 'Completá banco y número de cuenta.');
+      return;
+    }
     if (tipo === 'CHEQUE_CERTIFICADO') {
       const montoNum = Number(garantia);
-      if (!garantia || isNaN(montoNum) || montoNum <= 0) {
-        Alert.alert('Monto inválido', 'El monto de garantía del cheque debe ser mayor a cero.');
+      if (!banco || !garantia || isNaN(montoNum) || montoNum <= 0) {
+        Alert.alert('Datos inválidos', 'Completá banco y un monto de garantía mayor a cero.');
         return;
       }
     }
@@ -34,8 +49,13 @@ export default function AddPaymentMethodScreen() {
     try {
       await paymentsApi.add({
         tipo,
-        proveedor,
-        ultimosDigitos: ultimos || undefined,
+        titular: titular || undefined,
+        numeroTarjeta: numero || undefined,
+        vencimiento: vencimiento || undefined,
+        banco: banco || undefined,
+        numeroCuenta: numeroCuenta || undefined,
+        cbu: cbu || undefined,
+        numeroCheque: numeroCheque || undefined,
         montoGarantia: tipo === 'CHEQUE_CERTIFICADO' ? Number(garantia) : undefined,
       });
       Alert.alert('Listo', 'Medio de pago agregado correctamente.', [
@@ -49,7 +69,7 @@ export default function AddPaymentMethodScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
       <Text style={styles.title}>Agregar Medio de Pago</Text>
 
       <Text style={styles.label}>Tipo</Text>
@@ -57,21 +77,35 @@ export default function AddPaymentMethodScreen() {
         {TIPOS.map((t) => {
           const sel = tipo === t.v;
           return (
-            <Pressable
-              key={t.v}
-              onPress={() => setTipo(t.v)}
-              style={[styles.tipoChip, sel && styles.tipoChipSel]}
-            >
+            <Pressable key={t.v} onPress={() => setTipo(t.v)} style={[styles.tipoChip, sel && styles.tipoChipSel]}>
               <Text style={[styles.tipoText, sel && styles.tipoTextSel]}>{t.label}</Text>
             </Pressable>
           );
         })}
       </View>
 
-      <TextField label="Proveedor" value={proveedor} onChangeText={setProveedor} placeholder="Ej: MasterCard, Banco Nación, Mercado Pago" />
-      <TextField label="Últimos 4 dígitos" value={ultimos} onChangeText={setUltimos} keyboardType="numeric" maxLength={4} />
+      {tipo === 'TARJETA_CREDITO' ? (
+        <>
+          <TextField label="Titular" value={titular} onChangeText={setTitular} placeholder="Nombre como figura en la tarjeta" />
+          <TextField label="Últimos 4 dígitos" value={numero} onChangeText={setNumero} keyboardType="numeric" maxLength={4} />
+          <TextField label="Vencimiento (MM/AA)" value={vencimiento} onChangeText={setVencimiento} placeholder="12/30" />
+        </>
+      ) : null}
+
+      {tipo === 'CUENTA_BANCARIA' ? (
+        <>
+          <TextField label="Banco" value={banco} onChangeText={setBanco} placeholder="Ej: Banco Nación" />
+          <TextField label="Número de cuenta" value={numeroCuenta} onChangeText={setNumeroCuenta} keyboardType="numeric" />
+          <TextField label="CBU" value={cbu} onChangeText={setCbu} keyboardType="numeric" />
+        </>
+      ) : null}
+
       {tipo === 'CHEQUE_CERTIFICADO' ? (
-        <TextField label="Monto de garantía" value={garantia} onChangeText={setGarantia} keyboardType="numeric" />
+        <>
+          <TextField label="Banco" value={banco} onChangeText={setBanco} placeholder="Ej: Banco Provincia" />
+          <TextField label="Número de cheque" value={numeroCheque} onChangeText={setNumeroCheque} />
+          <TextField label="Monto de garantía" value={garantia} onChangeText={setGarantia} keyboardType="numeric" />
+        </>
       ) : null}
 
       <PrimaryButton title="Agregar" onPress={submit} loading={loading} style={{ marginTop: 16 }} />

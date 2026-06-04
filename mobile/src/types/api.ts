@@ -147,16 +147,39 @@ export interface BidRequest {
 export interface MedioPago {
   id: string;
   tipo: TipoMedioPago;
+  moneda?: Moneda;
+  verificado: boolean;
   proveedor: string;
   ultimosDigitos?: string;
-  verificado: boolean;
+  // Tarjeta de crédito (datos enmascarados)
+  titular?: string;
+  numeroMasked?: string;
+  vencimiento?: string;
+  codigoMasked?: string;
+  internacional?: boolean;
+  // Cuenta bancaria
+  banco?: string;
+  numeroCuentaMasked?: string;
+  cbuMasked?: string;
+  // Cheque certificado
+  numeroCheque?: string;
   montoGarantia?: number | null;
+  montoDisponible?: number | null;
 }
 
 export interface AddPaymentMethodRequest {
   tipo: TipoMedioPago;
-  proveedor: string;
-  ultimosDigitos?: string;
+  moneda?: Moneda;
+  // Tarjeta de crédito
+  titular?: string;
+  numeroTarjeta?: string; // últimos 4 dígitos
+  vencimiento?: string;
+  // Cuenta bancaria
+  banco?: string;
+  numeroCuenta?: string;
+  cbu?: string;
+  // Cheque certificado
+  numeroCheque?: string;
   montoGarantia?: number;
 }
 

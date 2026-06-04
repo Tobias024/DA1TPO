@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '@/screens/HomeScreen';
@@ -17,6 +18,20 @@ const tabIcon = (filled: IconName, outlined: IconName) =>
     <Ionicons name={focused ? filled : outlined} size={22} color={color} />
   );
 
+// Pantalla vacía: el tab "+" no muestra contenido, intercepta el press y navega
+// a "Nueva solicitud" (ConsignmentForm, en el stack padre).
+function NoopScreen() {
+  return null;
+}
+
+function PlusButton() {
+  return (
+    <View style={styles.plus}>
+      <Ionicons name="add" size={30} color={colors.onPrimary} />
+    </View>
+  );
+}
+
 export default function MainTabs() {
   return (
     <Tab.Navigator
@@ -29,8 +44,32 @@ export default function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
       <Tab.Screen name="Auctions" component={AuctionsScreen} options={{ tabBarLabel: 'Subastas', tabBarIcon: tabIcon('hammer', 'hammer-outline') }} />
+      <Tab.Screen
+        name="NuevaSolicitud"
+        component={NoopScreen}
+        options={{ tabBarLabel: 'Vender', tabBarIcon: () => <PlusButton /> }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            // ConsignmentForm vive en el stack padre; navigate burbujea hacia arriba.
+            navigation.navigate('ConsignmentForm' as never);
+          },
+        })}
+      />
       <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ tabBarLabel: 'Alertas', tabBarIcon: tabIcon('notifications', 'notifications-outline') }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Perfil', tabBarIcon: tabIcon('person', 'person-outline') }} />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  plus: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.brandPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+});
