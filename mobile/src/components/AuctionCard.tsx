@@ -8,6 +8,8 @@ import type { Auction } from '@/types/api';
 type Props = {
   auction: Auction;
   onPress?: () => void;
+  /** Atenúa la card (para subastas cerradas / ítems "apagados"). */
+  dimmed?: boolean;
 };
 
 type BadgeSpec = {
@@ -24,10 +26,10 @@ const ESTADO_BADGE: Record<string, BadgeSpec> = {
   CERRADA: { color: colors.inputHint, label: 'Cerrada', icon: null },
 };
 
-export default function AuctionCard({ auction, onPress }: Props) {
+export default function AuctionCard({ auction, onPress, dimmed }: Props) {
   const badge = ESTADO_BADGE[auction.estado] ?? ESTADO_BADGE.CERRADA;
   return (
-    <Card onPress={onPress} style={styles.card}>
+    <Card onPress={onPress} style={[styles.card, dimmed && styles.dimmed]}>
       <View style={styles.row}>
         <View style={styles.statusRow}>
           {badge.icon ? <Ionicons name={badge.icon} size={14} color={badge.color} style={{ marginRight: 4 }} /> : null}
@@ -59,6 +61,7 @@ export default function AuctionCard({ auction, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: { marginBottom: 10 },
+  dimmed: { opacity: 0.5 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   statusRow: { flexDirection: 'row', alignItems: 'center' },
   iconRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },

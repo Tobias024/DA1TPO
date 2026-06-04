@@ -12,10 +12,28 @@ type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 const CATS: Categoria[] = ['COMUN', 'ESPECIAL', 'PLATA', 'ORO', 'PLATINO'];
 
+type StatusKey = 'todas' | 'activas' | 'proximas' | 'cerradas';
+const STATUS_TABS: { key: StatusKey; label: string }[] = [
+  { key: 'todas', label: 'Todas' },
+  { key: 'activas', label: 'Activas' },
+  { key: 'proximas', label: 'Próximas' },
+  { key: 'cerradas', label: 'Vendidas' },
+];
+
+function matchesStatus(a: Auction, status: StatusKey): boolean {
+  switch (status) {
+    case 'activas': return a.estado === 'EN_CURSO' || a.estado === 'ABIERTA';
+    case 'proximas': return a.estado === 'PROXIMA';
+    case 'cerradas': return a.estado === 'CERRADA';
+    default: return true;
+  }
+}
+
 export default function DiscoverScreen() {
   const nav = useNavigation<Nav>();
   const [query, setQuery] = useState('');
   const [cat, setCat] = useState<Categoria | null>(null);
+  const [status, setStatus] = useState<StatusKey>('todas');
   const [all, setAll] = useState<Auction[]>([]);
 
   useEffect(() => {
@@ -24,11 +42,12 @@ export default function DiscoverScreen() {
 
   const filtered = useMemo(() => {
     return all.filter((a) => {
+      if (!matchesStatus(a, status)) return false;
       if (cat && a.categoriaRequerida !== cat) return false;
       if (query && !a.titulo.toLowerCase().includes(query.toLowerCase())) return false;
       return true;
     });
-  }, [all, query, cat]);
+  }, [all, query, cat, status]);
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
@@ -62,13 +81,40 @@ export default function DiscoverScreen() {
           })}
         </View>
 
+        <View style={styles.statusRow}>
+          {STATUS_TABS.map((t) => {
+            const active = status === t.key;
+            return (
+              <Pressable
+                key={t.key}
+                onPress={() => setStatus(t.key)}
+                style={[styles.statusChip, active && styles.statusChipActive]}
+              >
+                <Text style={[styles.statusText, active && styles.statusTextActive]}>{t.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <Text style={styles.sectionTitle}>Subastas destacadas</Text>
         {filtered.length === 0 ? (
           <Text style={styles.empty}>Sin resultados.</Text>
         ) : (
-          filtered.map((a) => (
-            <AuctionCard key={a.id} auction={a} onPress={() => nav.navigate('AuctionDetail', { auctionId: a.id })} />
-          ))
+          filtered.map((a) => {
+            const cerrada = a.estado === 'CERRADA';
+            return (
+              <AuctionCard
+                key={a.id}
+                auction={a}
+                dimmed={cerrada}
+                onPress={() =>
+                  cerrada
+                    ? nav.navigate('SoldItemDetail', { auctionId: a.id })
+                    : nav.navigate('AuctionDetail', { auctionId: a.id })
+                }
+              />
+            );
+          })
         )}
       </View>
     </ScrollView>
@@ -94,5 +140,13 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
   chipText: { fontSize: 12, fontWeight: '700', color: colors.inputHint },
   chipTextActive: { color: colors.textOnDark },
+  statusRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  statusChip: {
+    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
+    backgroundColor: colors.inputBg, borderWidth: 1, borderColor: colors.inputBorder,
+  },
+  statusChipActive: { backgroundColor: colors.brandPrimary, borderColor: colors.brandPrimary },
+  statusText: { fontSize: 12, fontWeight: '600', color: colors.inputHint },
+  statusTextActive: { color: colors.onPrimary },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 24 },
 });

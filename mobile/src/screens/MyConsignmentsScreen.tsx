@@ -13,17 +13,19 @@ import type { MainStackParamList } from '@/navigation/types';
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 const ESTADO_LABEL: Record<string, string> = {
-  ENVIADA: 'Enviada — pendiente de inspección',
+  PENDIENTE: 'Enviada — pendiente de inspección',
   EN_INSPECCION: 'En inspección',
-  ACEPTADA: 'Aceptada — propuesta lista',
-  RECHAZADA: 'Rechazada',
+  PENDIENTE_CONFIRMACION_USUARIO: 'Propuesta lista — revisá las condiciones',
+  ACEPTADO: 'Aceptada',
+  RECHAZADO: 'Rechazada',
   EN_SUBASTA: 'En subasta',
-  VENDIDA: 'Vendida',
+  VENDIDO: 'Vendida',
+  DEVUELTO: 'Devuelta',
 };
 
 const ESTADO_COLOR = (s: string) => {
-  if (s === 'ACEPTADA' || s === 'EN_SUBASTA' || s === 'VENDIDA') return colors.greenLive;
-  if (s === 'RECHAZADA') return colors.redLive;
+  if (s === 'ACEPTADO' || s === 'EN_SUBASTA' || s === 'VENDIDO' || s === 'PENDIENTE_CONFIRMACION_USUARIO') return colors.greenLive;
+  if (s === 'RECHAZADO') return colors.redLive;
   return colors.orangePending;
 };
 
@@ -39,9 +41,13 @@ export default function MyConsignmentsScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const open = (c: Consignment) => {
-    if (c.estado === 'ACEPTADA') nav.navigate('RequestAccepted', { consignmentId: c.id });
-    else if (c.estado === 'RECHAZADA') nav.navigate('RequestRejected', { consignmentId: c.id });
-    else nav.navigate('PieceLocation', { consignmentId: c.id });
+    if (c.estado === 'PENDIENTE_CONFIRMACION_USUARIO' || c.estado === 'ACEPTADO') {
+      nav.navigate('RequestAccepted', { consignmentId: c.id });
+    } else if (c.estado === 'RECHAZADO') {
+      nav.navigate('RequestRejected', { consignmentId: c.id });
+    } else {
+      nav.navigate('PieceLocation', { consignmentId: c.id });
+    }
   };
 
   return (
@@ -54,12 +60,12 @@ export default function MyConsignmentsScreen() {
         ListEmptyComponent={<Text style={styles.empty}>{loading ? 'Cargando…' : 'Aún no enviaste artículos a subastar.'}</Text>}
         renderItem={({ item }) => (
           <Card onPress={() => open(item)} style={{ marginBottom: 10 }}>
-            <Text style={styles.title}>{item.nombreBien}</Text>
+            <Text style={styles.title}>{item.nombreBien ?? item.tipoBien ?? item.descripcion ?? 'Bien consignado'}</Text>
             <Text style={[styles.estado, { color: ESTADO_COLOR(item.estado) }]}>
               {ESTADO_LABEL[item.estado] ?? item.estado}
             </Text>
-            {item.valorBaseOfrecido ? (
-              <Text style={styles.base}>Valor base: $ {item.valorBaseOfrecido.toLocaleString('es-AR')}</Text>
+            {(item.precioBaseOfrecido ?? item.valorBaseOfrecido) ? (
+              <Text style={styles.base}>Valor base: $ {(item.precioBaseOfrecido ?? item.valorBaseOfrecido)!.toLocaleString('es-AR')}</Text>
             ) : null}
             {item.polizaSeguro ? (
               <View style={styles.polizaRow}>

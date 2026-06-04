@@ -17,12 +17,14 @@ export type TipoNotificacion =
   | 'OFERTA_BASE_PROPUESTA'
   | 'BIEN_DEVUELTO';
 export type EstadoConsignacion =
-  | 'ENVIADA'
+  | 'PENDIENTE'
   | 'EN_INSPECCION'
-  | 'ACEPTADA'
-  | 'RECHAZADA'
+  | 'ACEPTADO'
+  | 'RECHAZADO'
+  | 'PENDIENTE_CONFIRMACION_USUARIO'
   | 'EN_SUBASTA'
-  | 'VENDIDA';
+  | 'VENDIDO'
+  | 'DEVUELTO';
 
 export interface LoginRequest {
   documento: string;
@@ -168,21 +170,27 @@ export interface PolizaSeguro {
 
 export interface Consignment {
   id: string;
-  nombreBien: string;
-  descripcionDetallada: string;
-  historia?: string;
-  fotos: string[];
-  declaraPropiedad: boolean;
-  declaraOrigenLicito: boolean;
   estado: EstadoConsignacion;
-  valorBaseOfrecido?: number | null;
+  // Campos reales del backend (Consignacion):
+  tipoBien?: string;
+  descripcion?: string;
+  precioBaseOfrecido?: number | null;
+  causaRechazo?: string | null;
+  fotos?: string[];
+  historia?: string;
+  declaraPropiedad?: boolean;
+  declaraOrigenLicito?: boolean;
   comision?: number | null;
   polizaSeguro?: PolizaSeguro | null;
+  gastosDevolucion?: number | null;
+  // Opcionales/legacy usados por algunas pantallas:
+  nombreBien?: string;
+  descripcionDetallada?: string;
+  valorBaseOfrecido?: number | null;
   ubicacionDeposito?: string | null;
   subastaAsignadaId?: string | null;
   fechaSubastaAsignada?: string | null;
   motivoRechazo?: string | null;
-  gastosDevolucion?: number | null;
 }
 
 export interface CreateConsignmentRequest {
