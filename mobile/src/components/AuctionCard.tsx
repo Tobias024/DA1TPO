@@ -56,9 +56,9 @@ export default function AuctionCard({ auction, onPress, dimmed }: Props) {
         <Text numberOfLines={2} style={styles.title}>{auction.titulo}</Text>
       </TouchableOpacity>
 
-      {/* Carrusel: un ítem a la vez, deslizable. Fuera del área tocable para no
-          robarle el gesto horizontal. */}
-      {items.length > 0 ? <ItemsCarousel items={items} moneda={auction.moneda} /> : null}
+      {/* Carrusel: un ítem a la vez, deslizable. Tocar un ítem abre la subasta;
+          deslizar rota entre ítems (el ScrollView distingue tap de swipe). */}
+      {items.length > 0 ? <ItemsCarousel items={items} moneda={auction.moneda} onOpen={onPress} /> : null}
 
       {/* Pie tocable: también abre la subasta. */}
       <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
@@ -83,7 +83,7 @@ export default function AuctionCard({ auction, onPress, dimmed }: Props) {
 }
 
 /** Carrusel paginado (un ítem por página) de los productos de la subasta. */
-function ItemsCarousel({ items, moneda }: { items: Piece[]; moneda: Moneda }) {
+function ItemsCarousel({ items, moneda, onOpen }: { items: Piece[]; moneda: Moneda; onOpen?: () => void }) {
   const [w, setW] = useState(0);
   const [idx, setIdx] = useState(0);
 
@@ -101,7 +101,7 @@ function ItemsCarousel({ items, moneda }: { items: Piece[]; moneda: Moneda }) {
             const img = pieceImage(p);
             const vendido = p.estado === 'VENDIDO';
             return (
-              <View key={p.id} style={{ width: w }}>
+              <TouchableOpacity key={p.id} activeOpacity={0.9} onPress={onOpen} style={{ width: w }}>
                 <View>
                   {img ? (
                     <Image source={{ uri: img }} style={[styles.carImg, vendido && styles.imgSold]} resizeMode="cover" />
@@ -120,7 +120,7 @@ function ItemsCarousel({ items, moneda }: { items: Piece[]; moneda: Moneda }) {
                 <Text style={[styles.itemPrice, vendido && styles.mutedText]}>
                   {moneda} {(p.mejorOferta ?? p.precioBase).toLocaleString('es-AR')}
                 </Text>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </ScrollView>
