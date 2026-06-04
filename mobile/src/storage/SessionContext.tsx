@@ -21,6 +21,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [activeAuctionId, setActiveAuction] = useState<string | null>(null);
 
   useEffect(() => {
+    // Si una request devuelve 401 (token vencido/ inválido), cerramos sesión
+    // para volver al login en vez de quedar con pantallas vacías.
+    session.onUnauthorized(() => {
+      setUser(null);
+      setLoggedIn(false);
+      setActiveAuction(null);
+    });
     (async () => {
       const [token, u] = await Promise.all([session.getAccessToken(), session.getUser()]);
       setLoggedIn(!!token);

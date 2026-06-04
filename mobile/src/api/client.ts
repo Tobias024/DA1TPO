@@ -58,6 +58,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await session.clear();
+      session.notifyUnauthorized(); // fuerza el logout en el context -> vuelve al login
     }
     return Promise.reject(error);
   },

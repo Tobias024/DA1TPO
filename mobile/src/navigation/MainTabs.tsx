@@ -37,17 +37,18 @@ export default function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.inputHint,
         tabBarStyle: { backgroundColor: colors.surfaceWhite, borderTopColor: colors.inputBorder },
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
-      <Tab.Screen name="Auctions" component={AuctionsScreen} options={{ tabBarLabel: 'Subastas', tabBarIcon: tabIcon('hammer', 'hammer-outline') }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: tabIcon('home', 'home-outline') }} />
+      <Tab.Screen name="Auctions" component={AuctionsScreen} options={{ tabBarIcon: tabIcon('search', 'search-outline') }} />
       <Tab.Screen
         name="NuevaSolicitud"
         component={NoopScreen}
-        options={{ tabBarLabel: 'Vender', tabBarIcon: () => <PlusButton /> }}
+        options={{ tabBarIcon: () => <PlusButton /> }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
@@ -56,8 +57,8 @@ export default function MainTabs() {
           },
         })}
       />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ tabBarLabel: 'Alertas', tabBarIcon: tabIcon('notifications', 'notifications-outline') }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Perfil', tabBarIcon: tabIcon('person', 'person-outline') }} />
+      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ tabBarIcon: tabIcon('notifications', 'notifications-outline') }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarIcon: tabIcon('person', 'person-outline') }} />
     </Tab.Navigator>
   );
 }
