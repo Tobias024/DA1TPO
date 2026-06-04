@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from './Card';
 import { colors, categoriaColor } from '@/theme/colors';
 import { auctionsApi } from '@/api/services';
-import type { Auction, Piece } from '@/types/api';
+import type { Auction, Piece, Moneda } from '@/types/api';
 
 type Props = {
   auction: Auction;
@@ -53,42 +53,8 @@ export default function AuctionCard({ auction, onPress, dimmed }: Props) {
       </View>
       <Text numberOfLines={2} style={styles.title}>{auction.titulo}</Text>
 
-      {/* Carrusel de ítems de la subasta (deslizá para ver cada uno). */}
-      {items.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.carousel}
-          contentContainerStyle={{ gap: 10 }}
-        >
-          {items.map((p) => {
-            const img = pieceImage(p);
-            const vendido = p.estado === 'VENDIDO';
-            return (
-              <View key={p.id} style={styles.itemCard}>
-                <View>
-                  {img ? (
-                    <Image source={{ uri: img }} style={[styles.itemImg, vendido && styles.itemImgSold]} resizeMode="cover" />
-                  ) : (
-                    <View style={[styles.itemImg, styles.itemImgPlaceholder]}>
-                      <Ionicons name="image-outline" size={24} color={colors.inputHint} />
-                    </View>
-                  )}
-                  {vendido ? (
-                    <View style={styles.soldOverlay}>
-                      <Text style={styles.soldText}>Item vendido</Text>
-                    </View>
-                  ) : null}
-                </View>
-                <Text numberOfLines={1} style={styles.itemTitle}>{p.descripcion}</Text>
-                <Text style={styles.itemPrice}>
-                  {auction.moneda} {(p.mejorOferta ?? p.precioBase).toLocaleString('es-AR')}
-                </Text>
-              </View>
-            );
-          })}
-        </ScrollView>
-      ) : null}
+      {/* Carrusel: un ítem a la vez, deslizable, sin entrar a la subasta. */}
+      {items.length > 0 ? <ItemsCarousel items={items} moneda={auction.moneda} /> : null}
 
       {auction.ubicacion ? (
         <View style={styles.iconRow}>
@@ -109,6 +75,60 @@ export default function AuctionCard({ auction, onPress, dimmed }: Props) {
   );
 }
 
+/** Carrusel paginado (un ítem por página) de los productos de la subasta. */
+function ItemsCarousel({ items, moneda }: { items: Piece[]; moneda: Moneda }) {
+  const [w, setW] = useState(0);
+  const [idx, setIdx] = useState(0);
+
+  return (
+    <View style={styles.carousel} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
+      {w > 0 ? (
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(e) => setIdx(Math.round(e.nativeEvent.contentOffset.x / w))}
+        >
+          {items.map((p) => {
+            const img = pieceImage(p);
+            const vendido = p.estado === 'VENDIDO';
+            return (
+              <View key={p.id} style={{ width: w }}>
+                <View>
+                  {img ? (
+                    <Image source={{ uri: img }} style={[styles.carImg, vendido && styles.imgSold]} resizeMode="cover" />
+                  ) : (
+                    <View style={[styles.carImg, styles.imgPlaceholder]}>
+                      <Ionicons name="image-outline" size={28} color={colors.inputHint} />
+                    </View>
+                  )}
+                  {vendido ? (
+                    <View style={styles.soldOverlay}><Text style={styles.soldText}>Item vendido</Text></View>
+                  ) : null}
+                </View>
+                <Text numberOfLines={1} style={[styles.itemTitle, vendido && styles.mutedText]}>
+                  {p.numeroItem ? `#${p.numeroItem} ` : ''}{p.descripcion}
+                </Text>
+                <Text style={[styles.itemPrice, vendido && styles.mutedText]}>
+                  {moneda} {(p.mejorOferta ?? p.precioBase).toLocaleString('es-AR')}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+      ) : null}
+
+      {items.length > 1 ? (
+        <View style={styles.dots}>
+          {items.map((p, i) => (
+            <View key={p.id} style={[styles.dot, i === idx && styles.dotActive]} />
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   card: { marginBottom: 10 },
   dimmed: { opacity: 0.5 },
@@ -119,22 +139,23 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
   chipText: { color: colors.textOnDark, fontSize: 11, fontWeight: '700' },
   title: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginVertical: 8 },
+
   carousel: { marginBottom: 10 },
-  itemCard: { width: 140 },
-  itemImg: { width: 140, height: 100, borderRadius: 8, backgroundColor: colors.surfaceCream },
-  itemImgSold: { opacity: 0.4 },
-  itemImgPlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  soldOverlay: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    alignItems: 'center', justifyContent: 'center',
-  },
+  carImg: { width: '100%', height: 170, borderRadius: 8, backgroundColor: colors.surfaceCream },
+  imgSold: { opacity: 0.4 },
+  imgPlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  soldOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   soldText: {
-    color: colors.textOnDark, fontWeight: '700', fontSize: 12,
-    backgroundColor: 'rgba(0,0,0,0.55)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
-    overflow: 'hidden',
+    color: colors.textOnDark, fontWeight: '700', fontSize: 14,
+    backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, overflow: 'hidden',
   },
-  itemTitle: { fontSize: 12, color: colors.textPrimary, marginTop: 4 },
-  itemPrice: { fontSize: 13, fontWeight: '700', color: colors.brandPrimary, marginTop: 2 },
+  itemTitle: { fontSize: 13, color: colors.textPrimary, marginTop: 6, fontWeight: '600' },
+  itemPrice: { fontSize: 15, fontWeight: '700', color: colors.brandPrimary, marginTop: 2 },
+  mutedText: { color: colors.inputHint },
+  dots: { flexDirection: 'row', justifyContent: 'center', marginTop: 8, gap: 6 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.inputBorder },
+  dotActive: { backgroundColor: colors.brandPrimary, width: 18 },
+
   location: { fontSize: 13, color: colors.inputHint },
   currency: { fontSize: 12, color: colors.brandPrimary, fontWeight: '700' },
   auctioneer: { fontSize: 12, color: colors.inputHint },
