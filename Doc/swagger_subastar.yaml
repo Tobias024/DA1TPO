@@ -388,7 +388,28 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/LoginResponse' }
         '400': { description: Datos inválidos. }
+        '409': { description: El registro no está listo para completarse. }
         '410': { description: Token expirado. }
+
+  /auth/register/{registrationId}/status:
+    get:
+      tags: [Auth]
+      summary: Estado del registro (pantalla "esperando verificación")
+      security: []
+      parameters:
+        - { name: registrationId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Estado actual del registro.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  estado: { type: string, enum: [PENDIENTE_VERIFICACION, PENDIENTE_COMPLETAR_REGISTRO, APROBADO, SUSPENDIDO] }
+                  listoParaCompletar: { type: boolean }
+                  registrationToken: { type: string, nullable: true }
+        '404': { description: No existe el registro. }
 
   /auth/login:
     post:
@@ -479,6 +500,31 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/UserMetrics' }
 
+  /users/me/fine/pay:
+    post:
+      tags: [Users]
+      summary: Regularizar / pagar la multa pendiente
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                medioPagoId: { type: string }
+      responses:
+        '200':
+          description: Multa regularizada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  tieneMulta: { type: boolean }
+        '403': { description: Medio de pago inválido. }
+        '409': { description: No hay multa pendiente. }
+
   # ─── AUCTIONS ──────────────────────────────────────────────────────
   /auctions:
     get:
@@ -487,7 +533,7 @@ paths:
       parameters:
         - in: query
           name: estado
-          schema: { type: string, enum: [PROGRAMADA, ABIERTA, CERRADA] }
+          schema: { type: string, enum: [PROXIMA, ABIERTA, EN_CURSO, CERRADA, CANCELADA] }
         - in: query
           name: page
           schema: { type: integer, default: 0 }
@@ -517,6 +563,35 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Auction' }
         '403': { description: Categoría insuficiente. }
+        '404': { description: No encontrada. }
+
+  /auctions/{id}/state:
+    get:
+      tags: [Auctions]
+      summary: Estado en vivo (item actual + mejor oferta + límites) — fallback de polling del WebSocket
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Estado actual de la subasta.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  estado: { type: string }
+                  moneda: { type: string }
+                  itemActual:
+                    type: object
+                    nullable: true
+                    properties:
+                      id: { type: string }
+                      descripcion: { type: string }
+                      precioBase: { type: number }
+                      mejorOferta: { type: number, nullable: true }
+                      imagenes: { type: array, items: { type: string } }
+                      limiteMinimo: { type: number }
+                      limiteMaximo: { type: number }
         '404': { description: No encontrada. }
 
   /auctions/{id}/catalog:
@@ -796,3 +871,83 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/Sale' }
+
+  /sales/won:
+    get:
+      tags: [Sales]
+      summary: Piezas ganadas por el usuario (mejor postor en subasta cerrada)
+      responses:
+        '200':
+          description: Lista de piezas ganadas con su estado de pago.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    piezaId: { type: string }
+                    subastaId: { type: string }
+                    descripcion: { type: string }
+                    imagen: { type: string, nullable: true }
+                    montoGanador: { type: number }
+                    moneda: { type: string }
+                    estadoPago: { type: string }
+
+  /sales/won/{piezaId}/checkout:
+    get:
+      tags: [Sales]
+      summary: Detalle de checkout de una pieza ganada (precio, comisión, envío, total)
+      parameters:
+        - { name: piezaId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Montos del checkout (calculados en backend).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  piezaId: { type: string }
+                  descripcion: { type: string }
+                  moneda: { type: string }
+                  precioFinal: { type: number }
+                  comision: { type: number }
+                  costoEnvio: { type: number }
+                  totalEnvio: { type: number }
+                  totalRetiro: { type: number }
+                  estadoPago: { type: string }
+        '403': { description: No ganaste esta pieza o la subasta no está cerrada. }
+        '404': { description: Pieza no encontrada. }
+
+  /sales/won/{piezaId}/pay:
+    post:
+      tags: [Sales]
+      summary: Confirmar el pago de una pieza ganada (crea la Venta)
+      parameters:
+        - { name: piezaId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [medioPagoId]
+              properties:
+                medioPagoId: { type: string }
+                retiraPersonalmente: { type: boolean }
+                direccionEnvio: { type: string }
+      responses:
+        '201':
+          description: Pago confirmado, venta creada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  venta: { $ref: '#/components/schemas/Sale' }
+        '400': { description: Falta dirección de envío. }
+        '403': { description: Medio inválido o no ganaste la pieza. }
+        '409': { description: La pieza ya fue pagada. }
+        '422': { description: Cheque sin saldo suficiente. }
