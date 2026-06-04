@@ -13,7 +13,7 @@ type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 const FILTERS = [
   { key: undefined as string | undefined, label: 'Todas' },
-  { key: 'ABIERTA', label: 'Activas' },
+  { key: 'EN_CURSO', label: 'Activas' },
   { key: 'PROXIMA', label: 'Próximas' },
   { key: 'CERRADA', label: 'Cerradas' },
 ];

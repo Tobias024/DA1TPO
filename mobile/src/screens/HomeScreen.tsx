@@ -24,7 +24,7 @@ export default function HomeScreen() {
     setError(null);
     try {
       const [a, p] = await Promise.all([
-        auctionsApi.list({ estado: 'ABIERTA', size: 10 }).catch(() => ({ content: [] } as any)),
+        auctionsApi.list({ estado: 'EN_CURSO', size: 10 }).catch(() => ({ content: [] } as any)),
         auctionsApi.list({ estado: 'PROXIMA', size: 10 }).catch(() => ({ content: [] } as any)),
       ]);
       setActivas(a.content ?? []);

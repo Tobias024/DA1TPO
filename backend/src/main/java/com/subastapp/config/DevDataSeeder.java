@@ -249,7 +249,31 @@ public class DevDataSeeder implements CommandLineRunner {
                 .depositoSector("A-14")
                 .build();
 
-        attach(s, p1, p2, p3);
+        Pieza p4 = Pieza.builder()
+                .numeroItem(4)
+                .descripcion("Grabado original — \"Serie Pampa\", artista cordobés, 1958")
+                .precioBase(new BigDecimal("140000"))
+                .estado(EstadoPieza.EN_SUBASTA)
+                .imagenes(images("arte-04a", "arte-04b"))
+                .build();
+
+        Pieza p5 = Pieza.builder()
+                .numeroItem(5)
+                .descripcion("Óleo abstracto — Escuela rioplatense, c. 1971")
+                .precioBase(new BigDecimal("310000"))
+                .estado(EstadoPieza.EN_SUBASTA)
+                .imagenes(images("arte-05a", "arte-05b", "arte-05c"))
+                .build();
+
+        Pieza p6 = Pieza.builder()
+                .numeroItem(6)
+                .descripcion("Dibujo a tinta — Retrato, firmado, 1949")
+                .precioBase(new BigDecimal("95000"))
+                .estado(EstadoPieza.EN_SUBASTA)
+                .imagenes(images("arte-06a"))
+                .build();
+
+        attach(s, p1, p2, p3, p4, p5, p6);
         s.setItemActual(p1);
         subastas.save(s);
     }
@@ -258,11 +282,11 @@ public class DevDataSeeder implements CommandLineRunner {
         Subasta s = Subasta.builder()
                 .titulo("Relojería Suiza Vintage")
                 .descripcion("Piezas de colección — Patek, Rolex, Omega de los años 50 a 80.")
-                .fechaHoraInicio(LocalDateTime.now().plusHours(4))
+                .fechaHoraInicio(LocalDateTime.now().minusMinutes(20))
                 .ubicacion("Buenos Aires — Sala VIP")
                 .categoriaRequerida(CategoriaUsuario.PLATA)
                 .moneda(Moneda.USD)
-                .estado(EstadoSubasta.ABIERTA)
+                .estado(EstadoSubasta.EN_CURSO)
                 .streamingUrl("https://www.twitch.tv/example")
                 .build();
 
@@ -322,11 +346,11 @@ public class DevDataSeeder implements CommandLineRunner {
         Subasta s = Subasta.builder()
                 .titulo("Joyería de Autor")
                 .descripcion("Piezas únicas de orfebres argentinos contemporáneos.")
-                .fechaHoraInicio(LocalDateTime.now().plusHours(8))
+                .fechaHoraInicio(LocalDateTime.now().minusMinutes(45))
                 .ubicacion("Buenos Aires — Sala Esmeralda")
                 .categoriaRequerida(CategoriaUsuario.ESPECIAL)
                 .moneda(Moneda.ARS)
-                .estado(EstadoSubasta.ABIERTA)
+                .estado(EstadoSubasta.EN_CURSO)
                 .build();
 
         Pieza p1 = Pieza.builder()
