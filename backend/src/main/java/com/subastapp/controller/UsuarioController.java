@@ -73,19 +73,49 @@ public class UsuarioController {
     }
 
     @GetMapping("/users/me/metrics")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<?> metricas(@AuthenticationPrincipal Usuario usuario) {
         var ventas = ventaRepository.findByCompradorIdOrderByFechaVentaDesc(usuario.getId());
-        long ganadas = ventas.size();
-        var totalPagado = ventas.stream()
+        var pujas = pujaRepository.findByPostorId(usuario.getId());
+
+        double totalGastado = ventas.stream()
                 .filter(v -> "PAGADO".equals(v.getEstadoPago()))
                 .mapToDouble(v -> v.getTotalAPagar() != null ? v.getTotalAPagar().doubleValue() : 0)
                 .sum();
+        long ganadas = ventas.size();
 
-        return ResponseEntity.ok(Map.of(
-                "totalSubastasGanadas", ganadas,
-                "importeTotalPagado", totalPagado,
-                "historialCompras", VentaMapper.toDtoList(ventas)
-        ));
+        // Participación = subastas distintas en las que el usuario pujó.
+        var subastasParticipadas = pujas.stream()
+                .map(p -> p.getSubasta() != null ? p.getSubasta().getId() : null)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        long participadas = subastasParticipadas.size();
+
+        double mayorPuja = pujas.stream()
+                .mapToDouble(p -> p.getMonto() != null ? p.getMonto().doubleValue() : 0)
+                .max().orElse(0);
+
+        double tasaExito = participadas > 0 ? (double) ganadas / participadas : 0;
+
+        // Categorías: subastas distintas por categoría requerida.
+        Map<String, java.util.Set<String>> porCategoria = new LinkedHashMap<>();
+        for (var p : pujas) {
+            if (p.getSubasta() == null) continue;
+            String cat = p.getSubasta().getCategoriaRequerida().name();
+            porCategoria.computeIfAbsent(cat, k -> new java.util.HashSet<>()).add(p.getSubasta().getId());
+        }
+        var categorias = porCategoria.entrySet().stream()
+                .map(e -> Map.of("categoria", (Object) e.getKey(), "participaciones", e.getValue().size()))
+                .toList();
+
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("totalGastado", totalGastado);
+        resp.put("subastasParticipadas", participadas);
+        resp.put("subastasGanadas", ganadas);
+        resp.put("tasaExito", tasaExito);
+        resp.put("mayorPuja", mayorPuja);
+        resp.put("categorias", categorias);
+        return ResponseEntity.ok(resp);
     }
 
     // ----- NOTIFICATIONS -----

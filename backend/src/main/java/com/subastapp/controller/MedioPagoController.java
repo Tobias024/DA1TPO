@@ -5,6 +5,7 @@ import com.subastapp.model.Usuario;
 import com.subastapp.model.enums.Moneda;
 import com.subastapp.model.enums.TipoMedioPago;
 import com.subastapp.repository.MedioPagoRepository;
+import com.subastapp.util.MedioPagoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,8 +23,9 @@ public class MedioPagoController {
     private final MedioPagoRepository medioPagoRepository;
 
     @GetMapping
-    public ResponseEntity<List<MedioPago>> listar(@AuthenticationPrincipal Usuario usuario) {
-        return ResponseEntity.ok(medioPagoRepository.findByUsuarioId(usuario.getId()));
+    public ResponseEntity<?> listar(@AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(MedioPagoMapper.toDtoList(
+                medioPagoRepository.findByUsuarioId(usuario.getId())));
     }
 
     @PostMapping
@@ -45,11 +46,10 @@ public class MedioPagoController {
                 .numeroCuenta((String) body.get("numeroCuenta"))
                 .cbu((String) body.get("cbu"))
                 .swift((String) body.get("swift"))
-                .ultimosDigitosTarjeta((String) body.get("numeroTarjeta"))
+                .ultimosDigitosTarjeta(str(body, "numeroTarjeta", "ultimosDigitos"))
                 .titularTarjeta((String) body.get("titular"))
                 .vencimientoTarjeta((String) body.get("vencimiento"))
-                .montoCheque(body.get("montoCheque") != null ?
-                        new BigDecimal(body.get("montoCheque").toString()) : null)
+                .montoCheque(num(body, "montoCheque", "montoGarantia"))
                 .numeroCheque((String) body.get("numeroCheque"))
                 // La verificación efectiva queda a cargo de la empresa subastadora
                 // (sistema externo, fuera de scope de esta entrega). Default `true`.
@@ -60,6 +60,20 @@ public class MedioPagoController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Medio de pago agregado.",
                         "id", medioPago.getId()));
+    }
+
+    /** Devuelve el primer valor no nulo entre las claves dadas. */
+    private static String str(Map<String, Object> body, String... keys) {
+        for (String k : keys) {
+            Object v = body.get(k);
+            if (v != null) return v.toString();
+        }
+        return null;
+    }
+
+    private static BigDecimal num(Map<String, Object> body, String... keys) {
+        String v = str(body, keys);
+        return v != null ? new BigDecimal(v) : null;
     }
 
     @DeleteMapping("/{id}")

@@ -131,6 +131,10 @@ public class SubastaController {
 
         return subastaRepository.findById(id)
                 .map(subasta -> {
+                    if (subasta.getEstado() != EstadoSubasta.EN_CURSO) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(Map.of("error", "La subasta no está en curso. Solo podés pujar mientras está en vivo."));
+                    }
                     if (!usuario.getCategoria().puedeAcceder(subasta.getCategoriaRequerida())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                 .body(Map.of("error", "Categoría insuficiente para acceder a esta subasta"));

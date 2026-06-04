@@ -15,4 +15,5 @@ public interface PujaRepository extends JpaRepository<Puja, String> {
     Page<Puja> findBySubastaIdOrderByTimestampAsc(String subastaId, Pageable pageable);
     Optional<Puja> findTopByPiezaIdOrderByTimestampDesc(String piezaId);
     long countByPostorIdAndConfirmadaFalse(String postorId);
+    List<Puja> findByPostorId(String postorId);
 }

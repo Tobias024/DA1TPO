@@ -102,9 +102,9 @@ public class DevDataSeeder implements CommandLineRunner {
     private Usuario obtenerOCrearUsuarioDemo() {
         return usuarios.findByDocumento("11111111").orElseGet(() -> {
             Usuario u = Usuario.builder()
-                    .nombre("Tobias")
-                    .apellido("Demo")
-                    .email("test@subastar.ar")
+                    .nombre("Juan")
+                    .apellido("Pérez")
+                    .email("juan.perez@subastar.ar")
                     .documento("11111111")
                     .password(passwordEncoder.encode("test1234"))
                     .domicilioLegal("Av. Siempre Viva 742")
@@ -125,9 +125,20 @@ public class DevDataSeeder implements CommandLineRunner {
                 .moneda(Moneda.ARS)
                 .verificado(true)
                 .ultimosDigitosTarjeta("4242")
-                .titularTarjeta("TOBIAS DEMO")
+                .titularTarjeta("JUAN PEREZ")
                 .vencimientoTarjeta("12/30")
                 .esInternacional(false)
+                .build());
+        // Segunda tarjeta (internacional) — para mostrar varias en la lista
+        mediosPago.save(MedioPago.builder()
+                .usuario(u)
+                .tipo(TipoMedioPago.TARJETA_CREDITO)
+                .moneda(Moneda.USD)
+                .verificado(true)
+                .ultimosDigitosTarjeta("1881")
+                .titularTarjeta("JUAN PEREZ")
+                .vencimientoTarjeta("08/28")
+                .esInternacional(true)
                 .build());
         // Cuenta bancaria local
         mediosPago.save(MedioPago.builder()
@@ -224,11 +235,14 @@ public class DevDataSeeder implements CommandLineRunner {
                 .depositoSector("A-13")
                 .build();
 
+        // Pieza ya vendida dentro de una subasta en curso (se muestra en gris con
+        // "Item vendido" en el catálogo).
         Pieza p3 = Pieza.builder()
                 .numeroItem(3)
                 .descripcion("Acuarela enmarcada — \"Pueblo Andino\"")
                 .precioBase(new BigDecimal("90000"))
-                .estado(EstadoPieza.EN_SUBASTA)
+                .estado(EstadoPieza.VENDIDO)
+                .mejorOferta(new BigDecimal("115000"))
                 .imagenes(images("arte-03a"))
                 .depositoNombre("Depósito Central")
                 .depositoDireccion("Av. de los Constituyentes 1234")
@@ -529,6 +543,24 @@ public class DevDataSeeder implements CommandLineRunner {
                     p.setMejorOferta(montos[montos.length - 1]);
                     p.setMejorPostor(u);
                     subastas.save(s);
+                });
+
+        // Participaciones adicionales en subastas ABIERTAS — enriquece las métricas
+        // (más subastas participadas y categorías variadas).
+        subastas.findAll().stream()
+                .filter(s -> s.getEstado() == EstadoSubasta.ABIERTA)
+                .limit(2)
+                .forEach(s -> {
+                    Pieza p = s.getCatalogo().isEmpty() ? null : s.getCatalogo().get(0);
+                    if (p == null) return;
+                    BigDecimal monto = p.getPrecioBase().add(
+                            p.getPrecioBase().multiply(new BigDecimal("0.05")));
+                    Puja puja = Puja.builder()
+                            .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
+                            .build();
+                    Puja saved = pujas.save(puja);
+                    saved.setTimestamp(LocalDateTime.now().minusDays(2));
+                    pujas.save(saved);
                 });
 
         // Pujas históricas para la subasta CERRADA
