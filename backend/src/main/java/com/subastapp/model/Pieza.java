@@ -1,5 +1,6 @@
 package com.subastapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.subastapp.model.enums.EstadoPieza;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,17 +34,22 @@ public class Pieza {
     @Builder.Default
     private EstadoPieza estado = EstadoPieza.EN_DEPOSITO;
 
-    // Images stored as comma-separated URLs or JSON array
-    @ElementCollection
+    // Images stored as comma-separated URLs or JSON array.
+    // EAGER: el catálogo/carrusel siempre necesita las imágenes al serializar la pieza.
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "pieza_imagenes", joinColumns = @JoinColumn(name = "pieza_id"))
     @Column(name = "imagen_url")
     @Builder.Default
     private List<String> imagenes = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dueno_id")
     private Usuario dueno;
 
+    // @JsonIgnore: corta la recursión Pieza -> Subasta -> catalogo -> Pieza al
+    // serializar el catálogo. El front ya conoce la subasta por contexto.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subasta_id")
     private Subasta subasta;
@@ -57,6 +63,7 @@ public class Pieza {
     @Column(precision = 19, scale = 2)
     private BigDecimal mejorOferta;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mejor_postor_id")
     private Usuario mejorPostor;

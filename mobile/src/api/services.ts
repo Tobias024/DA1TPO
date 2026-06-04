@@ -40,7 +40,8 @@ export const auctionsApi = {
   list: (params: { estado?: string; page?: number; size?: number } = {}) =>
     api.get<AuctionPage>('/auctions', { params }).then((r) => r.data),
   detail: (id: string) => api.get<Auction>(`/auctions/${id}`).then((r) => r.data),
-  catalog: (id: string) => api.get<Piece[]>(`/auctions/${id}/catalog`).then((r) => r.data),
+  catalog: (id: string) =>
+    api.get<Piece[]>(`/auctions/${id}/catalog`).then((r) => (Array.isArray(r.data) ? r.data : [])),
   join: (id: string) =>
     api.post<{ message: string; puedePujar: boolean }>(`/auctions/${id}/join`).then((r) => r.data),
   leave: (id: string) =>
