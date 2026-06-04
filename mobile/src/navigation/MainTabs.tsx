@@ -24,10 +24,10 @@ function NoopScreen() {
   return null;
 }
 
-function PlusButton() {
+function PlusButton({ focused }: { focused: boolean }) {
   return (
-    <View style={styles.plus}>
-      <Ionicons name="add" size={30} color={colors.onPrimary} />
+    <View style={[styles.plus, focused && styles.plusFocused]}>
+      <Ionicons name="add" size={26} color={colors.onPrimary} />
     </View>
   );
 }
@@ -48,7 +48,7 @@ export default function MainTabs() {
       <Tab.Screen
         name="NuevaSolicitud"
         component={NoopScreen}
-        options={{ tabBarIcon: () => <PlusButton /> }}
+        options={{ tabBarIcon: ({ focused }) => <PlusButton focused={focused} /> }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();
@@ -65,12 +65,14 @@ export default function MainTabs() {
 
 const styles = StyleSheet.create({
   plus: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.brandPrimary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+  },
+  plusFocused: {
+    backgroundColor: colors.brandPrimaryDim,
   },
 });
