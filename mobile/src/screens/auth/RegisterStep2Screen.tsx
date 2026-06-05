@@ -49,7 +49,7 @@ export default function RegisterStep2Screen({ navigation, route }: Props) {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.form}>
         <Text style={styles.kicker}>Confirmación 1 / 2</Text>
         <Text style={styles.title}>Completar Registro</Text>

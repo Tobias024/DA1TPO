@@ -32,7 +32,7 @@ export default function WonItemsScreen() {
 
   return (
     <FlatList
-      style={{ flex: 1, backgroundColor: colors.surfaceCream }}
+      style={{ flex: 1 }}
       contentContainerStyle={{ padding: 16 }}
       data={items}
       keyExtractor={(it) => it.piezaId}

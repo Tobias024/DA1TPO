@@ -69,7 +69,7 @@ export default function AddPaymentMethodScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
       <Text style={styles.title}>Agregar Medio de Pago</Text>
 
       <Text style={styles.label}>Tipo</Text>

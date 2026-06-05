@@ -73,7 +73,7 @@ export default function RegisterStep1Screen({ navigation }: Props) {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.banner}>
         <Text style={styles.bannerTitle}>REGISTRO</Text>
         <Text style={styles.bannerSubtitle}>Verificación de Identidad — Etapa 1 de 3</Text>

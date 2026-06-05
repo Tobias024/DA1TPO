@@ -47,7 +47,7 @@ export default function RequestAcceptedScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.title}>Solicitud Aceptada</Text>
       <Text style={styles.intro}>
         Tu artículo fue inspeccionado y aceptado para participar en una subasta.

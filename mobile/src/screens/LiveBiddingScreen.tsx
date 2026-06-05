@@ -156,7 +156,7 @@ export default function LiveBiddingScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.head}>
         <View style={styles.liveRow}>
           <Ionicons name="ellipse" size={10} color={colors.onPrimary} style={{ marginRight: 6 }} />

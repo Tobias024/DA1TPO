@@ -50,7 +50,7 @@ export default function DiscoverScreen() {
   }, [all, query, cat, status]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.wrap}>
         <Text style={styles.title}>Descubrir</Text>
 

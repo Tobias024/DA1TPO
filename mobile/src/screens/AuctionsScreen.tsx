@@ -39,7 +39,7 @@ export default function AuctionsScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <View style={{ flex: 1 }}>
       <ScreenHeader title="Subastas" subtitle="Subastas activas y programadas" />
 
       <View style={styles.filterRow}>

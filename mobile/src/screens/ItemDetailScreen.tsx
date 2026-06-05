@@ -53,7 +53,7 @@ export default function ItemDetailScreen() {
   const enCurso = auction?.estado === 'EN_CURSO';
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       {images.length > 0 ? (
         <FlatList
           data={images}

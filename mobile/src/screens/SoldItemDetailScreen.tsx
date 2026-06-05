@@ -34,7 +34,7 @@ export default function SoldItemDetailScreen() {
   const companyBought = auction?.estado === 'CERRADA' ? pieces.filter((p) => !p.vendido) : [];
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.head}>
         <Text style={styles.kicker}>VENDIDO</Text>
         <Text style={styles.title}>{auction?.titulo ?? '—'}</Text>

@@ -52,7 +52,7 @@ export default function PaymentMethodsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <View style={{ flex: 1 }}>
       <FlatList
         data={items}
         keyExtractor={(m) => m.id}

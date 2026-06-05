@@ -13,7 +13,7 @@ export default function MetricsScreen() {
   }, []);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.title}>Métricas</Text>
 
       <Card style={{ marginBottom: 12 }}>

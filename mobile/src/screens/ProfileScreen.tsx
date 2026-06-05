@@ -39,7 +39,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       {/* Banner bordó */}
       <View style={styles.banner}>
         <View style={styles.avatar}>

@@ -69,7 +69,7 @@ export default function AuctionDetailScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
       <View style={styles.head}>
         <Text style={styles.title}>{auction.titulo}</Text>
         <View style={styles.tags}>

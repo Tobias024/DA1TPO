@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
-        style={{ flex: 1, backgroundColor: colors.surfaceCream }}
+        style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >

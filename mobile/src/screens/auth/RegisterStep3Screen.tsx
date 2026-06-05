@@ -51,7 +51,7 @@ export default function RegisterStep3Screen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.form}>
         <Text style={styles.kicker}>Confirmación 2 / 2</Text>
         <Text style={styles.title}>Método de Pago</Text>

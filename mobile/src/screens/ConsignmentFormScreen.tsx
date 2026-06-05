@@ -56,7 +56,7 @@ export default function ConsignmentFormScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
       <Text style={styles.kicker}>NUEVA SOLICITUD</Text>
       <Text style={styles.title}>Nueva solicitud</Text>
       <Text style={styles.intro}>

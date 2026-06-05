@@ -69,7 +69,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <View style={{ flex: 1 }}>
       <ScreenHeader title="Notificaciones" />
       <FlatList
         data={items}

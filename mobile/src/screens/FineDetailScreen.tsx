@@ -55,7 +55,7 @@ export default function FineDetailScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.head}>
         <Ionicons name="warning" size={48} color={colors.textOnDark} />
         <Text style={styles.title}>{params.titulo}</Text>

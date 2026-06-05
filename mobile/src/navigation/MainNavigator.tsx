@@ -31,7 +31,7 @@ export default function MainNavigator() {
         headerStyle: { backgroundColor: colors.brandPrimary },
         headerTintColor: colors.onPrimary,
         headerTitleStyle: { fontWeight: '700' },
-        contentStyle: { backgroundColor: colors.surfaceCream },
+        contentStyle: { backgroundColor: 'transparent' },
       }}
     >
       <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />

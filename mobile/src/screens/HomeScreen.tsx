@@ -40,7 +40,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: colors.surfaceCream }}
+      style={{ flex: 1 }}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
     >
       <ScreenHeader title="SubastAR" subtitle="Conectá con cada remate desde donde estés." />

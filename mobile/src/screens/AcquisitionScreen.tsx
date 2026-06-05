@@ -107,7 +107,7 @@ export default function AcquisitionScreen() {
   if (sale) {
     const costoEnvioMostrado = sale.retiraPersonalmente ? 0 : sale.costoEnvio;
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+      <ScrollView style={{ flex: 1 }}>
         <View style={styles.hero}>
           <Ionicons name="trophy" size={64} color={colors.catOro} />
           <Text style={styles.title}>¡Compra confirmada!</Text>
@@ -142,7 +142,7 @@ export default function AcquisitionScreen() {
   const costoEnvio = delivery === 'retiro' ? 0 : checkout.costoEnvio;
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.hero}>
         <Ionicons name="trophy" size={64} color={colors.catOro} />
         <Text style={styles.title}>¡Has ganado!</Text>
