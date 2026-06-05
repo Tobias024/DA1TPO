@@ -41,7 +41,7 @@ export default function RegisterWaitingScreen({ navigation, route }: Props) {
     };
 
     // Mostramos la pantalla un instante y luego consultamos el estado.
-    const firstCheck = setTimeout(check, 2000);
+    const firstCheck = setTimeout(check, 5000);
     const interval = setInterval(check, 3000);
     return () => {
       cancelled = true;
@@ -53,9 +53,10 @@ export default function RegisterWaitingScreen({ navigation, route }: Props) {
   return (
     <View style={styles.container}>
       <Ionicons name="shield-checkmark-outline" size={72} color={colors.brandPrimary} />
-      <Text style={styles.title}>Verificando tu identidad</Text>
+      <Text style={styles.title}>¡Ya casi esta listo!</Text>
       <Text style={styles.subtitle}>
-        Estamos verificando tus datos y documento. Esto puede demorar unos instantes.
+        Estamos verificando tu identidad, esto puede demorar unos instantes. 
+        Verifica tu correo electronico para finalizar tu registro.
       </Text>
       <ActivityIndicator color={colors.brandPrimary} size="large" style={{ marginTop: 24 }} />
       {error ? <Text style={styles.error}>{error}</Text> : null}

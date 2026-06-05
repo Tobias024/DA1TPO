@@ -11,7 +11,7 @@ export const colors = {
   surfaceWhite: '#FFFFFF',
   scrim: 'rgba(0,0,0,0.4)',
 
-  inputBg: '#D9D9D9',
+  inputBg: '#eeeeee',
   inputBorder: '#9D9D9D',
   inputHint: '#727272',
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert,
+  View, Text, Image, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -47,12 +47,7 @@ export default function LoginScreen({ navigation }: Props) {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.banner}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoLetter}>S</Text>
-          </View>
-          <Text style={styles.bannerTitle}>LOGIN</Text>
-        </View>
+        <Image source={require('../../assets/banner.png')} style={styles.banner} resizeMode="cover" />
 
         <View style={styles.form}>
           <Text style={styles.welcome}>¡Bienvenido!</Text>
@@ -98,47 +93,29 @@ export default function LoginScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: colors.brandPrimary,
-    paddingTop: 48,
-    paddingBottom: 40,
-    alignItems: 'center',
-  },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.surfaceCream,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  logoLetter: {
-    color: colors.brandPrimary,
-    fontSize: 40,
-    fontWeight: '700',
-  },
-  bannerTitle: {
-    color: colors.textOnDark,
-    fontSize: 48,
-    fontWeight: '700',
-    letterSpacing: -1,
+    width: '100%',
+    height: 220,
   },
   form: { paddingHorizontal: 28, paddingTop: 32, paddingBottom: 32 },
   welcome: {
-    fontSize: 36,
+    fontSize: 38,
     color: colors.brandPrimary,
-    fontWeight: '500',
+    fontWeight: '700',
     marginBottom: 4,
+    textAlign: 'center',
   },
   section: {
     fontSize: 22,
     color: colors.textPrimary,
+    fontWeight: '700',
     marginBottom: 28,
+    textAlign: 'center',
   },
   forgot: {
     color: colors.textPrimary,
     fontSize: 14,
     marginBottom: 16,
+    textAlign: 'right',
   },
   noAccount: {
     color: colors.textPrimary,

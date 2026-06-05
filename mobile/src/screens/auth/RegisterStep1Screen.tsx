@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, Alert, Image, TouchableOpacity, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,6 +44,7 @@ export default function RegisterStep1Screen({ navigation }: Props) {
   const [paisOrigen, setPais] = useState('');
   const [frenteUri, setFrenteUri] = useState<string | null>(null);
   const [dorsoUri, setDorsoUri] = useState<string | null>(null);
+  const [tyc, setTyc] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
@@ -53,6 +54,10 @@ export default function RegisterStep1Screen({ navigation }: Props) {
     }
     if (!frenteUri || !dorsoUri) {
       Alert.alert('Fotos requeridas', 'Debe adjuntar la foto del frente y dorso de su documento de identidad.');
+      return;
+    }
+    if (!tyc) {
+      Alert.alert('Términos y Condiciones', 'Debés aceptar los Términos y Condiciones.');
       return;
     }
     setLoading(true);
@@ -74,18 +79,15 @@ export default function RegisterStep1Screen({ navigation }: Props) {
 
   return (
     <ScrollView style={{ flex: 1 }}>
-      <View style={styles.banner}>
-        <Text style={styles.bannerTitle}>REGISTRO</Text>
-        <Text style={styles.bannerSubtitle}>Verificación de Identidad — Etapa 1 de 3</Text>
-      </View>
 
       <View style={styles.form}>
         <Text style={styles.title}>Registrate</Text>
-
-        <TextField label="DNI / Documento" value={documento} onChangeText={setDocumento} keyboardType="numeric" />
+        <Text style={{ textAlign: 'center', marginBottom: 20, fontWeight: '500' }}>Verificación de Identidad — Etapa 1 de 3</Text>
+        
         <TextField label="Nombre" value={nombre} onChangeText={setNombre} />
         <TextField label="Apellido" value={apellido} onChangeText={setApellido} />
         <TextField label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+        <TextField label="DNI / Documento" value={documento} onChangeText={setDocumento} keyboardType="numeric" />
         <TextField label="Domicilio Legal" value={domicilioLegal} onChangeText={setDomicilio} />
         <TextField label="País de Origen" value={paisOrigen} onChangeText={setPais} placeholder="ARG" />
 
@@ -100,7 +102,14 @@ export default function RegisterStep1Screen({ navigation }: Props) {
         <Text style={styles.note}>
           Tus datos están protegidos y solo se usan para la verificación de identidad.
         </Text>
-
+        
+        <Pressable onPress={() => setTyc((v) => !v)} style={styles.tycRow}>
+          <View style={[styles.checkbox, tyc && styles.checkboxOn]}>
+            {tyc ? <Ionicons name="checkmark" size={14} color={colors.onPrimary} /> : null}
+          </View>
+          <Text style={styles.tycText}>Acepto los Términos y Condiciones</Text>
+        </Pressable>
+        
         <PrimaryButton title="CONTINUAR" onPress={submit} loading={loading} />
       </View>
     </ScrollView>
@@ -125,19 +134,22 @@ function PhotoPicker({ label, uri, onPick }: { label: string; uri: string | null
 }
 
 const styles = StyleSheet.create({
-  banner: {
-    backgroundColor: colors.brandPrimary,
-    paddingTop: 48,
-    paddingBottom: 32,
-    alignItems: 'center',
-  },
-  bannerTitle: { color: colors.textOnDark, fontSize: 48, fontWeight: '700', letterSpacing: -1 },
-  bannerSubtitle: { color: colors.onPrimary, fontSize: 14, marginTop: 4 },
-  form: { padding: 24 },
-  title: { fontSize: 36, color: colors.brandPrimary, fontWeight: '500', marginBottom: 16 },
+  form: { padding: 24,  paddingTop: 100  },
+  title: { fontSize: 36, color: colors.brandPrimary, fontWeight: '500', marginBottom: 16, textAlign: 'center' },
   section: { fontSize: 18, color: colors.brandPrimary, fontWeight: '700', marginTop: 8, marginBottom: 6 },
   sectionHint: { fontSize: 14, color: colors.textPrimary, marginBottom: 12 },
   note: { fontSize: 12, color: colors.inputHint, marginBottom: 24 },
+  tycRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 26 },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 4,
+    borderWidth: 1.5, borderColor: colors.inputBorder, marginRight: 10,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxOn: {
+    borderColor: colors.brandPrimary,
+    backgroundColor: colors.brandPrimary,
+  },
+  tycText: { color: colors.textPrimary, fontSize: 15 },
 });
 
 const pickerStyles = StyleSheet.create({

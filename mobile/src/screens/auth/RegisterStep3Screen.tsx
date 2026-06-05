@@ -17,14 +17,9 @@ const OPCIONES: { value: TipoMedioPago; label: string; hint: string }[] = [
 export default function RegisterStep3Screen() {
   const { signIn, refreshUser } = useSession();
   const [tipo, setTipo] = useState<TipoMedioPago>('CUENTA_BANCARIA');
-  const [tyc, setTyc] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const finalize = async () => {
-    if (!tyc) {
-      Alert.alert('Términos y Condiciones', 'Debés aceptar los Términos y Condiciones.');
-      return;
-    }
     setLoading(true);
     try {
       // Crea el medio de pago inicial (placeholder). El usuario completa el detalle
@@ -53,7 +48,7 @@ export default function RegisterStep3Screen() {
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={styles.form}>
-        <Text style={styles.kicker}>Confirmación 2 / 2</Text>
+        <Text style={styles.kicker}>Verificación de Identidad — Etapa 3 de 3</Text>
         <Text style={styles.title}>Método de Pago</Text>
         <Text style={styles.intro}>
           Seleccioná tu medio de pago inicial. Podés agregar más desde tu perfil cuando quieras.
@@ -78,13 +73,6 @@ export default function RegisterStep3Screen() {
 
         <View style={styles.divider} />
 
-        <Pressable onPress={() => setTyc((v) => !v)} style={styles.tycRow}>
-          <View style={[styles.checkbox, tyc && styles.checkboxOn]}>
-            {tyc ? <Ionicons name="checkmark" size={14} color={colors.onPrimary} /> : null}
-          </View>
-          <Text style={styles.tycText}>Acepto los Términos y Condiciones</Text>
-        </Pressable>
-
         <PrimaryButton title="FINALIZAR REGISTRO" onPress={finalize} loading={loading} style={{ marginTop: 24 }} />
       </View>
     </ScrollView>
@@ -92,10 +80,10 @@ export default function RegisterStep3Screen() {
 }
 
 const styles = StyleSheet.create({
-  form: { padding: 24, paddingTop: 48 },
+  form: { padding: 24, paddingTop: 100 },
   kicker: { fontSize: 14, color: colors.inputHint, marginBottom: 6 },
-  title: { fontSize: 32, color: colors.brandPrimary, fontWeight: '700', marginBottom: 8 },
-  intro: { fontSize: 14, color: colors.textPrimary, marginBottom: 20 },
+  title: { fontSize: 32, color: colors.brandPrimary, fontWeight: '700', marginBottom: 20, marginTop: 16, textAlign: 'center' },
+  intro: { fontSize: 14, color: colors.textPrimary, marginBottom: 40 },
 
   option: {
     flexDirection: 'row',
@@ -121,15 +109,4 @@ const styles = StyleSheet.create({
 
   divider: { height: 1, backgroundColor: colors.inputBorder, marginVertical: 20 },
 
-  tycRow: { flexDirection: 'row', alignItems: 'center' },
-  checkbox: {
-    width: 22, height: 22, borderRadius: 4,
-    borderWidth: 1.5, borderColor: colors.inputBorder, marginRight: 10,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  checkboxOn: {
-    borderColor: colors.brandPrimary,
-    backgroundColor: colors.brandPrimary,
-  },
-  tycText: { color: colors.textPrimary, fontSize: 15 },
 });
