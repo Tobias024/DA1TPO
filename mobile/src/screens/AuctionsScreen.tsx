@@ -35,7 +35,7 @@ export default function AuctionsScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await auctionsApi.list({ estado: filter, size: 50 });
+      const r = await auctionsApi.list({ size: 50 });
       setAuctions(r.content ?? []);
     } catch {
       setAuctions([]);
@@ -58,9 +58,17 @@ export default function AuctionsScreen() {
 
   const filtered = useMemo(() => {
     return auctions.filter((a) => {
-      if (filter && a.estado !== filter) return false;
+      if (filter === 'EN_CURSO' && a.estado !== 'EN_CURSO' && a.estado !== 'ABIERTA') return false;
+      if (filter && filter !== 'EN_CURSO' && a.estado !== filter) return false;
       if (cat && a.categoriaRequerida !== cat) return false;
-      if (query && !a.titulo.toLowerCase().includes(query.toLowerCase())) return false;
+      if (query) {
+        const q = query.trim().toLowerCase();
+        const matchTitulo = a.titulo.toLowerCase().includes(q);
+        const matchCategoria = a.categoriaRequerida.toLowerCase().includes(q);
+        const matchDescripcion = a.descripcion?.toLowerCase().includes(q) ?? false;
+        const matchUbicacion = a.ubicacion?.toLowerCase().includes(q) ?? false;
+        if (!matchTitulo && !matchCategoria && !matchDescripcion && !matchUbicacion) return false;
+      }
       return true;
     });
   }, [auctions, filter, cat, query]);
@@ -151,8 +159,8 @@ const styles = StyleSheet.create({
   },
   search: {
     backgroundColor: colors.inputBg,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 30,
+    borderWidth: 0.5,
     borderColor: colors.inputBorder,
     paddingHorizontal: 14,
     paddingVertical: 10,
