@@ -70,8 +70,9 @@ export default function NotificationsScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScreenHeader title="Notificaciones" />
+      <ScreenHeader title="SubastAR" />
       <FlatList
+        ListHeaderComponent={<Text style={styles.pageTitle}>Notificaciones</Text>}
         data={items}
         keyExtractor={(n) => n.id}
         contentContainerStyle={{ padding: 16 }}
@@ -108,4 +109,5 @@ const styles = StyleSheet.create({
   msg: { fontSize: 14, color: colors.textPrimary, marginTop: 2 },
   fecha: { fontSize: 12, color: colors.inputHint, marginTop: 6 },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 32 },
+  pageTitle: { fontSize: 26, fontWeight: '700', color: colors.brandPrimary, paddingBottom: 12, textAlign: 'center' },
 });

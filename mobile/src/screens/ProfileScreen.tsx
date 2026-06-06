@@ -5,7 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
-import { colors, categoriaColor } from '@/theme/colors';
+import { colors, categoriaColor, categoriaTextColor } from '@/theme/colors';
 import { useSession } from '@/storage/SessionContext';
 import { usersApi } from '@/api/services';
 import type { MainStackParamList } from '@/navigation/types';
@@ -48,8 +48,8 @@ export default function ProfileScreen() {
         <Text style={styles.userName}>{user ? `${user.nombre} ${user.apellido ?? ''}`.trim() : '—'}</Text>
         <Text style={styles.userEmail}>{user?.email ?? '—'}</Text>
         {user?.categoria ? (
-          <View style={[styles.catBadge, { backgroundColor: categoriaColor(user.categoria) }]}>
-            <Text style={styles.catBadgeText}>{user.categoria}</Text>
+          <View style={[styles.catBadge, { backgroundColor: categoriaColor(user.categoria), borderColor: categoriaTextColor(user.categoria) }]}>
+            <Text style={[styles.catBadgeText, { color: categoriaTextColor(user.categoria) }]}>{user.categoria}</Text>
           </View>
         ) : null}
       </View>
@@ -91,9 +91,7 @@ const styles = StyleSheet.create({
   avatarLetter: { color: colors.brandPrimary, fontSize: 40, fontWeight: '700' },
   userName: { color: colors.textOnDark, fontSize: 22, fontWeight: '700', marginTop: 12 },
   userEmail: { color: colors.onPrimary, fontSize: 14, marginTop: 4 },
-  catBadge: {
-    paddingHorizontal: 14, paddingVertical: 5, borderRadius: 8, marginTop: 12,
-  },
+  catBadge: { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, marginTop: 12, borderWidth: 1 },
   catBadgeText: { color: colors.textOnDark, fontSize: 11, fontWeight: '700' },
 
   menuItem: { marginBottom: 10, padding: 0 },

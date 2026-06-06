@@ -1,7 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabs from './MainTabs';
-import DiscoverScreen from '@/screens/DiscoverScreen';
 import AuctionDetailScreen from '@/screens/AuctionDetailScreen';
 import ItemDetailScreen from '@/screens/ItemDetailScreen';
 import LiveBiddingScreen from '@/screens/LiveBiddingScreen';
@@ -35,7 +34,6 @@ export default function MainNavigator() {
       }}
     >
       <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
-      <Stack.Screen name="Discover" component={DiscoverScreen} options={{ title: 'Descubrir' }} />
       <Stack.Screen name="AuctionDetail" component={AuctionDetailScreen} options={{ title: 'Detalle de Subasta' }} />
       <Stack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: 'Detalle del Item' }} />
       <Stack.Screen name="LiveBidding" component={LiveBiddingScreen} options={{ title: 'Participar' }} />

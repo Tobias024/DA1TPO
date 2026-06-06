@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from './Card';
-import { colors, categoriaColor } from '@/theme/colors';
+import { colors, categoriaColor, categoriaTextColor } from '@/theme/colors';
 import { auctionsApi } from '@/api/services';
 import type { Auction, Piece, Moneda } from '@/types/api';
 
@@ -49,8 +49,8 @@ export default function AuctionCard({ auction, onPress, dimmed }: Props) {
             {badge.icon ? <Ionicons name={badge.icon} size={14} color={badge.color} style={{ marginRight: 4 }} /> : null}
             <Text style={[styles.status, { color: badge.color }]}>{badge.label}</Text>
           </View>
-          <View style={[styles.chip, { backgroundColor: categoriaColor(auction.categoriaRequerida) }]}>
-            <Text style={styles.chipText}>{auction.categoriaRequerida}</Text>
+          <View style={[styles.chip, { backgroundColor: categoriaColor(auction.categoriaRequerida), borderColor: categoriaTextColor(auction.categoriaRequerida) }]}>
+            <Text style={[styles.chipText, { color: categoriaTextColor(auction.categoriaRequerida) }]}>{auction.categoriaRequerida}</Text>
           </View>
         </View>
         <Text numberOfLines={2} style={styles.title}>{auction.titulo}</Text>
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', alignItems: 'center' },
   iconRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   status: { fontSize: 12, fontWeight: '600' },
-  chip: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
+  chip: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, borderWidth: 1 },
   chipText: { color: colors.textOnDark, fontSize: 11, fontWeight: '700' },
   title: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginVertical: 8 },
 

@@ -40,7 +40,14 @@ export default function MainTabs() {
         tabBarShowLabel: false,
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.inputHint,
-        tabBarStyle: { backgroundColor: colors.surfaceWhite, borderTopColor: colors.inputBorder },
+        tabBarStyle: {
+          backgroundColor: 'rgba(255,255,255,0.85)',
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
+          height: 60,
+          paddingBottom: 8,
+        },
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: tabIcon('home', 'home-outline') }} />

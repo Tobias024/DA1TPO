@@ -39,53 +39,54 @@ export default function HomeScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
-    >
-      <ScreenHeader title="SubastAR" subtitle="Conectá con cada remate desde donde estés." />
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Subastas Activas</Text>
-          <Text style={styles.sectionLink} onPress={() => nav.navigate('Tabs', { screen: 'Auctions' } as never)}>
-            Ver todas →
-          </Text>
+    <View style={{ flex: 1 }}>
+      <ScreenHeader title="SubastAR"/>
+      <ScrollView
+        style={{ flex: 1 }}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+      >
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}> Activas</Text>
+            <Text style={styles.sectionLink} onPress={() => nav.navigate('Tabs', { screen: 'Auctions', params: { initialFilter: 'EN_CURSO' } } as never)}>
+              Ver todas →
+            </Text>
+          </View>
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {!loading && activas.length === 0 && !error ? (
+            <Text style={styles.empty}>No hay subastas activas en este momento.</Text>
+          ) : null}
+          {activas.map((a) => (
+            <AuctionCard key={a.id} auction={a} onPress={() => nav.navigate('AuctionDetail', { auctionId: a.id })} />
+          ))}
         </View>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {!loading && activas.length === 0 && !error ? (
-          <Text style={styles.empty}>No hay subastas activas en este momento.</Text>
-        ) : null}
-        {activas.map((a) => (
-          <AuctionCard key={a.id} auction={a} onPress={() => nav.navigate('AuctionDetail', { auctionId: a.id })} />
-        ))}
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Próximas Subastas</Text>
-        <Text style={styles.sectionHint}>Programadas para esta semana</Text>
-        {!loading && proximas.length === 0 ? (
-          <Text style={styles.empty}>Sin subastas programadas.</Text>
-        ) : null}
-        {proximas.map((a) => (
-          <AuctionCard key={a.id} auction={a} onPress={() => nav.navigate('AuctionDetail', { auctionId: a.id })} />
-        ))}
-      </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}> Próximas</Text>
+          <Text style={styles.sectionHint}>Programadas para esta semana</Text>
+          {!loading && proximas.length === 0 ? (
+            <Text style={styles.empty}>Sin subastas programadas.</Text>
+          ) : null}
+          {proximas.map((a) => (
+            <AuctionCard key={a.id} auction={a} onPress={() => nav.navigate('AuctionDetail', { auctionId: a.id })} />
+          ))}
+        </View>
 
-      <PrimaryButton
-        title="DESCUBRIR"
-        onPress={() => nav.navigate('Discover')}
-        style={{ marginHorizontal: 20, marginBottom: 32 }}
-      />
-    </ScrollView>
+        <PrimaryButton
+          title="Ver más"
+          onPress={() => nav.navigate('Tabs', { screen: 'Auctions', params: { initialFilter: 'PROXIMA' } } as never)}
+          style={{ marginHorizontal: 80, marginBottom: 32 }}
+        />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: { padding: 20 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 22, fontWeight: '700', color: colors.textPrimary },
-  sectionHint: { fontSize: 14, color: colors.inputHint, marginBottom: 12 },
+  sectionTitle: { fontSize: 26, fontWeight: '700', color: colors.brandPrimary, paddingBottom: 12 },
+  sectionHint: { fontSize: 14, color: colors.textPrimary, marginBottom: 12, marginLeft: 8 },
   sectionLink: { color: colors.brandPrimary, fontSize: 14, fontWeight: '600' },
   empty: { color: colors.inputHint, fontSize: 14, textAlign: 'center', padding: 24 },
   error: { color: colors.redLive, fontSize: 14, textAlign: 'center', padding: 12 },

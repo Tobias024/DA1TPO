@@ -7,7 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
-import { colors, categoriaColor } from '@/theme/colors';
+import { colors, categoriaColor, categoriaTextColor } from '@/theme/colors';
 import { auctionsApi } from '@/api/services';
 import { useSession } from '@/storage/SessionContext';
 import type { Auction, Piece } from '@/types/api';
@@ -73,8 +73,8 @@ export default function AuctionDetailScreen() {
       <View style={styles.head}>
         <Text style={styles.title}>{auction.titulo}</Text>
         <View style={styles.tags}>
-          <View style={[styles.chip, { backgroundColor: categoriaColor(auction.categoriaRequerida) }]}>
-            <Text style={styles.chipText}>{auction.categoriaRequerida}</Text>
+          <View style={[styles.chip, { backgroundColor: categoriaColor(auction.categoriaRequerida), borderColor: categoriaTextColor(auction.categoriaRequerida) }]}>
+            <Text style={[styles.chipText, { color: categoriaTextColor(auction.categoriaRequerida) }]}>{auction.categoriaRequerida}</Text>
           </View>
           <View style={[styles.chip, { backgroundColor: colors.brandPrimary }]}>
             <Text style={styles.chipText}>{auction.moneda}</Text>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: '700', color: colors.textPrimary, marginBottom: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  chip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1 },
   chipText: { color: colors.textOnDark, fontSize: 11, fontWeight: '700' },
   row: { flexDirection: 'row', marginBottom: 8 },
   rowKey: { width: 110, color: colors.inputHint, fontSize: 13 },

@@ -19,7 +19,7 @@ export type AuthStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
-  Auctions: undefined;
+  Auctions: { initialFilter?: string; initialCat?: string } | undefined;
   NuevaSolicitud: undefined;
   Notifications: undefined;
   Profile: undefined;
@@ -27,7 +27,6 @@ export type MainTabParamList = {
 
 export type MainStackParamList = {
   Tabs: undefined;
-  Discover: undefined;
   AuctionDetail: { auctionId: string };
   ItemDetail: { auctionId: string; pieceId: string };
   LiveBidding: { auctionId: string; pieceId?: string };
