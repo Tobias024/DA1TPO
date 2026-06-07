@@ -37,7 +37,8 @@ export default function AuctionsScreen() {
     try {
       const r = await auctionsApi.list({ size: 50 });
       setAuctions(r.content ?? []);
-    } catch {
+    } catch (e){
+      console.log('Error cargando subastas:', e);
       setAuctions([]);
     } finally {
       setLoading(false);
