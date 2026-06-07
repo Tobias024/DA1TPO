@@ -28,7 +28,6 @@ export type MainTabParamList = {
 export type MainStackParamList = {
   Tabs: undefined;
   AuctionDetail: { auctionId: string };
-  ItemDetail: { auctionId: string; pieceId: string };
   LiveBidding: { auctionId: string; pieceId?: string };
   SoldItemDetail: { auctionId: string; pieceId?: string };
   WonItems: undefined;

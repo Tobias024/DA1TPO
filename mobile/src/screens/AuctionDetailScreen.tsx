@@ -82,16 +82,11 @@ export default function AuctionDetailScreen() {
   const tiempo = timeUntil(auction.fechaHoraInicio);
 
   const openItem = (p: Piece) => {
-    const sold = p.estado === 'VENDIDO';
-    if (enCurso && !sold) {
-      if (activeAuctionId && activeAuctionId !== auctionId) {
-        Alert.alert('Ya estás en otra subasta', 'Salí de la subasta actual antes de pujar en esta.');
-        return;
-      }
-      nav.navigate('LiveBidding', { auctionId, pieceId: p.id });
-    } else {
-      nav.navigate('ItemDetail', { auctionId, pieceId: p.id });
+    if (activeAuctionId && activeAuctionId !== auctionId) {
+      Alert.alert('Ya estás en otra subasta', 'Salí de la subasta actual antes de entrar a esta.');
+      return;
     }
+    nav.navigate('LiveBidding', { auctionId, pieceId: p.id });
   };
 
   return (

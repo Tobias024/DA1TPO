@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   ScrollView, View, Text, StyleSheet, Alert, TextInput, ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
 } from 'react-native';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,8 +14,19 @@ import { auctionsApi, bidsApi, paymentsApi } from '@/api/services';
 import { useSession } from '@/storage/SessionContext';
 import type { Auction, Piece, Bid, MedioPago } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
+import { BsTransparency } from 'react-icons/bs';
 
+const { width: SCREEN_W } = Dimensions.get('window');
 type Rt = RouteProp<MainStackParamList, 'LiveBidding'>;
+
+function timeUntil(dateStr: string): string {
+  const diff = new Date(dateStr).getTime() - Date.now();
+  if (diff <= 0) return '0h : 00m : 00s';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return `${h}h : ${String(m).padStart(2, '0')}m : ${String(s).padStart(2, '0')}s`;
+}
 
 /**
  * Pantalla Participar de Subasta (Doc).
@@ -37,6 +51,12 @@ export default function LiveBiddingScreen() {
   const [pendingBid, setPendingBid] = useState(false);
   const [bootstrapping, setBootstrapping] = useState(true);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,7 +107,10 @@ export default function LiveBiddingScreen() {
     };
   }, [auctionId]);
 
+  const tiempo = auction ? timeUntil(auction.fechaHoraInicio) : '';
   const sinTope = auction?.categoriaRequerida === 'ORO' || auction?.categoriaRequerida === 'PLATINO';
+  const sold = pieza?.estado === 'VENDIDO';
+  const pujaHabilitada = auction?.estado === 'EN_CURSO' && !sold;
   const minimo = pieza
     ? (pieza.mejorOferta ?? pieza.precioBase) + pieza.precioBase * 0.01
     : 0;
@@ -154,34 +177,58 @@ export default function LiveBiddingScreen() {
   if (!auction || !pieza) {
     return <View style={styles.center}><Text>Subasta no disponible.</Text></View>;
   }
+  
+  const images = pieza.imagenes ?? pieza.fotos ?? [];
 
   return (
     <ScrollView style={{ flex: 1 }}>
-      <View style={styles.head}>
-        <View style={styles.liveRow}>
-          <Ionicons name="ellipse" size={10} color={colors.onPrimary} style={{ marginRight: 6 }} />
-          <Text style={styles.kicker}>EN VIVO</Text>
+      <Text style={styles.countdown}>FINALIZA EN: {tiempo}</Text>
+
+      {images.length > 0 ? (
+        <FlatList
+          data={images}
+          keyExtractor={(uri, i) => `${uri}-${i}`}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item }} style={styles.image} resizeMode="cover" />
+          )}
+        />
+      ) : (
+        <View style={[styles.image, styles.imagePlaceholder]}>
+          <Ionicons name="image-outline" size={56} color={colors.inputHint} />
         </View>
+      )}
+
+      <View style={styles.titlePriceRow}>
         <Text style={styles.title}>{pieza.descripcion}</Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={styles.priceLabel}>PRECIO BASE</Text>
+          <Text style={styles.priceValue}>
+            {auction.moneda} {pieza.precioBase.toLocaleString('es-AR')}
+          </Text>
+        </View>
       </View>
 
       <Card style={{ margin: 16 }}>
-        <Text style={styles.lblBid}>OFERTA ACTUAL</Text>
-        <Text style={styles.bidVal}>
-          {auction.moneda} {(pieza.mejorOferta ?? pieza.precioBase).toLocaleString('es-AR')}
-        </Text>
-        <Text style={styles.lblBaseline}>
-          Precio base: {auction.moneda} {pieza.precioBase.toLocaleString('es-AR')}
-        </Text>
-
-        <View style={styles.limits}>
-          <Text style={styles.limit}>Mín: {minimo.toFixed(2)}</Text>
-          <Text style={styles.limit}>{sinTope ? 'Sin tope (ORO/PLATINO)' : `Máx: ${maximo.toFixed(2)}`}</Text>
+        <View style={styles.bidLimitsRow}>
+          <View>
+            <Text style={styles.lblBid}>MEJOR OFERTA</Text>
+            <Text style={styles.bidVal}>
+              {auction.moneda} {(pieza.mejorOferta ?? pieza.precioBase).toLocaleString('es-AR')}
+            </Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={styles.limit}>Valor Mínimo: {minimo.toFixed(2)}</Text>
+            <Text style={styles.limit}>
+              {sinTope ? 'Sin tope (ORO/PLATINO)' : `Valor Máximo: ${maximo.toFixed(2)}`}
+            </Text>
+          </View>
         </View>
       </Card>
 
       <Card style={{ marginHorizontal: 16, marginBottom: 16 }}>
-        <Text style={styles.lblInput}>Tu puja</Text>
         <TextInput
           style={styles.input}
           value={amount}
@@ -194,10 +241,17 @@ export default function LiveBiddingScreen() {
           title="Realizar Puja"
           onPress={placeBid}
           loading={pendingBid}
-          disabled={!verifiedPayment}
+          disabled={!verifiedPayment || !pujaHabilitada}
           style={styles.pujaBtn}
         />
-        {!verifiedPayment ? (
+        {!pujaHabilitada ? (
+          <View style={styles.observerRow}>
+            <Ionicons name="information-circle-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
+            <Text style={styles.observerHint}>
+              {sold ? 'Este ítem ya fue vendido.' : 'La subasta no está activa en este momento: solo podés observar.'}
+            </Text>
+          </View>
+        ) : !verifiedPayment ? (
           <View style={styles.observerRow}>
             <Ionicons name="eye-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
             <Text style={styles.observerHint}>Sin medio verificado: solo podés observar.</Text>
@@ -205,12 +259,23 @@ export default function LiveBiddingScreen() {
         ) : null}
       </Card>
 
+      <View style={{ paddingHorizontal: 16}}>
+        <Text style={styles.sectionTitle}>Detalle del Item</Text>
+        <Card style={{ backgroundColor: 'transparent', borderWidth: 0}}>
+          <Row k="N° de item" v={pieza.numeroItem ? `${pieza.numeroItem}` : '-'} />
+          <Row k="Descripción" v={pieza.descripcion ?? '-'} />
+          {pieza.artista ? <Row k="Artista" v={pieza.artista} /> : null}
+          <Row k="Año" v={pieza.fechaObra ?? '-'} />
+          <Row k="Historia / Procedencia" v={pieza.historia ?? '-'} />
+        </Card>
+      </View>
+      
       <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
         <Text style={styles.sectionTitle}>Historial de Ofertas</Text>
         {history.length === 0 ? (
           <Text style={styles.empty}>Sé el primero en pujar.</Text>
         ) : history.map((b) => (
-          <Card key={b.id} style={{ marginBottom: 6 }}>
+          <Card key={b.id} style={{ backgroundColor: 'transparent', borderWidth: 0, marginBottom: 6}}>
             <View style={styles.histRow}>
               <Text style={styles.histUser}>{b.usuarioNombre ?? 'Postor'}</Text>
               <Text style={styles.histAmount}>{b.monto.toLocaleString('es-AR')}</Text>
@@ -223,36 +288,72 @@ export default function LiveBiddingScreen() {
   );
 }
 
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowKey}>{k}</Text>
+      <Text style={styles.rowVal}>{v}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceCream },
-  head: { backgroundColor: colors.brandPrimary, padding: 20 },
-  liveRow: { flexDirection: 'row', alignItems: 'center' },
-  kicker: { color: colors.onPrimary, fontSize: 12, fontWeight: '700', letterSpacing: 0.16 },
-  title: { color: colors.textOnDark, fontSize: 24, fontWeight: '700', marginTop: 4 },
+  countdown: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginTop: 8,
+    backgroundColor: "rgba(209, 204, 204, 0.34)",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  image: { width: SCREEN_W, height: 230, backgroundColor: colors.surfaceWhite },
+  imagePlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  titlePriceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  priceLabel: { fontSize: 11, color: colors.inputHint, fontWeight: '700', textAlign: 'right', marginTop: 10 },
+  priceValue: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginTop: 2 },
+  title: { color: colors.brandPrimary, fontSize: 20, fontWeight: '700', marginTop: 0, flex: 1, marginRight: 12 },
+  
+  bidLimitsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 5,
+    marginTop: 0,
+  },
   lblBid: { color: colors.inputHint, fontSize: 12, fontWeight: '700', letterSpacing: 0.12 },
-  bidVal: { color: colors.brandPrimary, fontSize: 36, fontWeight: '700', marginTop: 4 },
+  bidVal: { color: colors.brandPrimary, fontSize: 22, fontWeight: '700', marginTop: 0 },
   lblBaseline: { color: colors.inputHint, fontSize: 13, marginTop: 6 },
   limits: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  limit: { fontSize: 12, color: colors.textPrimary, fontWeight: '600' },
-  lblInput: { color: colors.inputHint, fontSize: 12, fontWeight: '700', letterSpacing: 0.12, marginBottom: 8 },
+  limit: { fontSize: 11, color: colors.inputHint, fontWeight: '600', textAlign: 'right', paddingVertical: 3 },
   input: {
     backgroundColor: colors.inputBg,
-    borderColor: colors.inputBorder,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 18,
     color: colors.textPrimary,
     marginBottom: 12,
   },
-  pujaBtn: { minHeight: 60, borderRadius: 10 },
-  observerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  pujaBtn: { minHeight: 30, borderRadius: 10 },
+  observerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8, paddingHorizontal: 12 },
   observerHint: { fontSize: 12, color: colors.orangePending },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 16 },
   histRow: { flexDirection: 'row', justifyContent: 'space-between' },
   histUser: { color: colors.textPrimary, fontSize: 14 },
   histAmount: { color: colors.brandPrimary, fontSize: 14, fontWeight: '700' },
   histTime: { color: colors.inputHint, fontSize: 11, marginTop: 2 },
+
+  row: { flexDirection: 'row', marginBottom: 8 },
+  rowKey: { width: 120, color: colors.inputHint, fontSize: 13 },
+  rowVal: { flex: 1, color: colors.textPrimary, fontSize: 14 },
 });
