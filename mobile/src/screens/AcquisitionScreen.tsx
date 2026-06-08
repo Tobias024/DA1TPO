@@ -8,6 +8,7 @@ import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
 import { salesApi, paymentsApi } from '@/api/services';
 import type { Sale, CheckoutDetail, MedioPago } from '@/types/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MainStackParamList } from '@/navigation/types';
 
 type Rt = RouteProp<MainStackParamList, 'Acquisition'>;
@@ -27,6 +28,7 @@ function timeUntil(dateStr?: string | null): string {
 export default function AcquisitionScreen() {
   const { params } = useRoute<Rt>();
   const nav = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const piezaId = params.piezaId;
 
   const [loading, setLoading] = useState(true);
@@ -137,7 +139,7 @@ export default function AcquisitionScreen() {
   if (sale) {
     const costoEnvioMostrado = sale.retiraPersonalmente ? 0 : sale.costoEnvio;
     return (
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: insets.bottom }}>
         <View style={styles.hero}>
           <Ionicons name="trophy" size={64} color={colors.catOro} />
           <Text style={styles.title}>¡Compra confirmada!</Text>
@@ -174,7 +176,7 @@ export default function AcquisitionScreen() {
     && new Date(checkout.fechaLimitePago).getTime() <= Date.now();
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: insets.bottom }}>
       <View style={styles.hero}>
         <Ionicons name="trophy" size={64} color={colors.catOro} />
         <Text style={styles.title}>¡Has ganado!</Text>

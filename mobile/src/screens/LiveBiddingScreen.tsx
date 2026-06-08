@@ -13,6 +13,7 @@ import { colors } from '@/theme/colors';
 import { auctionsApi, bidsApi, paymentsApi } from '@/api/services';
 import { useSession } from '@/storage/SessionContext';
 import type { Auction, Piece, Bid, MedioPago } from '@/types/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MainStackParamList } from '@/navigation/types';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -41,6 +42,7 @@ export default function LiveBiddingScreen() {
   const nav = useNavigation();
   const { auctionId, pieceId } = params;
   const { setActiveAuction } = useSession();
+  const insets = useSafeAreaInsets();
 
   const [auction, setAuction] = useState<Auction | null>(null);
   const [pieza, setPieza] = useState<Piece | null>(null);
@@ -277,7 +279,7 @@ export default function LiveBiddingScreen() {
         </Card>
       </View>
       
-      <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+      <View style={{ paddingHorizontal: 16, paddingBottom: 32 + insets.bottom }}>
         <Text style={styles.sectionTitle}>Historial de Ofertas</Text>
         {history.length === 0 ? (
           <Text style={styles.empty}>Sé el primero en pujar.</Text>

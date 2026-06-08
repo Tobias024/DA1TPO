@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '@/screens/HomeScreen';
 import AuctionsScreen from '@/screens/AuctionsScreen';
@@ -33,6 +34,10 @@ function PlusButton({ focused }: { focused: boolean }) {
 }
 
 export default function MainTabs() {
+  // Sumamos el inset inferior (barra de navegación de Android / home indicator de
+  // iOS) para que el tab bar no quede pisado por los botones del sistema. El alto
+  // varía por dispositivo (gestos vs 3 botones), por eso no puede ser fijo.
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -45,8 +50,8 @@ export default function MainTabs() {
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: 8 + insets.bottom,
         },
       }}
     >

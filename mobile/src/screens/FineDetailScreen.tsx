@@ -8,6 +8,7 @@ import { colors } from '@/theme/colors';
 import { usersApi, paymentsApi } from '@/api/services';
 import { useSession } from '@/storage/SessionContext';
 import type { MedioPago } from '@/types/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MainStackParamList } from '@/navigation/types';
 
 type Rt = RouteProp<MainStackParamList, 'FineDetail'>;
@@ -16,6 +17,7 @@ export default function FineDetailScreen() {
   const nav = useNavigation();
   const { params } = useRoute<Rt>();
   const { refreshUser } = useSession();
+  const insets = useSafeAreaInsets();
 
   const [tieneMulta, setTieneMulta] = useState(true);
   const [monto, setMonto] = useState<number | null>(null);
@@ -55,7 +57,7 @@ export default function FineDetailScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: insets.bottom }}>
       <View style={styles.head}>
         <Ionicons name="warning" size={48} color={colors.textOnDark} />
         <Text style={styles.title}>{params.titulo}</Text>
