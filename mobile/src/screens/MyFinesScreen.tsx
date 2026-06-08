@@ -23,7 +23,11 @@ export default function MyFinesScreen() {
   const load = useCallback(() => {
     setLoading(true);
     usersApi.fines()
-      .then(setFines)
+      .then((f) => {
+        // Más nuevas primero (por fecha de la multa).
+        const ts = (x: Fine) => (x.fecha ? new Date(x.fecha).getTime() : 0);
+        setFines([...f].sort((a, b) => ts(b) - ts(a)));
+      })
       .catch(() => setFines([]))
       .finally(() => setLoading(false));
   }, []);
@@ -34,8 +38,10 @@ export default function MyFinesScreen() {
     return <View style={styles.center}><ActivityIndicator color={colors.brandPrimary} /></View>;
   }
 
-  const irAPagar = () => nav.navigate('FineDetail', {
-    titulo: 'Multa por impago',
+  // Abre el detalle de ESTA multa: pendiente → pantalla de pago; pagada → comprobante.
+  const abrir = (f: Fine) => nav.navigate('FineDetail', {
+    ventaId: f.ventaId,
+    titulo: f.estado === 'PAGADA' ? 'Multa pagada' : 'Multa por impago',
     mensaje: 'Se aplicó una multa del 10% por no pagar un ítem adjudicado dentro del plazo. Regularizá tu situación para volver a participar en subastas.',
   });
 
@@ -59,7 +65,7 @@ export default function MyFinesScreen() {
           ? { color: colors.greenLive, text: 'Pagada' }
           : { color: colors.orangePending, text: 'Pendiente' };
         return (
-          <TouchableOpacity activeOpacity={pagada ? 1 : 0.7} onPress={pagada ? undefined : irAPagar} disabled={pagada}>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => abrir(item)}>
             <Card style={{ marginBottom: 10 }}>
               <View style={styles.row}>
                 <Ionicons
@@ -76,12 +82,12 @@ export default function MyFinesScreen() {
                   <View style={[styles.badge, { backgroundColor: badge.color }]}>
                     <Text style={styles.badgeText}>{badge.text}</Text>
                   </View>
-                  {!pagada ? (
-                    <View style={styles.cta}>
-                      <Text style={styles.ctaText}>Pagar</Text>
-                      <Ionicons name="chevron-forward" size={16} color={colors.brandPrimary} />
-                    </View>
-                  ) : null}
+                  <View style={styles.cta}>
+                    <Text style={[styles.ctaText, pagada && { color: colors.greenLive }]}>
+                      {pagada ? 'Ver comprobante' : 'Pagar'}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color={pagada ? colors.greenLive : colors.brandPrimary} />
+                  </View>
                 </View>
               </View>
             </Card>

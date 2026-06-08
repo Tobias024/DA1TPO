@@ -43,5 +43,5 @@ export type MainStackParamList = {
   RequestAccepted: { consignmentId: string };
   RequestRejected: { consignmentId: string };
   PieceLocation: { consignmentId: string };
-  FineDetail: { titulo: string; mensaje: string };
+  FineDetail: { titulo?: string; mensaje?: string; ventaId?: string };
 };

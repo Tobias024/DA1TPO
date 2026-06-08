@@ -42,7 +42,8 @@ export default function WonItemsScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const irAMulta = () => nav.navigate('FineDetail', {
+  const irAMulta = (ventaId?: string) => nav.navigate('FineDetail', {
+    ventaId,
     titulo: 'Multa por impago',
     mensaje: 'No pagaste un ítem adjudicado dentro del plazo. Se aplicó una multa del 10%.',
   });
@@ -74,7 +75,7 @@ export default function WonItemsScreen() {
           : { color: colors.orangePending, text: 'Pendiente de pago' };
 
         const onPress = () => {
-          if (fallido) irAMulta();
+          if (fallido) irAMulta(item.ventaId);
           else if (!multaPagada) nav.navigate('Acquisition', { piezaId: item.piezaId });
         };
 

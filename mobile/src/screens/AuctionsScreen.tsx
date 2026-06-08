@@ -58,7 +58,7 @@ export default function AuctionsScreen() {
   }, [route.params?.initialFilter]);
 
   const filtered = useMemo(() => {
-    return auctions.filter((a) => {
+    const list = auctions.filter((a) => {
       if (filter === 'EN_CURSO' && a.estado !== 'EN_CURSO') return false;
       if (filter && filter !== 'EN_CURSO' && a.estado !== filter) return false;
       if (cat && a.categoriaRequerida !== cat) return false;
@@ -72,6 +72,9 @@ export default function AuctionsScreen() {
       }
       return true;
     });
+    // Orden: Activas (EN_CURSO) → Próximas (PROXIMA) → Cerradas (CERRADA) al final.
+    const orden: Record<string, number> = { EN_CURSO: 0, PROXIMA: 1, CERRADA: 2, CANCELADA: 3 };
+    return [...list].sort((a, b) => (orden[a.estado] ?? 9) - (orden[b.estado] ?? 9));
   }, [auctions, filter, cat, query]);
 
   return (

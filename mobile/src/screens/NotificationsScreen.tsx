@@ -74,7 +74,8 @@ export default function NotificationsScreen() {
         break;
       }
       case 'MULTA_APLICADA':
-        nav.navigate('FineDetail', { titulo: n.titulo, mensaje: n.mensaje });
+        // referenciaId = ventaId de la multa → FineDetail muestra pago o comprobante.
+        nav.navigate('FineDetail', { titulo: n.titulo, mensaje: n.mensaje, ventaId: n.referenciaId ?? undefined });
         break;
     }
   };
