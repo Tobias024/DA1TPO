@@ -21,7 +21,7 @@ public class Venta {
 
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pieza_id", nullable = false)
+    @JoinColumn(name = "pieza_id", nullable = false, unique = true)
     private Pieza pieza;
 
     @JsonIgnore
@@ -34,8 +34,10 @@ public class Venta {
     @JoinColumn(name = "subasta_id", nullable = false)
     private Subasta subasta;
 
+    // nullable: la Venta nace en la adjudicación (scheduler) SIN medio de pago;
+    // el ganador lo elige al pagar (/sales/won/{id}/pay).
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medio_pago_id", nullable = false)
+    @JoinColumn(name = "medio_pago_id", nullable = true)
     private MedioPago medioPago;
 
     @JsonProperty("precio")
@@ -57,6 +59,9 @@ public class Venta {
 
     @Column(nullable = false)
     private String estadoPago; // PENDIENTE_PAGO, PAGADO, INCUMPLIDO, EN_JUSTICIA
+
+    // Fecha límite para pagar tras la adjudicación; vencida sin pago -> multa.
+    private LocalDateTime fechaLimitePago;
 
     // Shipping address
     private String direccionEnvio;

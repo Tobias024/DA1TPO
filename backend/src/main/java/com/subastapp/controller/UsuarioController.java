@@ -82,7 +82,11 @@ public class UsuarioController {
                 .filter(v -> "PAGADO".equals(v.getEstadoPago()))
                 .mapToDouble(v -> v.getTotalAPagar() != null ? v.getTotalAPagar().doubleValue() : 0)
                 .sum();
-        long ganadas = ventas.size();
+        // Ganadas = adjudicadas no incumplidas (PAGADO o PENDIENTE_PAGO); las impagas
+        // (INCUMPLIDO) no cuentan como subasta ganada.
+        long ganadas = ventas.stream()
+                .filter(v -> !"INCUMPLIDO".equals(v.getEstadoPago()))
+                .count();
 
         // Participación = subastas distintas en las que el usuario pujó.
         var subastasParticipadas = pujas.stream()
@@ -144,6 +148,7 @@ public class UsuarioController {
 
     // ----- SALES / PURCHASE HISTORY -----
     @GetMapping("/sales")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<?> misCompras(@AuthenticationPrincipal Usuario usuario) {
         return ResponseEntity.ok(VentaMapper.toDtoList(
                 ventaRepository.findByCompradorIdOrderByFechaVentaDesc(usuario.getId())));

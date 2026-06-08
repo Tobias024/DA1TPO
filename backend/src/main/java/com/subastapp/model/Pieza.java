@@ -99,7 +99,7 @@ public class Pieza {
      * la entidad usa acceso por campo, así que este getter no se persiste igual.) */
     @JsonGetter("estadoPuja")
     public String getEstadoPujaJson() {
-        if (estado == EstadoPieza.VENDIDO) return "CERRADO";
+        if (estado == EstadoPieza.VENDIDO || estado == EstadoPieza.ADJUDICADO) return "CERRADO";
         LocalDateTime now = LocalDateTime.now();
         if (inicioPuja != null && now.isBefore(inicioPuja)) return "PROXIMO";
         if (finPuja != null && now.isAfter(finPuja)) return "CERRADO";

@@ -460,18 +460,29 @@ public class DevDataSeeder implements CommandLineRunner {
                 .mejorOferta(new BigDecimal("675000"))
                 .build();
 
-        // Segunda pieza ganada por el usuario demo pero AÚN SIN PAGAR —
-        // habilita demostrar el flujo de checkout/pago (VentaController).
+        // Pieza ADJUDICADA al usuario demo, AÚN SIN PAGAR con plazo vigente —
+        // demuestra el flujo "ganaste → pagá" (la Venta se siembra en sembrarVentas).
         Pieza p2 = Pieza.builder()
                 .numeroItem(2)
                 .descripcion("Máscara ceremonial de madera — Cultura Mapuche, c. siglo XIX")
                 .precioBase(new BigDecimal("300000"))
-                .estado(EstadoPieza.EN_SUBASTA)
+                .estado(EstadoPieza.ADJUDICADO)
                 .imagenes(images("vendido-02a"))
                 .mejorOferta(new BigDecimal("455000"))
                 .build();
 
-        attach(s, p1, p2);
+        // Pieza ADJUDICADA con plazo de pago YA VENCIDO — el scheduler le aplica la
+        // multa en vivo (~30s tras iniciar) para demostrar el caso de impago.
+        Pieza p3 = Pieza.builder()
+                .numeroItem(3)
+                .descripcion("Tapiz andino — lote sin pagar (demo de multa)")
+                .precioBase(new BigDecimal("200000"))
+                .estado(EstadoPieza.ADJUDICADO)
+                .imagenes(images("vendido-03a"))
+                .mejorOferta(new BigDecimal("260000"))
+                .build();
+
+        attach(s, p1, p2, p3);
         subastas.save(s);
     }
 
@@ -578,6 +589,14 @@ public class DevDataSeeder implements CommandLineRunner {
                     }
                     p.setMejorOferta(montos[montos.length - 1]);
                     p.setMejorPostor(u);
+                    // Lote 2 (Escultura): su ventana ya venció con ganador → el scheduler
+                    // lo ADJUDICA en vivo apenas arranca (demo del cierre automático).
+                    s.getCatalogo().stream()
+                            .filter(it -> Integer.valueOf(2).equals(it.getNumeroItem()))
+                            .findFirst().ifPresent(esc -> {
+                                esc.setMejorOferta(new BigDecimal("195000"));
+                                esc.setMejorPostor(u);
+                            });
                     subastas.save(s);
                 });
 
@@ -641,26 +660,44 @@ public class DevDataSeeder implements CommandLineRunner {
                 .filter(s -> s.getEstado() == EstadoSubasta.CERRADA)
                 .findFirst()
                 .ifPresent(s -> {
-                    Pieza p = s.getCatalogo().isEmpty() ? null : s.getCatalogo().get(0);
-                    if (p == null) return;
-                    BigDecimal precio = new BigDecimal("675000");
-                    BigDecimal comision = new BigDecimal("67500");   // 10%
-                    BigDecimal envio = new BigDecimal("5000");
-                    Venta v = Venta.builder()
-                            .pieza(p)
-                            .comprador(u)
-                            .subasta(s)
-                            .medioPago(medio)
-                            .montoOfertado(precio)
-                            .comision(comision)
-                            .costoEnvio(envio)
-                            .totalAPagar(precio.add(comision).add(envio))
-                            .moneda(Moneda.ARS)
-                            .estadoPago("PAGADO")
-                            .build();
-                    Venta saved = ventas.save(v);          // @PrePersist setea fechaVenta = now()
-                    saved.setFechaVenta(LocalDateTime.now().minusDays(29));
-                    ventas.save(saved);                     // UPDATE
+                    for (Pieza p : s.getCatalogo()) {
+                        BigDecimal precio = p.getMejorOferta();
+                        if (precio == null) continue;
+                        BigDecimal comision = precio.multiply(new BigDecimal("0.10"));
+                        int n = p.getNumeroItem() != null ? p.getNumeroItem() : 0;
+
+                        if (n == 1) {
+                            // Vasija: compra PAGADA (historial).
+                            BigDecimal envio = new BigDecimal("5000");
+                            Venta v = Venta.builder()
+                                    .pieza(p).comprador(u).subasta(s).medioPago(medio)
+                                    .montoOfertado(precio).comision(comision).costoEnvio(envio)
+                                    .totalAPagar(precio.add(comision).add(envio))
+                                    .moneda(s.getMoneda()).estadoPago("PAGADO")
+                                    .build();
+                            Venta saved = ventas.save(v);
+                            saved.setFechaVenta(LocalDateTime.now().minusDays(29));
+                            ventas.save(saved);
+                        } else if (n == 2) {
+                            // Máscara: adjudicada con plazo de pago VIGENTE ("ganaste, pagá").
+                            ventas.save(Venta.builder()
+                                    .pieza(p).comprador(u).subasta(s)
+                                    .montoOfertado(precio).comision(comision)
+                                    .totalAPagar(precio.add(comision))
+                                    .moneda(s.getMoneda()).estadoPago("PENDIENTE_PAGO")
+                                    .fechaLimitePago(LocalDateTime.now().plusMinutes(5))
+                                    .build());
+                        } else {
+                            // Tapiz: adjudicada con plazo VENCIDO -> el scheduler aplica la multa.
+                            ventas.save(Venta.builder()
+                                    .pieza(p).comprador(u).subasta(s)
+                                    .montoOfertado(precio).comision(comision)
+                                    .totalAPagar(precio.add(comision))
+                                    .moneda(s.getMoneda()).estadoPago("PENDIENTE_PAGO")
+                                    .fechaLimitePago(LocalDateTime.now().minusMinutes(1))
+                                    .build());
+                        }
+                    }
                 });
     }
 
@@ -674,8 +711,12 @@ public class DevDataSeeder implements CommandLineRunner {
         String consRechazadaId = consignaciones.findAll().stream()
                 .filter(c -> c.getEstado() == EstadoConsignacion.RECHAZADO)
                 .map(Consignacion::getId).findFirst().orElse(null);
-        String ventaId = ventas.findByCompradorIdOrderByFechaVentaDesc(u.getId()).stream()
-                .findFirst().map(Venta::getId).orElse(null);
+        // Venta de la pieza adjudicada con plazo VIGENTE (la Máscara) — la pagable.
+        String ventaId = ventas.findByCompradorIdAndEstadoPagoInOrderByFechaVentaDesc(
+                        u.getId(), java.util.List.of("PENDIENTE_PAGO")).stream()
+                .filter(v -> v.getFechaLimitePago() != null
+                        && v.getFechaLimitePago().isAfter(LocalDateTime.now()))
+                .map(Venta::getId).findFirst().orElse(null);
 
         // 1. CONSIGNACION_ACEPTADA (oferta lista para confirmar)
         if (consAceptadaId != null) {
@@ -705,18 +746,14 @@ public class DevDataSeeder implements CommandLineRunner {
                     .usuario(u)
                     .tipo(TipoNotificacion.VENTA_GANADA)
                     .asunto("¡Ganaste una subasta!")
-                    .cuerpo("Adquiriste la Vasija precolombina por $ 675.000. Revisá los detalles de pago y envío.")
+                    .cuerpo("Adjudicaste la Máscara ceremonial. Tenés unos minutos para pagar antes de que se aplique una multa.")
                     .referenciaId(ventaId)
                     .build());
         }
 
-        // 4. MULTA_APLICADA (informativa, no bloquea login)
-        notificaciones.save(Notificacion.builder()
-                .usuario(u)
-                .tipo(TipoNotificacion.MULTA_APLICADA)
-                .asunto("Multa pendiente")
-                .cuerpo("Se te aplicó una multa equivalente al 10% del valor ofertado por incumplimiento de pago. Tenés 72 hs. para regularizar la situación antes de poder participar nuevamente.")
-                .build());
+        // (La multa por impago la genera el scheduler en vivo sobre la pieza con
+        //  plazo vencido — ver SubastaScheduler — para no mostrar una multa que el
+        //  usuario todavía no tiene.)
 
         // 5. CUENTA_APROBADA (bienvenida)
         notificaciones.save(Notificacion.builder()

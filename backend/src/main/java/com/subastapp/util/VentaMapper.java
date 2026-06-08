@@ -29,6 +29,7 @@ public final class VentaMapper {
         m.put("total", v.getTotalAPagar());
         m.put("moneda", v.getMoneda());
         m.put("estadoPago", v.getEstadoPago());
+        m.put("fechaLimitePago", v.getFechaLimitePago());
         m.put("retiraPersonalmente", v.isRetiraPersonalmente());
         m.put("direccionEnvio", v.getDireccionEnvio());
         m.put("fecha", v.getFechaVenta());
