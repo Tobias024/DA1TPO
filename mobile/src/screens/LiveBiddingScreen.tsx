@@ -109,7 +109,7 @@ export default function LiveBiddingScreen() {
     };
   }, [auctionId]);
 
-  const tiempo = auction ? timeUntil(auction.fechaHoraInicio) : '';
+  const tiempo = pieza?.finPuja ? timeUntil(pieza.finPuja) : '';
   const sinTope = auction?.categoriaRequerida === 'ORO' || auction?.categoriaRequerida === 'PLATINO';
   const sold = pieza?.estado === 'VENDIDO';
   const winState = pieza?.estadoPuja ?? 'ABIERTO';
