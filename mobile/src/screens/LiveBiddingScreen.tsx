@@ -14,7 +14,6 @@ import { auctionsApi, bidsApi, paymentsApi } from '@/api/services';
 import { useSession } from '@/storage/SessionContext';
 import type { Auction, Piece, Bid, MedioPago } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
-import { BsTransparency } from 'react-icons/bs';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 type Rt = RouteProp<MainStackParamList, 'LiveBidding'>;
