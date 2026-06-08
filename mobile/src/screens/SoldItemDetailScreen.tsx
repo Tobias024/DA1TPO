@@ -1,112 +1,121 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import { useRoute, type RouteProp } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import { colors } from '@/theme/colors';
-import { auctionsApi, bidsApi } from '@/api/services';
-import type { Auction, Bid, Piece } from '@/types/api';
+import { auctionsApi } from '@/api/services';
+import type { Auction, Piece } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
 type Rt = RouteProp<MainStackParamList, 'SoldItemDetail'>;
+type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 export default function SoldItemDetailScreen() {
   const { params } = useRoute<Rt>();
+  const nav = useNavigation<Nav>();
   const { auctionId } = params;
   const [auction, setAuction] = useState<Auction | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
-  const [bids, setBids] = useState<Bid[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
+    let cancelled = false;
+    setLoading(true);
     Promise.all([
       auctionsApi.detail(auctionId).catch(() => null),
       auctionsApi.catalog(auctionId).catch(() => []),
-      bidsApi.history(auctionId).catch(() => ({ content: [] } as any)),
-    ]).then(([a, c, h]) => {
+    ]).then(([a, c]) => {
+      if (cancelled) return;
       setAuction(a);
-      setPieces(c ?? []);
-      setBids(h.content ?? []);
+      setPieces(Array.isArray(c) ? c : []);
+      setLoading(false);
     });
-  }, [auctionId]);
+    return () => { cancelled = true; };
+  }, [auctionId]));
 
-  const sold = pieces.filter((p) => p.vendido);
+  if (loading) {
+    return <View style={styles.center}><ActivityIndicator color={colors.brandPrimary} /></View>;
+  }
+
+  const moneda = auction?.moneda ?? '';
+  const vendidas = pieces.filter((p) => (p.estado === 'VENDIDO' || p.estado === 'ADJUDICADO') && p.mejorOferta != null);
   // Piezas sin pujador en subasta cerrada: la empresa compra al precio base (PDF).
-  const companyBought = auction?.estado === 'CERRADA' ? pieces.filter((p) => !p.vendido) : [];
+  const companyBought = pieces.filter((p) => p.mejorOferta == null);
+
+  // Al abrir un ítem voy a la pantalla de venta (LiveBidding): muestra el historial
+  // de pujas de ESE ítem y mantiene la puja bloqueada por estar vendido/cerrado.
+  const abrirItem = (p: Piece) => nav.navigate('LiveBidding', { auctionId, pieceId: p.id });
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
       <View style={styles.head}>
-        <Text style={styles.kicker}>VENDIDO</Text>
+        <Text style={styles.kicker}>SUBASTA FINALIZADA</Text>
         <Text style={styles.title}>{auction?.titulo ?? '—'}</Text>
       </View>
 
-      {sold.length === 0 && companyBought.length === 0 ? (
-        <Text style={styles.empty}>No hay piezas vendidas en esta subasta.</Text>
+      {vendidas.length === 0 && companyBought.length === 0 ? (
+        <Text style={styles.empty}>No hay piezas en esta subasta.</Text>
       ) : null}
 
-      {sold.map((p) => (
-        <Card key={p.id} style={{ margin: 16 }}>
-          <Text style={styles.pieceTitle}>{p.descripcion}</Text>
-          <Text style={styles.priceLabel}>Precio final</Text>
-          <Text style={styles.priceVal}>
-            {p.moneda} {(p.precioVenta ?? 0).toLocaleString('es-AR')}
-          </Text>
-          {p.obraArte ? (
-            <View style={styles.artistRow}>
-              <Ionicons name="color-palette-outline" size={13} color={colors.inputHint} style={{ marginRight: 4 }} />
-              <Text style={styles.artist}>{p.obraArte.artista} {p.obraArte.fecha ? `· ${p.obraArte.fecha}` : ''}</Text>
-            </View>
-          ) : null}
-        </Card>
-      ))}
-
-      {companyBought.length > 0 ? (
-        <View style={{ paddingHorizontal: 16 }}>
-          <Text style={styles.sectionTitle}>Adquiridas por la empresa</Text>
-          {companyBought.map((p) => (
-            <Card key={p.id} style={{ marginBottom: 8 }}>
-              <Text style={styles.pieceTitle}>{p.descripcion}</Text>
-              <Text style={styles.companyLabel}>Sin pujadores — comprada por la empresa</Text>
-              <Text style={styles.priceVal}>
-                {p.moneda} {p.precioBase.toLocaleString('es-AR')}
-              </Text>
-            </Card>
+      {vendidas.length > 0 ? (
+        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+          <Text style={styles.sectionTitle}>Piezas vendidas</Text>
+          {vendidas.map((p) => (
+            <TouchableOpacity key={p.id} activeOpacity={0.7} onPress={() => abrirItem(p)}>
+              <Card style={{ marginBottom: 10 }}>
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.pieceTitle} numberOfLines={2}>
+                      {p.numeroItem ? `Lote #${p.numeroItem} — ` : ''}{p.descripcion}
+                    </Text>
+                    <Text style={styles.priceLabel}>Precio final</Text>
+                    <Text style={styles.priceVal}>{moneda} {(p.mejorOferta ?? 0).toLocaleString('es-AR')}</Text>
+                  </View>
+                  <View style={styles.cta}>
+                    <Text style={styles.ctaText}>Ver pujas</Text>
+                    <Ionicons name="chevron-forward" size={16} color={colors.brandPrimary} />
+                  </View>
+                </View>
+              </Card>
+            </TouchableOpacity>
           ))}
         </View>
       ) : null}
 
-      <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
-        <Text style={styles.sectionTitle}>Historial de pujas</Text>
-        {bids.length === 0 ? (
-          <Text style={styles.empty}>Sin pujas registradas.</Text>
-        ) : bids.map((b) => (
-          <Card key={b.id} style={{ marginBottom: 6 }}>
-            <View style={styles.bidRow}>
-              <Text style={styles.bidUser}>{b.usuarioNombre ?? 'Postor'}</Text>
-              <Text style={styles.bidAmt}>{b.monto.toLocaleString('es-AR')}</Text>
-            </View>
-            <Text style={styles.bidTime}>{new Date(b.timestamp).toLocaleString('es-AR')}</Text>
-          </Card>
-        ))}
-      </View>
+      {companyBought.length > 0 ? (
+        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+          <Text style={styles.sectionTitle}>Adquiridas por la empresa</Text>
+          {companyBought.map((p) => (
+            <TouchableOpacity key={p.id} activeOpacity={0.7} onPress={() => abrirItem(p)}>
+              <Card style={{ marginBottom: 8 }}>
+                <Text style={styles.pieceTitle} numberOfLines={2}>
+                  {p.numeroItem ? `Lote #${p.numeroItem} — ` : ''}{p.descripcion}
+                </Text>
+                <Text style={styles.companyLabel}>Sin pujadores — comprada por la empresa al precio base</Text>
+                <Text style={styles.priceVal}>{moneda} {p.precioBase.toLocaleString('es-AR')}</Text>
+              </Card>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   head: { backgroundColor: colors.brandPrimary, padding: 20 },
   kicker: { color: colors.onPrimary, fontSize: 12, fontWeight: '700', letterSpacing: 0.16 },
   title: { color: colors.textOnDark, fontSize: 24, fontWeight: '700', marginTop: 4 },
-  pieceTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 10 },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  pieceTitle: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   priceLabel: { fontSize: 12, color: colors.inputHint, marginTop: 8 },
-  priceVal: { fontSize: 28, fontWeight: '700', color: colors.brandPrimary },
-  artist: { fontSize: 13, color: colors.inputHint },
-  artistRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 8, marginTop: 8 },
+  priceVal: { fontSize: 22, fontWeight: '700', color: colors.brandPrimary, marginTop: 2 },
   companyLabel: { fontSize: 12, color: colors.inputHint, marginTop: 4 },
+  cta: { flexDirection: 'row', alignItems: 'center', marginLeft: 8 },
+  ctaText: { color: colors.brandPrimary, fontWeight: '700', fontSize: 14 },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 24 },
-  bidRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  bidUser: { color: colors.textPrimary, fontSize: 14 },
-  bidAmt: { color: colors.brandPrimary, fontSize: 14, fontWeight: '700' },
-  bidTime: { color: colors.inputHint, fontSize: 11, marginTop: 2 },
 });

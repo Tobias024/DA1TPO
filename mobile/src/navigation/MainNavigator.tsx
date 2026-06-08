@@ -6,6 +6,7 @@ import LiveBiddingScreen from '@/screens/LiveBiddingScreen';
 import SoldItemDetailScreen from '@/screens/SoldItemDetailScreen';
 import AcquisitionScreen from '@/screens/AcquisitionScreen';
 import WonItemsScreen from '@/screens/WonItemsScreen';
+import MyFinesScreen from '@/screens/MyFinesScreen';
 import EditProfileScreen from '@/screens/EditProfileScreen';
 import MetricsScreen from '@/screens/MetricsScreen';
 import PaymentMethodsScreen from '@/screens/PaymentMethodsScreen';
@@ -37,6 +38,7 @@ export default function MainNavigator() {
       <Stack.Screen name="LiveBidding" component={LiveBiddingScreen} options={{ title: 'Detalle del Item' }} />
       <Stack.Screen name="SoldItemDetail" component={SoldItemDetailScreen} options={{ title: 'Item Vendido' }} />
       <Stack.Screen name="WonItems" component={WonItemsScreen} options={{ title: 'Mis Compras' }} />
+      <Stack.Screen name="MyFines" component={MyFinesScreen} options={{ title: 'Mis Multas' }} />
       <Stack.Screen name="Acquisition" component={AcquisitionScreen} options={{ title: 'Caso Adquisición' }} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Editar Perfil' }} />
       <Stack.Screen name="Metrics" component={MetricsScreen} options={{ title: 'Métricas' }} />

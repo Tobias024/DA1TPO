@@ -61,18 +61,21 @@ export default function WonItemsScreen() {
       ListEmptyComponent={<Text style={styles.empty}>Todavía no ganaste ninguna pieza.</Text>}
       renderItem={({ item }) => {
         const pagado = item.estadoPago === 'PAGADO';
-        const fallido = item.estadoPago === 'INCUMPLIDO' || !!item.vencido;
+        const multaPagada = item.estadoPago === 'INCUMPLIDO' && !!item.multaPagada;
+        const fallido = (item.estadoPago === 'INCUMPLIDO' || !!item.vencido) && !multaPagada;
         const pendiente = item.estadoPago === 'PENDIENTE_PAGO' && !item.vencido;
 
         const badge = pagado
           ? { color: colors.greenLive, text: 'Pagado' }
+          : multaPagada
+          ? { color: colors.greenLive, text: 'Multa pagada' }
           : fallido
           ? { color: colors.redLive, text: 'Plazo vencido' }
           : { color: colors.orangePending, text: 'Pendiente de pago' };
 
         const onPress = () => {
           if (fallido) irAMulta();
-          else nav.navigate('Acquisition', { piezaId: item.piezaId });
+          else if (!multaPagada) nav.navigate('Acquisition', { piezaId: item.piezaId });
         };
 
         return (
@@ -101,6 +104,11 @@ export default function WonItemsScreen() {
                   <View style={styles.cta}>
                     <Text style={[styles.ctaText, { color: colors.redLive }]}>Regularizar multa</Text>
                     <Ionicons name="chevron-forward" size={16} color={colors.redLive} />
+                  </View>
+                ) : multaPagada ? (
+                  <View style={styles.cta}>
+                    <Ionicons name="checkmark-circle" size={16} color={colors.greenLive} style={{ marginRight: 4 }} />
+                    <Text style={[styles.ctaText, { color: colors.greenLive }]}>Multa abonada</Text>
                   </View>
                 ) : null}
               </View>

@@ -8,15 +8,15 @@ const API_PATH = '/api/v1';
 
 /**
  * Resuelve la URL del backend según el entorno:
- *  1. Si hay `extra.apiBaseUrl` explícito (y no es localhost), se usa tal cual
- *     (sirve para producción o una IP fija).
- *  2. En Expo Go / dev: se deriva la IP del server de Metro (`hostUri`), así el
- *     celular físico llega a la PC sin tener que hardcodear la IP por red.
+ *  1. Si hay `extra.apiBaseUrl` explícito, se usa tal cual. Incluye localhost:
+ *     en modo cable, `adb reverse` redirige el localhost del celular hacia la PC.
+ *  2. En Expo Go / dev sin override: se deriva la IP del server de Metro (`hostUri`),
+ *     así el celular físico llega a la PC sin hardcodear la IP por red.
  *  3. Fallback: 10.0.2.2 (emulador Android) o localhost (iOS sim / web).
  */
 function resolveBaseUrl(): string {
   const override = (Constants.expoConfig?.extra as { apiBaseUrl?: string } | undefined)?.apiBaseUrl;
-  if (override && !/(localhost|127\.0\.0\.1|10\.0\.2\.2)/.test(override)) {
+  if (override) {
     return override;
   }
 

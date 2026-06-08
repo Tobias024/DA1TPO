@@ -2,7 +2,7 @@ import { api } from './client';
 import type {
   Auction, AuctionPage, Bid, BidPage, BidRequest, Consignment, CreateConsignmentRequest,
   LoginRequest, LoginResponse, MedioPago, AddPaymentMethodRequest, Notification,
-  NotificationPage, Piece, Sale, UserMetrics, UserProfile, WonItem, CheckoutDetail, PayRequest,
+  NotificationPage, Piece, Sale, UserMetrics, UserProfile, WonItem, CheckoutDetail, PayRequest, Fine,
 } from '@/types/api';
 
 // ─── AUTH ────────────────────────────────────────────────────────────
@@ -31,6 +31,7 @@ export const usersApi = {
   updateMe: (body: Partial<UserProfile>) =>
     api.put<UserProfile>('/users/me', body).then((r) => r.data),
   metrics: () => api.get<UserMetrics>('/users/me/metrics').then((r) => r.data),
+  fines: () => api.get<Fine[]>('/users/me/fines').then((r) => r.data),
   payFine: (body: { medioPagoId?: string } = {}) =>
     api.post<{ message: string; tieneMulta: boolean }>('/users/me/fine/pay', body).then((r) => r.data),
 };
@@ -50,8 +51,10 @@ export const auctionsApi = {
 
 // ─── BIDS ────────────────────────────────────────────────────────────
 export const bidsApi = {
-  history: (auctionId: string, page = 0, size = 50) =>
-    api.get<BidPage>(`/auctions/${auctionId}/bids`, { params: { page, size } }).then((r) => r.data),
+  // piezaId opcional: historial de ESE ítem (así la mejor oferta coincide con el
+  // historial). Sin piezaId: historial de toda la subasta.
+  history: (auctionId: string, piezaId?: string, page = 0, size = 50) =>
+    api.get<BidPage>(`/auctions/${auctionId}/bids`, { params: { piezaId, page, size } }).then((r) => r.data),
   place: (auctionId: string, body: BidRequest) =>
     api.post<Bid>(`/auctions/${auctionId}/bids`, body).then((r) => r.data),
 };

@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 import { colors } from '@/theme/colors';
-import { notificationsApi } from '@/api/services';
+import { notificationsApi, salesApi } from '@/api/services';
 import type { Notification, TipoNotificacion } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
@@ -59,9 +59,20 @@ export default function NotificationsScreen() {
       case 'CONSIGNACION_RECHAZADA':
         if (n.referenciaId) nav.navigate('RequestRejected', { consignmentId: n.referenciaId });
         break;
-      case 'VENTA_GANADA':
-        if (n.referenciaId) nav.navigate('Acquisition', { saleId: n.referenciaId });
+      case 'VENTA_GANADA': {
+        // La notif trae el id de la venta; resolvemos el item ganado para abrir su
+        // pantalla de puja (LiveBidding) con el historial. Fallback: Mis Compras.
+        if (!n.referenciaId) break;
+        try {
+          const won = await salesApi.won();
+          const w = won.find((x) => x.ventaId === n.referenciaId);
+          if (w) nav.navigate('LiveBidding', { auctionId: w.subastaId, pieceId: w.piezaId });
+          else nav.navigate('WonItems');
+        } catch {
+          nav.navigate('WonItems');
+        }
         break;
+      }
       case 'MULTA_APLICADA':
         nav.navigate('FineDetail', { titulo: n.titulo, mensaje: n.mensaje });
         break;

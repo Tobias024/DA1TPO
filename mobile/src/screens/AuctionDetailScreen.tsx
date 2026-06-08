@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView, View, Text, StyleSheet, Linking, ActivityIndicator, Alert, Image, TouchableOpacity,
   Pressable,
 } from 'react-native';
-import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
@@ -19,7 +19,6 @@ type Rt = RouteProp<MainStackParamList, 'AuctionDetail'>;
 
 const ESTADO_LABEL: Record<string, { label: string; color: string }> = {
   PROXIMA:  { label: 'Próxima',    color: colors.blueUpcoming },
-  ABIERTA:  { label: 'Abierta',    color: colors.greenLive },
   EN_CURSO: { label: 'En vivo',    color: colors.redLive },
   CERRADA:  { label: 'Finalizada', color: colors.inputHint },
   CANCELADA:{ label: 'Cancelada',  color: colors.inputHint },
@@ -54,7 +53,7 @@ export default function AuctionDetailScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     let cancelled = false;
     setLoading(true);
     Promise.all([
@@ -67,7 +66,33 @@ export default function AuctionDetailScreen() {
       setLoading(false);
     });
     return () => { cancelled = true; };
+  }, [auctionId]));
+
+  useEffect(() => {
+    const poll = setInterval(async () => {
+      try {
+        const [a, c] = await Promise.all([
+          auctionsApi.detail(auctionId).catch(() => null),
+          auctionsApi.catalog(auctionId).catch(() => null),
+        ]);
+        if (a) setAuction(a);
+        if (c) setCatalog(Array.isArray(c) ? c : []);
+      } catch {}
+    }, 10000);
+    return () => clearInterval(poll);
   }, [auctionId]);
+
+  // Orden pedido: primero los terminados (CERRADO), luego el abierto/pujable,
+  // luego los próximos a abrirse. Secundario: número de lote.
+  const sortedCatalog = useMemo(() => {
+    const orden: Record<string, number> = { CERRADO: 0, ABIERTO: 1, PROXIMO: 2 };
+    return [...catalog].sort((a, b) => {
+      const oa = orden[a.estadoPuja ?? 'ABIERTO'] ?? 3;
+      const ob = orden[b.estadoPuja ?? 'ABIERTO'] ?? 3;
+      if (oa !== ob) return oa - ob;
+      return (a.numeroItem ?? 0) - (b.numeroItem ?? 0);
+    });
+  }, [catalog]);
 
   if (loading) {
     return <View style={styles.center}><ActivityIndicator color={colors.brandPrimary} /></View>;
@@ -81,8 +106,10 @@ export default function AuctionDetailScreen() {
   const fecha = new Date(auction.fechaHoraInicio).toLocaleString('es-AR');
   const tiempo = timeUntil(auction.fechaHoraInicio);
 
-  const openItem = (p: Piece, abierto: boolean) => {
-    if (!abierto) return; // lotes cerrados o que aún no abrieron: no se entra a pujar
+  const openItem = (p: Piece) => {
+    // PROXIMO: aún no abrió, no se entra. ABIERTO o finalizado (vendido/cerrado): se
+    // entra a LiveBidding (finalizado = solo lectura del historial, puja bloqueada).
+    if ((p.estadoPuja ?? 'ABIERTO') === 'PROXIMO') return;
     if (activeAuctionId && activeAuctionId !== auctionId) {
       Alert.alert('Ya estás en otra subasta', 'Salí de la subasta actual antes de entrar a esta.');
       return;
@@ -150,18 +177,21 @@ export default function AuctionDetailScreen() {
         <Text style={styles.sectionTitle}>Catálogo ({catalog.length})</Text>
         {catalog.length === 0
           ? <Text style={styles.empty}>Catálogo no disponible aún.</Text>
-          : catalog.map((p) => {
+          : sortedCatalog.map((p) => {
           const sold = p.estado === 'VENDIDO';
           const win = p.estadoPuja ?? 'ABIERTO';
           const cerrado = win === 'CERRADO';
           const proximo = win === 'PROXIMO';
           const abierto = win === 'ABIERTO';
+          const finalizado = sold || cerrado; // UI unificada: ambos muestran "Item vendido"
           const img = pieceImage(p);
           const precioActual = p.mejorOferta ?? p.precioBase;
-          const precioLabel = sold ? 'Vendido en' : (p.mejorOferta != null ? 'Mejor oferta' : 'Precio base');
+          const precioLabel = finalizado
+            ? (p.mejorOferta != null ? 'Vendido en' : 'Precio base')
+            : (p.mejorOferta != null ? 'Mejor oferta' : 'Precio base');
           const abreEn = proximo && p.inicioPuja ? timeUntil(p.inicioPuja) : '';
           return (
-            <TouchableOpacity key={p.id} activeOpacity={0.85} onPress={() => openItem(p, abierto)}>
+            <TouchableOpacity key={p.id} activeOpacity={0.85} onPress={() => openItem(p)}>
               <Card style={[styles.itemCard, !abierto && styles.soldCard]}>
                 <View style={styles.itemImageWrap}>
                   {img ? (
@@ -171,13 +201,9 @@ export default function AuctionDetailScreen() {
                       <Ionicons name="image-outline" size={32} color={colors.inputHint} />
                     </View>
                   )}
-                  {sold ? (
+                  {finalizado ? (
                     <View style={styles.soldOverlay}>
                       <View style={styles.soldBadge}><Text style={styles.soldText}>ITEM VENDIDO</Text></View>
-                    </View>
-                  ) : cerrado ? (
-                    <View style={styles.soldOverlay}>
-                      <View style={styles.soldBadge}><Text style={styles.soldText}>PUJA CERRADA</Text></View>
                     </View>
                   ) : proximo ? (
                     <View style={styles.soldOverlay}>
@@ -201,14 +227,14 @@ export default function AuctionDetailScreen() {
                   {abierto ? (
                     <Pressable
                       style={({ pressed }) => [styles.pujarBtn, pressed && { opacity: 0.8 }]}
-                      onPress={() => openItem(p, true)}
+                      onPress={() => openItem(p)}
                     >
                       <Text style={styles.pujarBtnText}>PUJAR</Text>
                     </Pressable>
                   ) : proximo ? (
                     <Text style={styles.itemStateText}>Abre en {abreEn}</Text>
                   ) : (
-                    <Text style={styles.itemStateText}>Puja cerrada</Text>
+                    <Text style={styles.itemStateText}>Item vendido</Text>
                   )}
                 </View>
               </Card>

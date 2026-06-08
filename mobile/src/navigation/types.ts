@@ -31,6 +31,7 @@ export type MainStackParamList = {
   LiveBidding: { auctionId: string; pieceId?: string };
   SoldItemDetail: { auctionId: string; pieceId?: string };
   WonItems: undefined;
+  MyFines: undefined;
   Acquisition: { saleId?: string; piezaId?: string };
   EditProfile: undefined;
   Metrics: undefined;

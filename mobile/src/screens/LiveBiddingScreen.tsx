@@ -65,10 +65,9 @@ export default function LiveBiddingScreen() {
       try {
         await auctionsApi.join(auctionId).catch(() => {});
         setActiveAuction(auctionId);
-        const [a, cat, hist, methods] = await Promise.all([
+        const [a, cat, methods] = await Promise.all([
           auctionsApi.detail(auctionId),
           auctionsApi.catalog(auctionId).catch(() => []),
-          bidsApi.history(auctionId).catch(() => ({ content: [] } as any)),
           paymentsApi.list().catch(() => []),
         ]);
         if (cancelled) return;
@@ -82,7 +81,7 @@ export default function LiveBiddingScreen() {
           ?? lista[0]
           ?? null;
         setPieza(elegida);
-        setHistory(hist.content ?? []);
+        // El historial (por ítem) lo carga el efecto dedicado al cambiar la pieza.
         setVerifiedPayment((methods ?? []).find((m) => m.verificado) ?? null);
         setBootstrapping(false);
 
@@ -90,11 +89,23 @@ export default function LiveBiddingScreen() {
         pollRef.current = setInterval(async () => {
           try {
             const [r, cat] = await Promise.all([
-              bidsApi.history(auctionId),
+              bidsApi.history(auctionId, piezaIdRef.current),
               auctionsApi.catalog(auctionId).catch(() => null),
             ]);
             setHistory(r.content ?? []);
-            if (cat) setPieza((prev) => (prev ? cat.find((p) => p.id === prev.id) ?? prev : cat[0] ?? null));
+            if (cat) {
+              setPieza((prev) => {
+                if (!prev) return cat[0] ?? null;
+                const updated = cat.find((p) => p.id === prev.id) ?? prev;
+                const wasOpen = (prev.estadoPuja ?? 'ABIERTO') === 'ABIERTO';
+                const isOpen  = (updated.estadoPuja ?? 'ABIERTO') === 'ABIERTO';
+                if (wasOpen && !isOpen) {
+                  const next = cat.find((p) => (p.estadoPuja ?? 'ABIERTO') === 'ABIERTO');
+                  return next ?? updated;
+                }
+                return updated;
+              });
+            }
           } catch {}
         }, 4000);
       } catch {
@@ -109,14 +120,36 @@ export default function LiveBiddingScreen() {
     };
   }, [auctionId]);
 
-  const tiempo = pieza?.finPuja ? timeUntil(pieza.finPuja) : '';
-  const sinTope = auction?.categoriaRequerida === 'ORO' || auction?.categoriaRequerida === 'PLATINO';
+  // Ref con el id de la pieza mostrada (lo usa el poll para traer SU historial).
+  const piezaIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => { piezaIdRef.current = pieza?.id; }, [pieza?.id]);
+
+  // Historial POR ÍTEM: se recarga cada vez que cambia la pieza mostrada (carga
+  // inicial y auto-avance al siguiente lote). Así la mejor oferta coincide con él.
+  useEffect(() => {
+    if (!pieza?.id) return;
+    let cancelled = false;
+    bidsApi.history(auctionId, pieza.id)
+      .then((r) => { if (!cancelled) setHistory(r.content ?? []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [auctionId, pieza?.id]);
+
   const sold = pieza?.estado === 'VENDIDO';
   const winState = pieza?.estadoPuja ?? 'ABIERTO';
   const cerradoItem = winState === 'CERRADO';
   const proximoItem = winState === 'PROXIMO';
+  const itemCerrado = sold || cerradoItem;
+  const tiempoRaw = pieza?.finPuja ? timeUntil(pieza.finPuja) : null;
+  const tiempo = tiempoRaw === null
+    ? 'Sin límite de tiempo'
+    : tiempoRaw === '0h : 00m : 00s'
+      ? 'Aguardando cierre...'
+      : tiempoRaw;
+  const sinTope = auction?.categoriaRequerida === 'ORO' || auction?.categoriaRequerida === 'PLATINO';
+  const finPujaExpired = pieza?.finPuja != null && new Date(pieza.finPuja).getTime() <= Date.now();
   // Solo se puja un ítem dentro de su ventana de tiempo (no todos a la vez).
-  const pujaHabilitada = auction?.estado === 'EN_CURSO' && winState === 'ABIERTO';
+  const pujaHabilitada = auction?.estado === 'EN_CURSO' && winState === 'ABIERTO' && !finPujaExpired;
   const minimo = pieza
     ? (pieza.mejorOferta ?? pieza.precioBase) + pieza.precioBase * 0.01
     : 0;
@@ -161,7 +194,7 @@ export default function LiveBiddingScreen() {
       await bidsApi.place(auctionId, { piezaId: pieza.id, monto: m, medioPagoId: verifiedPayment.id });
       setAmount('');
       const [r, cat] = await Promise.all([
-        bidsApi.history(auctionId),
+        bidsApi.history(auctionId, pieza.id),
         auctionsApi.catalog(auctionId).catch(() => null),
       ]);
       setHistory(r.content ?? []);
@@ -188,7 +221,7 @@ export default function LiveBiddingScreen() {
 
   return (
     <ScrollView style={{ flex: 1 }}>
-      <Text style={styles.countdown}>FINALIZA EN: {tiempo}</Text>
+      <Text style={styles.countdown}>{itemCerrado ? 'PUJA FINALIZADA' : `FINALIZA EN: ${tiempo}`}</Text>
 
       {images.length > 0 ? (
         <FlatList
@@ -254,7 +287,8 @@ export default function LiveBiddingScreen() {
           <View style={styles.observerRow}>
             <Ionicons name="information-circle-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
             <Text style={styles.observerHint}>
-              {sold ? 'Este ítem ya fue vendido.'
+              {finPujaExpired ? 'El tiempo de puja finalizó. Aguardando cierre del sistema...'
+                : sold ? 'Este ítem ya fue vendido.'
                 : cerradoItem ? 'La puja de este ítem ya cerró.'
                 : proximoItem ? `Este ítem abre en ${pieza.inicioPuja ? timeUntil(pieza.inicioPuja) : 'breve'}.`
                 : 'La subasta no está activa en este momento: solo podés observar.'}
@@ -282,7 +316,7 @@ export default function LiveBiddingScreen() {
       <View style={{ paddingHorizontal: 16, paddingBottom: 32 + insets.bottom }}>
         <Text style={styles.sectionTitle}>Historial de Ofertas</Text>
         {history.length === 0 ? (
-          <Text style={styles.empty}>Sé el primero en pujar.</Text>
+          <Text style={styles.empty}>{itemCerrado ? 'Sin pujas registradas.' : 'Sé el primero en pujar.'}</Text>
         ) : history.map((b) => (
           <Card key={b.id} style={{ backgroundColor: 'transparent', borderWidth: 0, marginBottom: 6}}>
             <View style={styles.histRow}>

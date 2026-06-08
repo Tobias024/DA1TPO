@@ -59,7 +59,7 @@ export default function AuctionsScreen() {
 
   const filtered = useMemo(() => {
     return auctions.filter((a) => {
-      if (filter === 'EN_CURSO' && a.estado !== 'EN_CURSO' && a.estado !== 'ABIERTA') return false;
+      if (filter === 'EN_CURSO' && a.estado !== 'EN_CURSO') return false;
       if (filter && filter !== 'EN_CURSO' && a.estado !== filter) return false;
       if (cat && a.categoriaRequerida !== cat) return false;
       if (query) {

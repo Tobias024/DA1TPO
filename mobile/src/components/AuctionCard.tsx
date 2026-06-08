@@ -21,7 +21,6 @@ type BadgeSpec = {
 };
 
 const ESTADO_BADGE: Record<string, BadgeSpec> = {
-  ABIERTA: { color: colors.greenLive, label: 'Abierta', icon: 'checkmark-circle' },
   EN_CURSO: { color: colors.redLive, label: 'En vivo', icon: 'ellipse' },
   PROXIMA: { color: colors.blueUpcoming, label: 'Próxima', icon: 'calendar-outline' },
   CERRADA: { color: colors.inputHint, label: 'Cerrada', icon: null },
