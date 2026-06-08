@@ -218,6 +218,8 @@ public class DevDataSeeder implements CommandLineRunner {
                         + "Recuperado de una colección privada de Mar del Plata. Restaurado en 2018.")
                 .precioBase(new BigDecimal("250000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().minusMinutes(10)) // ABIERTO (item actual)
+                .finPuja(LocalDateTime.now().plusMinutes(50))
                 .imagenes(images("arte-01a", "arte-01b", "arte-01c"))
                 .depositoNombre("Depósito Central")
                 .depositoDireccion("Av. de los Constituyentes 1234")
@@ -229,6 +231,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Escultura en bronce — Figura femenina, 35 cm")
                 .precioBase(new BigDecimal("180000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().minusMinutes(120)) // CERRADO (lote previo)
+                .finPuja(LocalDateTime.now().minusMinutes(60))
                 .imagenes(images("arte-02a", "arte-02b"))
                 .depositoNombre("Depósito Central")
                 .depositoDireccion("Av. de los Constituyentes 1234")
@@ -242,6 +246,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Acuarela enmarcada — \"Pueblo Andino\"")
                 .precioBase(new BigDecimal("90000"))
                 .estado(EstadoPieza.VENDIDO)
+                .inicioPuja(LocalDateTime.now().minusMinutes(180)) // VENDIDO (cerrado)
+                .finPuja(LocalDateTime.now().minusMinutes(120))
                 .mejorOferta(new BigDecimal("115000"))
                 .imagenes(images("arte-03a"))
                 .depositoNombre("Depósito Central")
@@ -254,6 +260,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Grabado original — \"Serie Pampa\", artista cordobés, 1958")
                 .precioBase(new BigDecimal("140000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().minusMinutes(5)) // ABIERTO (segundo lote en vivo)
+                .finPuja(LocalDateTime.now().plusMinutes(40))
                 .imagenes(images("arte-04a", "arte-04b"))
                 .build();
 
@@ -262,6 +270,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Óleo abstracto — Escuela rioplatense, c. 1971")
                 .precioBase(new BigDecimal("310000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().plusMinutes(30)) // PROXIMO (abre en 30 min)
+                .finPuja(LocalDateTime.now().plusMinutes(90))
                 .imagenes(images("arte-05a", "arte-05b", "arte-05c"))
                 .build();
 
@@ -270,6 +280,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Dibujo a tinta — Retrato, firmado, 1949")
                 .precioBase(new BigDecimal("95000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().plusMinutes(60)) // PROXIMO (abre en 1 h)
+                .finPuja(LocalDateTime.now().plusMinutes(120))
                 .imagenes(images("arte-06a"))
                 .build();
 

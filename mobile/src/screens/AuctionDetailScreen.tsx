@@ -81,7 +81,8 @@ export default function AuctionDetailScreen() {
   const fecha = new Date(auction.fechaHoraInicio).toLocaleString('es-AR');
   const tiempo = timeUntil(auction.fechaHoraInicio);
 
-  const openItem = (p: Piece) => {
+  const openItem = (p: Piece, abierto: boolean) => {
+    if (!abierto) return; // lotes cerrados o que aún no abrieron: no se entra a pujar
     if (activeAuctionId && activeAuctionId !== auctionId) {
       Alert.alert('Ya estás en otra subasta', 'Salí de la subasta actual antes de entrar a esta.');
       return;
@@ -151,12 +152,17 @@ export default function AuctionDetailScreen() {
           ? <Text style={styles.empty}>Catálogo no disponible aún.</Text>
           : catalog.map((p) => {
           const sold = p.estado === 'VENDIDO';
+          const win = p.estadoPuja ?? 'ABIERTO';
+          const cerrado = win === 'CERRADO';
+          const proximo = win === 'PROXIMO';
+          const abierto = win === 'ABIERTO';
           const img = pieceImage(p);
           const precioActual = p.mejorOferta ?? p.precioBase;
           const precioLabel = sold ? 'Vendido en' : (p.mejorOferta != null ? 'Mejor oferta' : 'Precio base');
+          const abreEn = proximo && p.inicioPuja ? timeUntil(p.inicioPuja) : '';
           return (
-            <TouchableOpacity key={p.id} activeOpacity={0.85} onPress={() => openItem(p)}>
-              <Card style={[styles.itemCard, sold && styles.soldCard]}>
+            <TouchableOpacity key={p.id} activeOpacity={0.85} onPress={() => openItem(p, abierto)}>
+              <Card style={[styles.itemCard, !abierto && styles.soldCard]}>
                 <View style={styles.itemImageWrap}>
                   {img ? (
                     <Image source={{ uri: img }} style={styles.itemImage} resizeMode="cover" />
@@ -167,9 +173,15 @@ export default function AuctionDetailScreen() {
                   )}
                   {sold ? (
                     <View style={styles.soldOverlay}>
-                      <View style={styles.soldBadge}>
-                        <Text style={styles.soldText}>ITEM VENDIDO</Text>
-                      </View>
+                      <View style={styles.soldBadge}><Text style={styles.soldText}>ITEM VENDIDO</Text></View>
+                    </View>
+                  ) : cerrado ? (
+                    <View style={styles.soldOverlay}>
+                      <View style={styles.soldBadge}><Text style={styles.soldText}>PUJA CERRADA</Text></View>
+                    </View>
+                  ) : proximo ? (
+                    <View style={styles.soldOverlay}>
+                      <View style={styles.soldBadge}><Text style={styles.soldText}>ABRE EN {abreEn}</Text></View>
                     </View>
                   ) : null}
                   <View style={styles.itemTitleOverlay}>
@@ -181,19 +193,23 @@ export default function AuctionDetailScreen() {
 
                 <View style={styles.itemFooter}>
                   <View>
-                    <Text style={[styles.priceLabel, sold && styles.mutedText]}>{precioLabel}</Text>
-                    <Text style={[styles.priceValue, sold && styles.mutedText]}>
+                    <Text style={[styles.priceLabel, !abierto && styles.mutedText]}>{precioLabel}</Text>
+                    <Text style={[styles.priceValue, !abierto && styles.mutedText]}>
                       {auction.moneda} {precioActual.toLocaleString('es-AR')}
                     </Text>
                   </View>
-                  {!sold ? (
+                  {abierto ? (
                     <Pressable
                       style={({ pressed }) => [styles.pujarBtn, pressed && { opacity: 0.8 }]}
-                      onPress={() => openItem(p)}
+                      onPress={() => openItem(p, true)}
                     >
                       <Text style={styles.pujarBtnText}>PUJAR</Text>
                     </Pressable>
-                  ) : null}
+                  ) : proximo ? (
+                    <Text style={styles.itemStateText}>Abre en {abreEn}</Text>
+                  ) : (
+                    <Text style={styles.itemStateText}>Puja cerrada</Text>
+                  )}
                 </View>
               </Card>
             </TouchableOpacity>
@@ -292,6 +308,7 @@ const styles = StyleSheet.create({
   },
   priceLabel: { fontSize: 12, color: colors.inputHint },
   priceValue: { fontSize: 16, fontWeight: '700', color: colors.brandPrimary, marginTop: 2 },
+  itemStateText: { fontSize: 13, color: colors.inputHint, fontWeight: '600' },
 
   pujarBtn: {
     backgroundColor: colors.brandPrimary,

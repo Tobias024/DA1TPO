@@ -75,6 +75,7 @@ export default function LiveBiddingScreen() {
         const lista = cat ?? [];
         const elegida =
           (pieceId ? lista.find((p) => p.id === pieceId) : undefined)
+          ?? lista.find((p) => (p.estadoPuja ?? 'ABIERTO') === 'ABIERTO')
           ?? lista.find((p) => p.estado !== 'VENDIDO')
           ?? lista[0]
           ?? null;
@@ -109,7 +110,11 @@ export default function LiveBiddingScreen() {
   const tiempo = auction ? timeUntil(auction.fechaHoraInicio) : '';
   const sinTope = auction?.categoriaRequerida === 'ORO' || auction?.categoriaRequerida === 'PLATINO';
   const sold = pieza?.estado === 'VENDIDO';
-  const pujaHabilitada = auction?.estado === 'EN_CURSO' && !sold;
+  const winState = pieza?.estadoPuja ?? 'ABIERTO';
+  const cerradoItem = winState === 'CERRADO';
+  const proximoItem = winState === 'PROXIMO';
+  // Solo se puja un ítem dentro de su ventana de tiempo (no todos a la vez).
+  const pujaHabilitada = auction?.estado === 'EN_CURSO' && winState === 'ABIERTO';
   const minimo = pieza
     ? (pieza.mejorOferta ?? pieza.precioBase) + pieza.precioBase * 0.01
     : 0;
@@ -247,7 +252,10 @@ export default function LiveBiddingScreen() {
           <View style={styles.observerRow}>
             <Ionicons name="information-circle-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
             <Text style={styles.observerHint}>
-              {sold ? 'Este ítem ya fue vendido.' : 'La subasta no está activa en este momento: solo podés observar.'}
+              {sold ? 'Este ítem ya fue vendido.'
+                : cerradoItem ? 'La puja de este ítem ya cerró.'
+                : proximoItem ? `Este ítem abre en ${pieza.inicioPuja ? timeUntil(pieza.inicioPuja) : 'breve'}.`
+                : 'La subasta no está activa en este momento: solo podés observar.'}
             </Text>
           </View>
         ) : !verifiedPayment ? (

@@ -82,13 +82,33 @@ public class PujaController {
                     .body(Map.of("error", "Medio de pago inválido o no verificado"));
         }
 
-        // 6. Validate bid amount
-        Pieza pieza = subasta.getItemActual();
+        // 6. Resolver el ítem a pujar: el seleccionado (piezaId) o, si no vino, el item actual.
+        String piezaId = (String) body.get("piezaId");
+        Pieza pieza = null;
+        if (piezaId != null) {
+            pieza = subasta.getCatalogo().stream()
+                    .filter(p -> p.getId().equals(piezaId)).findFirst().orElse(null);
+        }
+        if (pieza == null) pieza = subasta.getItemActual();
         if (pieza == null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "No hay item activo en esta subasta"));
         }
 
+        // 6b. Validar la ventana de tiempo del ítem (cada lote se remata en su horario).
+        String estadoPuja = pieza.getEstadoPujaJson();
+        if ("CERRADO".equals(estadoPuja)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "La puja de este ítem ya cerró"));
+        }
+        if ("PROXIMO".equals(estadoPuja)) {
+            Map<String, Object> resp = new java.util.HashMap<>();
+            resp.put("error", "La puja de este ítem todavía no abrió");
+            resp.put("abrePuja", pieza.getInicioPuja());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(resp);
+        }
+
+        // 7. Validate bid amount
         BigDecimal monto = new BigDecimal(body.get("monto").toString());
         BigDecimal minimo = pieza.calcularLimiteMinimoPuja();
         BigDecimal maximo = pieza.calcularLimiteMaximoPuja();

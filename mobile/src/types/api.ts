@@ -103,6 +103,10 @@ export interface Piece {
   estado?: EstadoPieza;
   imagenes?: string[];
   mejorOferta?: number;
+  // Ventana de puja del ítem
+  inicioPuja?: string | null;
+  finPuja?: string | null;
+  estadoPuja?: 'ABIERTO' | 'CERRADO' | 'PROXIMO';
   // ObraArte: cuando la pieza es una obra de arte, estos campos vienen inline.
   artista?: string;
   fechaObra?: string;
