@@ -3,7 +3,7 @@
 export type Categoria = 'COMUN' | 'ESPECIAL' | 'PLATA' | 'ORO' | 'PLATINO';
 export type Moneda = 'ARS' | 'USD';
 export type EstadoSubasta = 'PROXIMA' | 'ABIERTA' | 'EN_CURSO' | 'CERRADA' | 'CANCELADA';
-export type EstadoPieza = 'EN_DEPOSITO' | 'EN_EXHIBICION' | 'EN_SUBASTA' | 'VENDIDO' | 'DEVUELTO' | 'RETIRADO';
+export type EstadoPieza = 'EN_DEPOSITO' | 'EN_EXHIBICION' | 'EN_SUBASTA' | 'ADJUDICADO' | 'VENDIDO' | 'DEVUELTO' | 'RETIRADO';
 export type EstadoUsuario = 'PENDIENTE_VERIFICACION' | 'APROBADO' | 'SUSPENDIDO';
 export type TipoMedioPago = 'CUENTA_BANCARIA' | 'TARJETA_CREDITO' | 'CHEQUE_CERTIFICADO';
 export type TipoNotificacion =
@@ -257,6 +257,7 @@ export interface Sale {
   costoEnvio: number;
   total?: number;
   estadoPago?: string;
+  fechaLimitePago?: string | null;
   retiraPersonalmente?: boolean;
   direccionEnvio?: string | null;
   medioPago?: MedioPago;
@@ -265,17 +266,21 @@ export interface Sale {
 
 /** Pieza ganada por el usuario (GET /sales/won). */
 export interface WonItem {
+  ventaId: string;
   piezaId: string;
   subastaId: string;
   descripcion: string;
   imagen?: string | null;
   montoGanador: number;
   moneda: Moneda;
-  estadoPago: string;
+  estadoPago: 'PENDIENTE_PAGO' | 'PAGADO' | 'INCUMPLIDO' | string;
+  fechaLimitePago?: string | null;
+  vencido?: boolean;
 }
 
 /** Detalle de checkout de una pieza ganada (GET /sales/won/{piezaId}/checkout). */
 export interface CheckoutDetail {
+  ventaId?: string;
   piezaId: string;
   descripcion: string;
   moneda: Moneda;
@@ -285,6 +290,7 @@ export interface CheckoutDetail {
   totalEnvio: number;
   totalRetiro: number;
   estadoPago: string;
+  fechaLimitePago?: string | null;
 }
 
 export interface PayRequest {

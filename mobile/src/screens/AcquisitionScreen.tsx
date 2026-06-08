@@ -14,6 +14,16 @@ type Rt = RouteProp<MainStackParamList, 'Acquisition'>;
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 type DeliveryOption = 'envio' | 'retiro';
 
+function timeUntil(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  const diff = new Date(dateStr).getTime() - Date.now();
+  if (diff <= 0) return '0m';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
 export default function AcquisitionScreen() {
   const { params } = useRoute<Rt>();
   const nav = useNavigation<Nav>();
@@ -27,6 +37,12 @@ export default function AcquisitionScreen() {
   const [delivery, setDelivery] = useState<DeliveryOption>('envio');
   const [direccion, setDireccion] = useState('');
   const [paying, setPaying] = useState(false);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const i = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(i);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,7 +109,21 @@ export default function AcquisitionScreen() {
         { text: 'OK', onPress: () => nav.goBack() },
       ]);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo confirmar el pago.');
+      const data = e?.response?.data;
+      if (data?.redirect === 'fine' || data?.estadoPago === 'INCUMPLIDO') {
+        Alert.alert('Plazo vencido', data?.error ?? 'El plazo de pago venció.', [
+          { text: 'Cerrar', style: 'cancel', onPress: () => nav.goBack() },
+          {
+            text: 'Regularizar multa',
+            onPress: () => nav.navigate('FineDetail', {
+              titulo: 'Multa por impago',
+              mensaje: 'No pagaste el ítem dentro del plazo. Se aplicó una multa del 10%.',
+            }),
+          },
+        ]);
+      } else {
+        Alert.alert('Error', data?.error ?? 'No se pudo confirmar el pago.');
+      }
     } finally {
       setPaying(false);
     }
@@ -140,6 +170,8 @@ export default function AcquisitionScreen() {
   // ── Modo checkout: pieza ganada sin pagar ──
   const total = delivery === 'retiro' ? checkout.totalRetiro : checkout.totalEnvio;
   const costoEnvio = delivery === 'retiro' ? 0 : checkout.costoEnvio;
+  const vencido = !!checkout.fechaLimitePago
+    && new Date(checkout.fechaLimitePago).getTime() <= Date.now();
 
   return (
     <ScrollView style={{ flex: 1 }}>
@@ -148,6 +180,15 @@ export default function AcquisitionScreen() {
         <Text style={styles.title}>¡Has ganado!</Text>
         <Text style={styles.subtitle}>Confirmá el pago para completar tu compra.</Text>
       </View>
+
+      {checkout.fechaLimitePago ? (
+        <View style={styles.plazoBanner}>
+          <Ionicons name="time-outline" size={16} color={vencido ? colors.redLive : colors.orangePending} style={{ marginRight: 6 }} />
+          <Text style={[styles.plazo, vencido && { color: colors.redLive }]}>
+            {vencido ? 'El plazo de pago venció — se aplicará una multa.' : `Pagá antes de ${timeUntil(checkout.fechaLimitePago)}`}
+          </Text>
+        </View>
+      ) : null}
 
       <Card style={{ margin: 16 }}>
         <Text style={styles.bien}>{checkout.descripcion}</Text>
@@ -211,7 +252,7 @@ export default function AcquisitionScreen() {
       </View>
 
       <View style={{ padding: 16 }}>
-        <PrimaryButton title="Confirmar pago" onPress={confirmarPago} loading={paying} disabled={methods.length === 0} />
+        <PrimaryButton title="Confirmar pago" onPress={confirmarPago} loading={paying} disabled={methods.length === 0 || vencido} />
       </View>
     </ScrollView>
   );
@@ -246,6 +287,8 @@ const styles = StyleSheet.create({
   highlight: { color: colors.brandPrimary, fontSize: 18, fontWeight: '700' },
   divider: { height: 1, backgroundColor: colors.inputBorder, marginVertical: 8 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginBottom: 10 },
+  plazoBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginHorizontal: 16, marginBottom: 4 },
+  plazo: { fontSize: 13, fontWeight: '600', color: colors.orangePending },
   deliveryRow: { flexDirection: 'row', gap: 10 },
   input: {
     borderWidth: 1.5, borderColor: colors.inputBorder, borderRadius: 8,
