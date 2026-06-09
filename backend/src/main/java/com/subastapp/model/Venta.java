@@ -72,6 +72,11 @@ public class Venta {
     @Column(precision = 19, scale = 2)
     private BigDecimal multa;
 
+    // true cuando el usuario regularizó (pagó) la multa. La Venta sigue INCUMPLIDO
+    // (el ítem se perdió), pero la multa queda registrada como pagada en el historial.
+    @lombok.Builder.Default
+    private boolean multaPagada = false;
+
     @JsonProperty("fecha")
     private LocalDateTime fechaVenta;
 

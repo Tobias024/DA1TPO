@@ -69,7 +69,41 @@ public class UsuarioController {
         usuario.setTieneMulta(false);
         usuario.setMontoPendienteMulta(null);
         usuarioRepository.save(usuario);
-        return ResponseEntity.ok(Map.of("message", "Multa regularizada", "tieneMulta", false));
+        // Al regularizar, los ítems impagos vuelven a estar PENDIENTE_PAGO con un
+        // nuevo plazo de 72 hs para pagar el producto (se reusa el "pagar antes de").
+        // La multa queda registrada como pagada (historial en Mis Multas).
+        for (var v : ventaRepository.findByCompradorIdOrderByFechaVentaDesc(usuario.getId())) {
+            if (v.getMulta() != null && !v.isMultaPagada()) {
+                v.setMultaPagada(true);
+                v.setEstadoPago("PENDIENTE_PAGO");
+                v.setFechaLimitePago(java.time.LocalDateTime.now().plusHours(72));
+                ventaRepository.save(v);
+            }
+        }
+        return ResponseEntity.ok(Map.of("message", "Multa regularizada", "tieneMulta", false,
+                "plazoPagoHoras", 72));
+    }
+
+    /** Lista las multas del usuario (pendientes y pagadas) — una por venta incumplida. */
+    @GetMapping("/users/me/fines")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public ResponseEntity<?> misMultas(@AuthenticationPrincipal Usuario usuario) {
+        var lista = ventaRepository.findByCompradorIdOrderByFechaVentaDesc(usuario.getId());
+        java.util.List<Map<String, Object>> out = new java.util.ArrayList<>();
+        for (var v : lista) {
+            if (v.getMulta() == null) continue;
+            var p = v.getPieza();
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("ventaId", v.getId());
+            m.put("piezaId", p != null ? p.getId() : null);
+            m.put("descripcion", p != null ? p.getDescripcion() : null);
+            m.put("monto", v.getMulta());
+            m.put("moneda", v.getMoneda());
+            m.put("estado", v.isMultaPagada() ? "PAGADA" : "PENDIENTE");
+            m.put("fecha", v.getFechaVenta());
+            out.add(m);
+        }
+        return ResponseEntity.ok(out);
     }
 
     @GetMapping("/users/me/metrics")

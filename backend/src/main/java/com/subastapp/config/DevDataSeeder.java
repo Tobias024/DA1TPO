@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,6 +94,32 @@ public class DevDataSeeder implements CommandLineRunner {
         log.info("   documento: 11111111");
         log.info("   password : test1234");
         log.info("══════════════════════════════════════════════════");
+    }
+
+    /**
+     * Reset de demo (perfil dev): borra subastas/pujas/ventas/notificaciones y las
+     * vuelve a sembrar con ventanas de puja frescas (relativas al momento del reset).
+     * Pensado para volver a testear el ciclo en vivo sin reiniciar el backend.
+     * Lo expone AdminController en POST /api/v1/admin/reset-demo.
+     */
+    @Transactional
+    public void resetDemo() {
+        Usuario u = obtenerOCrearUsuarioDemo();
+        // Orden FK-safe: primero lo que referencia piezas, luego las subastas (cascade a piezas).
+        pujas.deleteAll();
+        ventas.deleteAll();
+        notificaciones.deleteAll();
+        subastas.deleteAll();
+        // Limpiar multas acumuladas del usuario demo.
+        u.setTieneMulta(false);
+        u.setMontoPendienteMulta(null);
+        usuarios.save(u);
+        // Re-sembrar (los bloques corren porque las tablas quedaron vacías).
+        sembrarSubastasSiHaceFalta();
+        sembrarPujasSiHaceFalta(u);
+        sembrarVentasSiHaceFalta(u);
+        sembrarNotificacionesSiHaceFalta(u);
+        log.info("Demo reseteada: subastas/pujas/ventas/notificaciones regeneradas.");
     }
 
     // =================================================================
@@ -218,8 +245,8 @@ public class DevDataSeeder implements CommandLineRunner {
                         + "Recuperado de una colección privada de Mar del Plata. Restaurado en 2018.")
                 .precioBase(new BigDecimal("250000"))
                 .estado(EstadoPieza.EN_SUBASTA)
-                .inicioPuja(LocalDateTime.now().minusMinutes(10)) // ABIERTO (item actual)
-                .finPuja(LocalDateTime.now().plusMinutes(50))
+                .inicioPuja(LocalDateTime.now().minusMinutes(1)) // ABIERTO (item actual) — cierra en ~3 min
+                .finPuja(LocalDateTime.now().plusMinutes(3))
                 .imagenes(images("arte-01a", "arte-01b", "arte-01c"))
                 .depositoNombre("Depósito Central")
                 .depositoDireccion("Av. de los Constituyentes 1234")
@@ -231,8 +258,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Escultura en bronce — Figura femenina, 35 cm")
                 .precioBase(new BigDecimal("180000"))
                 .estado(EstadoPieza.EN_SUBASTA)
-                .inicioPuja(LocalDateTime.now().minusMinutes(120)) // CERRADO (lote previo)
-                .finPuja(LocalDateTime.now().minusMinutes(60))
+                .inicioPuja(LocalDateTime.now().minusMinutes(7)) // CERRADO con ganador → el scheduler lo ADJUDICA al arrancar
+                .finPuja(LocalDateTime.now().minusMinutes(3))
                 .imagenes(images("arte-02a", "arte-02b"))
                 .depositoNombre("Depósito Central")
                 .depositoDireccion("Av. de los Constituyentes 1234")
@@ -246,8 +273,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Acuarela enmarcada — \"Pueblo Andino\"")
                 .precioBase(new BigDecimal("90000"))
                 .estado(EstadoPieza.VENDIDO)
-                .inicioPuja(LocalDateTime.now().minusMinutes(180)) // VENDIDO (cerrado)
-                .finPuja(LocalDateTime.now().minusMinutes(120))
+                .inicioPuja(LocalDateTime.now().minusMinutes(12)) // VENDIDO (cerrado)
+                .finPuja(LocalDateTime.now().minusMinutes(8))
                 .mejorOferta(new BigDecimal("115000"))
                 .imagenes(images("arte-03a"))
                 .depositoNombre("Depósito Central")
@@ -260,8 +287,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Grabado original — \"Serie Pampa\", artista cordobés, 1958")
                 .precioBase(new BigDecimal("140000"))
                 .estado(EstadoPieza.EN_SUBASTA)
-                .inicioPuja(LocalDateTime.now().minusMinutes(5)) // ABIERTO (segundo lote en vivo)
-                .finPuja(LocalDateTime.now().plusMinutes(40))
+                .inicioPuja(LocalDateTime.now().plusMinutes(3)) // PROXIMO — abre cuando cierra el lote 1
+                .finPuja(LocalDateTime.now().plusMinutes(5))
                 .imagenes(images("arte-04a", "arte-04b"))
                 .build();
 
@@ -270,8 +297,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Óleo abstracto — Escuela rioplatense, c. 1971")
                 .precioBase(new BigDecimal("310000"))
                 .estado(EstadoPieza.EN_SUBASTA)
-                .inicioPuja(LocalDateTime.now().plusMinutes(30)) // PROXIMO (abre en 30 min)
-                .finPuja(LocalDateTime.now().plusMinutes(90))
+                .inicioPuja(LocalDateTime.now().plusMinutes(5)) // PROXIMO (abre cuando cierra el lote 4)
+                .finPuja(LocalDateTime.now().plusMinutes(7))
                 .imagenes(images("arte-05a", "arte-05b", "arte-05c"))
                 .build();
 
@@ -280,8 +307,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Dibujo a tinta — Retrato, firmado, 1949")
                 .precioBase(new BigDecimal("95000"))
                 .estado(EstadoPieza.EN_SUBASTA)
-                .inicioPuja(LocalDateTime.now().plusMinutes(60)) // PROXIMO (abre en 1 h)
-                .finPuja(LocalDateTime.now().plusMinutes(120))
+                .inicioPuja(LocalDateTime.now().plusMinutes(7)) // PROXIMO (abre cuando cierra el lote 5)
+                .finPuja(LocalDateTime.now().plusMinutes(9))
                 .imagenes(images("arte-06a"))
                 .build();
 
@@ -307,6 +334,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Rolex Submariner 1680, año 1972, caja original")
                 .precioBase(new BigDecimal("8500"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().minusMinutes(1)) // ABIERTO — cierra en ~3 min
+                .finPuja(LocalDateTime.now().plusMinutes(3))
                 .imagenes(images("reloj-01a", "reloj-01b", "reloj-01c"))
                 .build();
 
@@ -315,6 +344,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Omega Speedmaster Professional, 1969")
                 .precioBase(new BigDecimal("4200"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().plusMinutes(3)) // PROXIMO — abre cuando cierra el lote 1
+                .finPuja(LocalDateTime.now().plusMinutes(5))
                 .imagenes(images("reloj-02a", "reloj-02b"))
                 .build();
 
@@ -370,6 +401,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Anillo de oro 18k con esmeralda colombiana, talla princesa 2.4 ct")
                 .precioBase(new BigDecimal("520000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().minusMinutes(1)) // ABIERTO — cierra en ~3 min
+                .finPuja(LocalDateTime.now().plusMinutes(3))
                 .imagenes(images("joya-01a", "joya-01b"))
                 .build();
 
@@ -378,6 +411,8 @@ public class DevDataSeeder implements CommandLineRunner {
                 .descripcion("Collar de perlas Akoya, broche de plata")
                 .precioBase(new BigDecimal("180000"))
                 .estado(EstadoPieza.EN_SUBASTA)
+                .inicioPuja(LocalDateTime.now().plusMinutes(3)) // PROXIMO — abre cuando cierra el lote 1
+                .finPuja(LocalDateTime.now().plusMinutes(5))
                 .imagenes(images("joya-02a"))
                 .build();
 
@@ -569,84 +604,44 @@ public class DevDataSeeder implements CommandLineRunner {
                 .filter(MedioPago::isVerificado).findFirst().orElse(null);
         if (medio == null) return;
 
-        // Pujas para la subasta EN_CURSO (Arte Latinoamericano) — pieza activa
-        subastas.findAll().stream()
-                .filter(s -> s.getEstado() == EstadoSubasta.EN_CURSO)
-                .findFirst()
-                .ifPresent(s -> {
-                    Pieza p = s.getItemActual();
-                    if (p == null) return;
-                    BigDecimal[] montos = { new BigDecimal("252500"), new BigDecimal("255000"), new BigDecimal("257500") };
-                    LocalDateTime t = LocalDateTime.now().minusMinutes(10);
-                    for (BigDecimal monto : montos) {
-                        Puja puja = Puja.builder()
-                                .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
-                                .build();
-                        Puja saved = pujas.save(puja); // @PrePersist setea timestamp = now()
-                        saved.setTimestamp(t);          // override con timestamp histórico
-                        pujas.save(saved);              // UPDATE
-                        t = t.plusMinutes(2);
-                    }
-                    p.setMejorOferta(montos[montos.length - 1]);
-                    p.setMejorPostor(u);
-                    // Lote 2 (Escultura): su ventana ya venció con ganador → el scheduler
-                    // lo ADJUDICA en vivo apenas arranca (demo del cierre automático).
-                    s.getCatalogo().stream()
-                            .filter(it -> Integer.valueOf(2).equals(it.getNumeroItem()))
-                            .findFirst().ifPresent(esc -> {
-                                esc.setMejorOferta(new BigDecimal("195000"));
-                                esc.setMejorPostor(u);
-                            });
-                    subastas.save(s);
-                });
+        // Las subastas EN CURSO arrancan SIN pujas: las pujas reales del usuario son
+        // las que aparecen en el historial e incrementan la mejor oferta. Solo se
+        // siembra historial para ítems YA VENDIDOS/ADJUDICADOS, coherente con su
+        // mejorOferta (la última puja del historial == mejor oferta del ítem).
+        // Copia de la lista: sembrarHistorialConsistente persiste pujas (auto-flush)
+        // y no queremos un ConcurrentModificationException sobre el catálogo managed.
+        for (Subasta s : subastas.findAll()) {
+            for (Pieza p : new ArrayList<>(s.getCatalogo())) {
+                if (p.getMejorOferta() == null) continue;
+                if (p.getEstado() != EstadoPieza.VENDIDO && p.getEstado() != EstadoPieza.ADJUDICADO) continue;
+                sembrarHistorialConsistente(u, medio, s, p);
+            }
+        }
+    }
 
-        // Participaciones adicionales en subastas ABIERTAS — enriquece las métricas
-        // (más subastas participadas y categorías variadas).
-        subastas.findAll().stream()
-                .filter(s -> s.getEstado() == EstadoSubasta.ABIERTA)
-                .limit(2)
-                .forEach(s -> {
-                    Pieza p = s.getCatalogo().isEmpty() ? null : s.getCatalogo().get(0);
-                    if (p == null) return;
-                    BigDecimal monto = p.getPrecioBase().add(
-                            p.getPrecioBase().multiply(new BigDecimal("0.05")));
-                    Puja puja = Puja.builder()
-                            .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
-                            .build();
-                    Puja saved = pujas.save(puja);
-                    saved.setTimestamp(LocalDateTime.now().minusDays(2));
-                    pujas.save(saved);
-                });
-
-        // Pujas históricas para la subasta CERRADA
-        subastas.findAll().stream()
-                .filter(s -> s.getEstado() == EstadoSubasta.CERRADA)
-                .findFirst()
-                .ifPresent(s -> {
-                    Pieza p = s.getCatalogo().isEmpty() ? null : s.getCatalogo().get(0);
-                    if (p == null) return;
-                    BigDecimal[] montos = {
-                            new BigDecimal("450000"), new BigDecimal("550000"),
-                            new BigDecimal("625000"), new BigDecimal("675000")
-                    };
-                    LocalDateTime t = LocalDateTime.now().minusDays(30).plusHours(1);
-                    for (BigDecimal monto : montos) {
-                        Puja puja = Puja.builder()
-                                .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
-                                .build();
-                        Puja saved = pujas.save(puja);
-                        saved.setTimestamp(t);
-                        pujas.save(saved);
-                        t = t.plusMinutes(3);
-                    }
-                    // El usuario demo es el ganador de las piezas de la subasta cerrada.
-                    // p[0] queda pagada (tiene Venta en sembrarVentas); el resto, sin pagar
-                    // (para demostrar el checkout). mejorOferta ya viene del seed de cada pieza.
-                    for (Pieza ganada : s.getCatalogo()) {
-                        ganada.setMejorPostor(u);
-                    }
-                    subastas.save(s);
-                });
+    /** Crea 4 pujas ascendentes desde el precio base hasta la mejor oferta del ítem. */
+    private void sembrarHistorialConsistente(Usuario u, MedioPago medio, Subasta s, Pieza p) {
+        BigDecimal base = p.getPrecioBase();
+        BigDecimal salto = p.getMejorOferta().subtract(base);
+        BigDecimal[] montos = {
+                base.add(salto.multiply(new BigDecimal("0.25")).setScale(2, RoundingMode.HALF_UP)),
+                base.add(salto.multiply(new BigDecimal("0.55")).setScale(2, RoundingMode.HALF_UP)),
+                base.add(salto.multiply(new BigDecimal("0.80")).setScale(2, RoundingMode.HALF_UP)),
+                p.getMejorOferta(),
+        };
+        LocalDateTime t = (s.getFechaHoraInicio() != null
+                ? s.getFechaHoraInicio() : LocalDateTime.now().minusHours(1)).plusMinutes(1);
+        for (BigDecimal monto : montos) {
+            Puja puja = Puja.builder()
+                    .monto(monto).postor(u).pieza(p).subasta(s).medioPago(medio).confirmada(true)
+                    .build();
+            Puja saved = pujas.save(puja);
+            saved.setTimestamp(t);
+            pujas.save(saved);
+            t = t.plusMinutes(2);
+        }
+        // mejorPostor: la pieza es managed dentro de @Transactional → dirty-check al commit.
+        p.setMejorPostor(u);
     }
 
     private void sembrarVentasSiHaceFalta(Usuario u) {
@@ -718,51 +713,62 @@ public class DevDataSeeder implements CommandLineRunner {
                         && v.getFechaLimitePago().isAfter(LocalDateTime.now()))
                 .map(Venta::getId).findFirst().orElse(null);
 
-        // 1. CONSIGNACION_ACEPTADA (oferta lista para confirmar)
-        if (consAceptadaId != null) {
-            notificaciones.save(Notificacion.builder()
-                    .usuario(u)
-                    .tipo(TipoNotificacion.CONSIGNACION_ACEPTADA)
-                    .asunto("Tu artículo fue aceptado")
-                    .cuerpo("La vajilla de porcelana fue aceptada tras la inspección. Revisá la propuesta de valor base y comisión.")
-                    .referenciaId(consAceptadaId)
-                    .build());
-        }
+        // Timestamps explícitos para un orden cronológico realista (el front las
+        // muestra de la más nueva a la más vieja). La de "Cuenta verificada" es la
+        // más antigua (el alta) → queda última en la lista.
 
-        // 2. CONSIGNACION_RECHAZADA
-        if (consRechazadaId != null) {
-            notificaciones.save(Notificacion.builder()
-                    .usuario(u)
-                    .tipo(TipoNotificacion.CONSIGNACION_RECHAZADA)
-                    .asunto("Solicitud rechazada")
-                    .cuerpo("Tu cuadro decorativo no superó la inspección. Podés ver el motivo y los gastos de devolución.")
-                    .referenciaId(consRechazadaId)
-                    .build());
-        }
-
-        // 3. VENTA_GANADA
-        if (ventaId != null) {
-            notificaciones.save(Notificacion.builder()
-                    .usuario(u)
-                    .tipo(TipoNotificacion.VENTA_GANADA)
-                    .asunto("¡Ganaste una subasta!")
-                    .cuerpo("Adjudicaste la Máscara ceremonial. Tenés unos minutos para pagar antes de que se aplique una multa.")
-                    .referenciaId(ventaId)
-                    .build());
-        }
-
-        // (La multa por impago la genera el scheduler en vivo sobre la pieza con
-        //  plazo vencido — ver SubastaScheduler — para no mostrar una multa que el
-        //  usuario todavía no tiene.)
-
-        // 5. CUENTA_APROBADA (bienvenida)
-        notificaciones.save(Notificacion.builder()
+        // CUENTA_APROBADA (bienvenida) — la más vieja (alta de la cuenta).
+        guardarNotif(Notificacion.builder()
                 .usuario(u)
                 .tipo(TipoNotificacion.CUENTA_APROBADA)
                 .asunto("Cuenta verificada")
                 .cuerpo("Tu cuenta fue verificada y aprobada. Ya podés participar en subastas de tu categoría.")
                 .leido(true)
-                .build());
+                .build(), LocalDateTime.now().minusDays(7));
+
+        // CONSIGNACION_RECHAZADA
+        if (consRechazadaId != null) {
+            guardarNotif(Notificacion.builder()
+                    .usuario(u)
+                    .tipo(TipoNotificacion.CONSIGNACION_RECHAZADA)
+                    .asunto("Solicitud rechazada")
+                    .cuerpo("Tu cuadro decorativo no superó la inspección. Podés ver el motivo y los gastos de devolución.")
+                    .referenciaId(consRechazadaId)
+                    .build(), LocalDateTime.now().minusDays(3));
+        }
+
+        // CONSIGNACION_ACEPTADA (oferta lista para confirmar)
+        if (consAceptadaId != null) {
+            guardarNotif(Notificacion.builder()
+                    .usuario(u)
+                    .tipo(TipoNotificacion.CONSIGNACION_ACEPTADA)
+                    .asunto("Tu artículo fue aceptado")
+                    .cuerpo("La vajilla de porcelana fue aceptada tras la inspección. Revisá la propuesta de valor base y comisión.")
+                    .referenciaId(consAceptadaId)
+                    .build(), LocalDateTime.now().minusDays(2));
+        }
+
+        // VENTA_GANADA — la más reciente de las sembradas.
+        if (ventaId != null) {
+            guardarNotif(Notificacion.builder()
+                    .usuario(u)
+                    .tipo(TipoNotificacion.VENTA_GANADA)
+                    .asunto("¡Ganaste una subasta!")
+                    .cuerpo("Adjudicaste la Máscara ceremonial. Tenés unos minutos para pagar antes de que se aplique una multa.")
+                    .referenciaId(ventaId)
+                    .build(), LocalDateTime.now().minusHours(1));
+        }
+
+        // (La multa por impago la genera el scheduler en vivo sobre la pieza con
+        //  plazo vencido — ver SubastaScheduler — para no mostrar una multa que el
+        //  usuario todavía no tiene.)
+    }
+
+    /** Guarda una notificación forzando su fechaEnvio (el @PrePersist la pone en now()). */
+    private void guardarNotif(Notificacion n, LocalDateTime fecha) {
+        Notificacion saved = notificaciones.save(n);
+        saved.setFechaEnvio(fecha);
+        notificaciones.save(saved);
     }
 
     // =================================================================

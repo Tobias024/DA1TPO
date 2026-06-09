@@ -6,9 +6,11 @@ import com.subastapp.model.Subasta;
 import com.subastapp.model.Usuario;
 import com.subastapp.model.Venta;
 import com.subastapp.model.enums.EstadoPieza;
+import com.subastapp.model.enums.EstadoSubasta;
 import com.subastapp.model.enums.TipoNotificacion;
 import com.subastapp.repository.NotificacionRepository;
 import com.subastapp.repository.PiezaRepository;
+import com.subastapp.repository.SubastaRepository;
 import com.subastapp.repository.UsuarioRepository;
 import com.subastapp.repository.VentaRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class SubastaScheduler {
     private final VentaRepository ventas;
     private final UsuarioRepository usuarios;
     private final NotificacionRepository notificaciones;
+    private final SubastaRepository subastas;
 
     @Value("${subastar.plazo-pago-minutos:5}")
     private long plazoPagoMinutos;
@@ -104,7 +107,8 @@ public class SubastaScheduler {
 
             BigDecimal multa = v.getMontoOfertado().multiply(MULTA_RATE).setScale(2, RoundingMode.HALF_UP);
             v.setMulta(multa);
-            v.setEstadoPago("INCUMPLIDO"); // en justicia; el ítem no se re-subasta
+            v.setMultaPagada(false); // multa nueva: queda pendiente de regularizar
+            v.setEstadoPago("INCUMPLIDO");
 
             Usuario u = v.getComprador();
             u.setTieneMulta(true);
@@ -118,6 +122,26 @@ public class SubastaScheduler {
                     "Se aplicó una multa del 10% ($" + multa + ") por no pagar «" + bien
                             + "» a tiempo. Regularizá tu situación para volver a participar.", v.getId());
             log.info("Multa {} aplicada a {} por venta impaga {}", multa, u.getId(), v.getId());
+        }
+    }
+
+    /**
+     * Cierra las subastas EN_CURSO cuyos ítems ya finalizaron todos su ventana de
+     * puja (estadoPuja CERRADO: vendidos/adjudicados o con finPuja vencido).
+     * Resuelve el bug de "la subasta termina pero no pasa a CERRADA".
+     */
+    @Scheduled(fixedRateString = "${subastar.scheduler-ms:30000}", initialDelay = 20000)
+    @Transactional
+    public void cerrarSubastasCompletadas() {
+        for (Subasta s : subastas.findByEstado(EstadoSubasta.EN_CURSO)) {
+            List<Pieza> items = s.getCatalogo();
+            if (items.isEmpty()) continue;
+            boolean todosCerrados = items.stream()
+                    .allMatch(p -> "CERRADO".equals(p.getEstadoPujaJson()));
+            if (todosCerrados) {
+                s.setEstado(EstadoSubasta.CERRADA); // managed → dirty check
+                log.info("Subasta {} cerrada: todos sus ítems finalizaron la puja", s.getId());
+            }
         }
     }
 

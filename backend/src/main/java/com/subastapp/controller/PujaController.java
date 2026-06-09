@@ -32,9 +32,16 @@ public class PujaController {
     @GetMapping
     public ResponseEntity<?> historialPujas(
             @PathVariable String auctionId,
+            @RequestParam(required = false) String piezaId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
 
+        // Con piezaId: solo el historial de ESE ítem (así la mejor oferta mostrada
+        // coincide con el historial). Sin piezaId: historial de toda la subasta.
+        if (piezaId != null && !piezaId.isBlank()) {
+            var lista = pujaRepository.findBySubastaIdAndPiezaIdOrderByTimestampAsc(auctionId, piezaId);
+            return ResponseEntity.ok(Map.of("content", lista));
+        }
         var pujas = pujaRepository.findBySubastaIdOrderByTimestampAsc(
                 auctionId, PageRequest.of(page, size));
         return ResponseEntity.ok(pujas);

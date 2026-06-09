@@ -64,6 +64,8 @@ public class VentaController {
             m.put("estadoPago", v.getEstadoPago());
             m.put("fechaLimitePago", v.getFechaLimitePago());
             m.put("vencido", vencido);
+            m.put("multa", v.getMulta());
+            m.put("multaPagada", v.isMultaPagada());
             out.add(m);
         }
         return ResponseEntity.ok(out);

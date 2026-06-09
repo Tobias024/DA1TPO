@@ -6,13 +6,14 @@ import {
   Image,
 } from 'react-native';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
-import { auctionsApi, bidsApi, paymentsApi } from '@/api/services';
+import { auctionsApi, bidsApi, paymentsApi, salesApi } from '@/api/services';
 import { useSession } from '@/storage/SessionContext';
-import type { Auction, Piece, Bid, MedioPago } from '@/types/api';
+import type { Auction, Piece, Bid, MedioPago, WonItem } from '@/types/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MainStackParamList } from '@/navigation/types';
 
@@ -39,7 +40,7 @@ function timeUntil(dateStr: string): string {
  */
 export default function LiveBiddingScreen() {
   const { params } = useRoute<Rt>();
-  const nav = useNavigation();
+  const nav = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const { auctionId, pieceId } = params;
   const { setActiveAuction } = useSession();
   const insets = useSafeAreaInsets();
@@ -47,6 +48,7 @@ export default function LiveBiddingScreen() {
   const [auction, setAuction] = useState<Auction | null>(null);
   const [pieza, setPieza] = useState<Piece | null>(null);
   const [history, setHistory] = useState<Bid[]>([]);
+  const [wonItems, setWonItems] = useState<WonItem[]>([]);
   const [verifiedPayment, setVerifiedPayment] = useState<MedioPago | null>(null);
   const [amount, setAmount] = useState('');
   const [pendingBid, setPendingBid] = useState(false);
@@ -65,13 +67,15 @@ export default function LiveBiddingScreen() {
       try {
         await auctionsApi.join(auctionId).catch(() => {});
         setActiveAuction(auctionId);
-        const [a, cat, methods] = await Promise.all([
+        const [a, cat, methods, won] = await Promise.all([
           auctionsApi.detail(auctionId),
           auctionsApi.catalog(auctionId).catch(() => []),
           paymentsApi.list().catch(() => []),
+          salesApi.won().catch(() => []),
         ]);
         if (cancelled) return;
         setAuction(a);
+        setWonItems(won ?? []);
         // Pieza a pujar: la elegida (pieceId), si no la primera no vendida, si no la primera.
         const lista = cat ?? [];
         const elegida =
@@ -88,11 +92,13 @@ export default function LiveBiddingScreen() {
         // Poll del historial + oferta actual (placeholder de WebSocket — STOMP queda como mejora futura).
         pollRef.current = setInterval(async () => {
           try {
-            const [r, cat] = await Promise.all([
+            const [r, cat, won] = await Promise.all([
               bidsApi.history(auctionId, piezaIdRef.current),
               auctionsApi.catalog(auctionId).catch(() => null),
+              salesApi.won().catch(() => null),
             ]);
             setHistory(r.content ?? []);
+            if (won) setWonItems(won);
             if (cat) {
               setPieza((prev) => {
                 if (!prev) return cat[0] ?? null;
@@ -140,6 +146,9 @@ export default function LiveBiddingScreen() {
   const cerradoItem = winState === 'CERRADO';
   const proximoItem = winState === 'PROXIMO';
   const itemCerrado = sold || cerradoItem;
+  // ¿Este ítem lo gané yo y tiene un pago pendiente? → atajo directo al checkout.
+  const wonPending = !!pieza && wonItems.some(
+    (w) => w.piezaId === pieza.id && w.estadoPago === 'PENDIENTE_PAGO' && !w.vencido);
   const tiempoRaw = pieza?.finPuja ? timeUntil(pieza.finPuja) : null;
   const tiempo = tiempoRaw === null
     ? 'Sin límite de tiempo'
@@ -268,38 +277,54 @@ export default function LiveBiddingScreen() {
       </Card>
 
       <Card style={{ marginHorizontal: 16, marginBottom: 16 }}>
-        <TextInput
-          style={styles.input}
-          value={amount}
-          onChangeText={setAmount}
-          keyboardType="numeric"
-          placeholder="$ Ingresá monto"
-          placeholderTextColor={colors.inputHint}
-        />
-        <PrimaryButton
-          title="Realizar Puja"
-          onPress={placeBid}
-          loading={pendingBid}
-          disabled={!verifiedPayment || !pujaHabilitada}
-          style={styles.pujaBtn}
-        />
-        {!pujaHabilitada ? (
-          <View style={styles.observerRow}>
-            <Ionicons name="information-circle-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
-            <Text style={styles.observerHint}>
-              {finPujaExpired ? 'El tiempo de puja finalizó. Aguardando cierre del sistema...'
-                : sold ? 'Este ítem ya fue vendido.'
-                : cerradoItem ? 'La puja de este ítem ya cerró.'
-                : proximoItem ? `Este ítem abre en ${pieza.inicioPuja ? timeUntil(pieza.inicioPuja) : 'breve'}.`
-                : 'La subasta no está activa en este momento: solo podés observar.'}
-            </Text>
-          </View>
-        ) : !verifiedPayment ? (
-          <View style={styles.observerRow}>
-            <Ionicons name="eye-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
-            <Text style={styles.observerHint}>Sin medio verificado: solo podés observar.</Text>
-          </View>
-        ) : null}
+        {wonPending ? (
+          <>
+            <View style={styles.wonRow}>
+              <Ionicons name="trophy" size={18} color={colors.catOro} style={{ marginRight: 8 }} />
+              <Text style={styles.wonText}>Ganaste este ítem — tenés un pago pendiente.</Text>
+            </View>
+            <PrimaryButton
+              title="Pagar artículo"
+              onPress={() => nav.navigate('Acquisition', { piezaId: pieza.id })}
+              style={[styles.pujaBtn, { marginTop: 10 }]}
+            />
+          </>
+        ) : (
+          <>
+            <TextInput
+              style={styles.input}
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+              placeholder="$ Ingresá monto"
+              placeholderTextColor={colors.inputHint}
+            />
+            <PrimaryButton
+              title="Realizar Puja"
+              onPress={placeBid}
+              loading={pendingBid}
+              disabled={!verifiedPayment || !pujaHabilitada}
+              style={styles.pujaBtn}
+            />
+            {!pujaHabilitada ? (
+              <View style={styles.observerRow}>
+                <Ionicons name="information-circle-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
+                <Text style={styles.observerHint}>
+                  {finPujaExpired ? 'El tiempo de puja finalizó. Aguardando cierre del sistema...'
+                    : sold ? 'Este ítem ya fue vendido.'
+                    : cerradoItem ? 'La puja de este ítem ya cerró.'
+                    : proximoItem ? `Este ítem abre en ${pieza.inicioPuja ? timeUntil(pieza.inicioPuja) : 'breve'}.`
+                    : 'La subasta no está activa en este momento: solo podés observar.'}
+                </Text>
+              </View>
+            ) : !verifiedPayment ? (
+              <View style={styles.observerRow}>
+                <Ionicons name="eye-outline" size={14} color={colors.orangePending} style={{ marginRight: 6 }} />
+                <Text style={styles.observerHint}>Sin medio verificado: solo podés observar.</Text>
+              </View>
+            ) : null}
+          </>
+        )}
       </Card>
 
       <View style={{ paddingHorizontal: 16}}>
@@ -389,6 +414,8 @@ const styles = StyleSheet.create({
   pujaBtn: { minHeight: 30, borderRadius: 10 },
   observerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8, paddingHorizontal: 12 },
   observerHint: { fontSize: 12, color: colors.orangePending },
+  wonRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  wonText: { fontSize: 14, color: colors.textPrimary, fontWeight: '600', textAlign: 'center', flexShrink: 1 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
   empty: { color: colors.inputHint, textAlign: 'center', padding: 16 },
   histRow: { flexDirection: 'row', justifyContent: 'space-between' },
