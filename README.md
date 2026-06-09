@@ -26,16 +26,27 @@ DA1TPO/
 
 ```bash
 cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
+
+> **PowerShell (Windows):** las comillas alrededor de `-D...` son **obligatorias**.
+> Sin ellas PowerShell parte el argumento y Maven falla con
+> `Unknown lifecycle phase ".run.profiles=dev"`. En Git Bash o CMD las comillas
+> no molestan, así que el comando de arriba sirve en todos los entornos.
 
 Esperá ver en consola:
 
 ```
 Started SubastAppApplication in X.X seconds
-Seed dev: usuario de prueba creado.   (primera vez)
-o
-Seed dev: usuario de prueba ya existe, salteando.   (siguientes)
+ Seed dev:
+   • 7 países
+   • 1 usuario(s) demo
+   • 3 medio(s) de pago
+   • 7 subastas
+   • 5 consignaciones
+   • 3 pujas
+   • 1 ventas
+   • 5 notificaciones
 ```
 
 El backend escucha en `http://localhost:8080`. La consola de la base H2 está en `http://localhost:8080/h2-console` (JDBC URL `jdbc:h2:file:./data/subastar`, user `sa`, pass vacío).
@@ -51,7 +62,8 @@ Categoría: ORO  (sin tope de puja, ve casi todas las subastas)
 Incluye además una tarjeta verificada y una subasta abierta de muestra.
 
 > H2 persiste en `backend/data/subastar.mv.db`. Para empezar de cero:
-> `rm -rf backend/data/`
+> `rm -rf backend/data/` (bash) o `Remove-Item -Recurse -Force backend/data` (PowerShell).
+> Hacelo con el backend **frenado**, si no el archivo está bloqueado.
 
 ### Verificación
 
@@ -62,7 +74,15 @@ curl -i http://localhost:8080/api/v1/auctions
 
 ---
 
-## 2. Levantar la app — opción A: Wi-Fi normal (mismo router)
+## 2. Levantar la app
+
+La app necesita el backend ya corriendo (paso 1). Hay **dos formas de conectar
+el celular a tu PC** — elegí una según tu red:
+
+- **Opción A — Wi-Fi normal**: PC y celular en la misma red doméstica.
+- **Opción B — USB + `adb reverse`**: para redes restringidas (facu, trabajo, hotel) donde el celular no puede hablar con la PC por Wi-Fi.
+
+### Opción A: Wi-Fi normal (mismo router)
 
 Apto si la PC y el celular están en la **misma red doméstica**, sin restricciones.
 
@@ -86,20 +106,18 @@ Si la app no se conecta al backend, editá `mobile/app.json` y poné la IP de tu
 
 Usá `ip a` en Linux o `ipconfig` en Windows para averiguar tu IP. Reiniciá Metro con `npm start -- --clear` después del cambio.
 
----
-
-## 3. Levantar la app — opción B: USB + `adb reverse` (red de facu / Wi-Fi restringida)
+### Opción B: USB + `adb reverse` (red de facu / Wi-Fi restringida)
 
 Cuando la red local no deja que el celular hable con la PC (campus universitario, red corporativa, hotel, etc.), conectá por cable USB y forzá los puertos vía adb. **No requiere internet ni Wi-Fi.**
 
-### Setup en el celular (una sola vez)
+#### Setup en el celular (una sola vez)
 
 1. Ajustes → *Acerca del teléfono* → tap 7 veces a *Número de compilación* (activa Opciones de Desarrollador).
 2. Ajustes → *Sistema* → *Opciones de desarrollador* → activá **Depuración USB**.
 3. Conectá el cable. Cuando aparezca el popup *¿Permitir depuración USB desde esta computadora?* marcá *Permitir siempre* y aceptá.
 4. En la barra de notificaciones del celular, cambiá el modo USB de *Solo carga* a *Transferencia de archivos*.
 
-### Cada vez que levantás la app
+#### Cada vez que levantás la app
 
 ```bash
 # Verificá que adb ve el celular
@@ -126,7 +144,7 @@ En **Expo Go**:
 
 > ⚠️ **No escanees el QR** en este modo: el QR contiene la IP LAN, que en la red restringida no es alcanzable. La URL `exp://localhost:8081` solo funciona porque `adb reverse` redirige el `localhost` del celular hacia tu PC.
 
-### Diagnóstico rápido (modo cable)
+#### Diagnóstico rápido (modo cable)
 
 ```bash
 adb devices                # ¿Aparece el celu?
@@ -139,11 +157,11 @@ Desde el browser del celular:
 
 Si reconectás el cable o reiniciás el celular, los `adb reverse` se borran — hay que repetirlos.
 
-### Tip: script todo-en-uno
+#### Tip: script todo-en-uno
 
 ```bash
 # Desde la raíz del proyecto, en una terminal:
-cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev
+cd backend && mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 # En otra terminal:
 adb reverse tcp:8081 tcp:8081 && adb reverse tcp:8080 tcp:8080
@@ -152,7 +170,7 @@ cd mobile && npm start
 
 ---
 
-## 4. Build de Android (entrega 3)
+## 3. Build de Android (entrega 3)
 
 ```bash
 cd mobile

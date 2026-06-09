@@ -1,6 +1,7 @@
 package com.subastapp.config;
 
 import com.subastapp.security.JwtAuthFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +52,16 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                // Auth ausente/inválida/vencida → 401 (no el 403 por defecto de Spring).
+                // Así el cliente distingue "tenés que (re)loguearte" de un 403 de permisos
+                // y el interceptor de la app limpia la sesión y vuelve al login en vez de
+                // quedarse con pantallas vacías.
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authEx) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write(
+                            "{\"error\":\"UNAUTHORIZED\",\"message\":\"Token ausente, invalido o vencido\"}");
+                }))
                 // H2 console usa frames; hay que permitirlos en mismo origen
                 .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

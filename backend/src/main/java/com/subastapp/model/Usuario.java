@@ -1,5 +1,6 @@
 package com.subastapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.subastapp.model.enums.CategoriaUsuario;
 import com.subastapp.model.enums.EstadoUsuario;
 import jakarta.persistence.*;
@@ -32,6 +33,7 @@ public class Usuario implements UserDetails {
     @Column(unique = true)
     private String documento;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -47,10 +49,12 @@ public class Usuario implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private CategoriaUsuario categoria = CategoriaUsuario.COMUN;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private EstadoUsuario estado = EstadoUsuario.PENDIENTE_VERIFICACION;
 
     // Registration email token (step 2)
@@ -65,12 +69,15 @@ public class Usuario implements UserDetails {
     private java.math.BigDecimal montoPendienteMulta;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<MedioPago> mediosPago = new ArrayList<>();
 
     @OneToMany(mappedBy = "postor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Puja> pujas = new ArrayList<>();
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Notificacion> notificaciones = new ArrayList<>();
 
     @Column(name = "created_at")

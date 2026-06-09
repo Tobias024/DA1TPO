@@ -2,22 +2,29 @@
 
 export type Categoria = 'COMUN' | 'ESPECIAL' | 'PLATA' | 'ORO' | 'PLATINO';
 export type Moneda = 'ARS' | 'USD';
-export type EstadoSubasta = 'PROGRAMADA' | 'ABIERTA' | 'CERRADA' | 'EN_CURSO';
+export type EstadoSubasta = 'PROXIMA' | 'EN_CURSO' | 'CERRADA' | 'CANCELADA';
+export type EstadoPieza = 'EN_DEPOSITO' | 'EN_EXHIBICION' | 'EN_SUBASTA' | 'ADJUDICADO' | 'VENDIDO' | 'DEVUELTO' | 'RETIRADO';
 export type EstadoUsuario = 'PENDIENTE_VERIFICACION' | 'APROBADO' | 'SUSPENDIDO';
 export type TipoMedioPago = 'CUENTA_BANCARIA' | 'TARJETA_CREDITO' | 'CHEQUE_CERTIFICADO';
 export type TipoNotificacion =
-  | 'SOLICITUD_ACEPTADA'
-  | 'SOLICITUD_RECHAZADA'
-  | 'NUEVA_SUBASTA'
-  | 'SUBASTA_ADQUIRIDA'
-  | 'MULTA_APLICADA';
+  | 'CUENTA_APROBADA'
+  | 'COMPLETAR_REGISTRO'
+  | 'VENTA_GANADA'
+  | 'PAGO_REQUERIDO'
+  | 'MULTA_APLICADA'
+  | 'CONSIGNACION_ACEPTADA'
+  | 'CONSIGNACION_RECHAZADA'
+  | 'OFERTA_BASE_PROPUESTA'
+  | 'BIEN_DEVUELTO';
 export type EstadoConsignacion =
-  | 'ENVIADA'
+  | 'PENDIENTE'
   | 'EN_INSPECCION'
-  | 'ACEPTADA'
-  | 'RECHAZADA'
+  | 'ACEPTADO'
+  | 'RECHAZADO'
+  | 'PENDIENTE_CONFIRMACION_USUARIO'
   | 'EN_SUBASTA'
-  | 'VENDIDA';
+  | 'VENDIDO'
+  | 'DEVUELTO';
 
 export interface LoginRequest {
   documento: string;
@@ -89,15 +96,31 @@ export interface ObraArte {
 
 export interface Piece {
   id: string;
-  numero?: number;
   descripcion: string;
   precioBase: number;
-  moneda: Moneda;
-  fotos: string[];
+  // Campos reales del backend (Pieza):
+  numeroItem?: number;
+  estado?: EstadoPieza;
+  imagenes?: string[];
+  mejorOferta?: number;
+  // Ventana de puja del ítem
+  inicioPuja?: string | null;
+  finPuja?: string | null;
+  estadoPuja?: 'ABIERTO' | 'CERRADO' | 'PROXIMO';
+  // ObraArte: cuando la pieza es una obra de arte, estos campos vienen inline.
+  artista?: string;
+  fechaObra?: string;
+  historia?: string;
+  depositoNombre?: string;
+  depositoDireccion?: string;
+  depositoSector?: string;
+  // Opcionales/legacy usados por algunas pantallas (no siempre presentes):
+  numero?: number;
+  moneda?: Moneda;
+  fotos?: string[];
   obraArte?: ObraArte | null;
   vendido?: boolean;
   precioVenta?: number | null;
-  mejorOferta?: number;
 }
 
 export interface Bid {
@@ -128,16 +151,39 @@ export interface BidRequest {
 export interface MedioPago {
   id: string;
   tipo: TipoMedioPago;
+  moneda?: Moneda;
+  verificado: boolean;
   proveedor: string;
   ultimosDigitos?: string;
-  verificado: boolean;
+  // Tarjeta de crédito (datos enmascarados)
+  titular?: string;
+  numeroMasked?: string;
+  vencimiento?: string;
+  codigoMasked?: string;
+  internacional?: boolean;
+  // Cuenta bancaria
+  banco?: string;
+  numeroCuentaMasked?: string;
+  cbuMasked?: string;
+  // Cheque certificado
+  numeroCheque?: string;
   montoGarantia?: number | null;
+  montoDisponible?: number | null;
 }
 
 export interface AddPaymentMethodRequest {
   tipo: TipoMedioPago;
-  proveedor: string;
-  ultimosDigitos?: string;
+  moneda?: Moneda;
+  // Tarjeta de crédito
+  titular?: string;
+  numeroTarjeta?: string; // últimos 4 dígitos
+  vencimiento?: string;
+  // Cuenta bancaria
+  banco?: string;
+  numeroCuenta?: string;
+  cbu?: string;
+  // Cheque certificado
+  numeroCheque?: string;
   montoGarantia?: number;
 }
 
@@ -151,21 +197,27 @@ export interface PolizaSeguro {
 
 export interface Consignment {
   id: string;
-  nombreBien: string;
-  descripcionDetallada: string;
-  historia?: string;
-  fotos: string[];
-  declaraPropiedad: boolean;
-  declaraOrigenLicito: boolean;
   estado: EstadoConsignacion;
-  valorBaseOfrecido?: number | null;
+  // Campos reales del backend (Consignacion):
+  tipoBien?: string;
+  descripcion?: string;
+  precioBaseOfrecido?: number | null;
+  causaRechazo?: string | null;
+  fotos?: string[];
+  historia?: string;
+  declaraPropiedad?: boolean;
+  declaraOrigenLicito?: boolean;
   comision?: number | null;
   polizaSeguro?: PolizaSeguro | null;
+  gastosDevolucion?: number | null;
+  // Opcionales/legacy usados por algunas pantallas:
+  nombreBien?: string;
+  descripcionDetallada?: string;
+  valorBaseOfrecido?: number | null;
   ubicacionDeposito?: string | null;
   subastaAsignadaId?: string | null;
   fechaSubastaAsignada?: string | null;
   motivoRechazo?: string | null;
-  gastosDevolucion?: number | null;
 }
 
 export interface CreateConsignmentRequest {
@@ -203,6 +255,59 @@ export interface Sale {
   moneda: Moneda;
   comisiones: number;
   costoEnvio: number;
+  total?: number;
+  estadoPago?: string;
+  fechaLimitePago?: string | null;
+  retiraPersonalmente?: boolean;
+  direccionEnvio?: string | null;
   medioPago?: MedioPago;
   fecha: string;
+}
+
+/** Pieza ganada por el usuario (GET /sales/won). */
+export interface WonItem {
+  ventaId: string;
+  piezaId: string;
+  subastaId: string;
+  descripcion: string;
+  imagen?: string | null;
+  montoGanador: number;
+  moneda: Moneda;
+  estadoPago: 'PENDIENTE_PAGO' | 'PAGADO' | 'INCUMPLIDO' | string;
+  fechaLimitePago?: string | null;
+  vencido?: boolean;
+  multa?: number | null;
+  multaPagada?: boolean;
+}
+
+/** Multa del usuario (GET /users/me/fines) — una por venta incumplida. */
+export interface Fine {
+  ventaId: string;
+  piezaId?: string | null;
+  descripcion?: string | null;
+  monto: number;
+  moneda?: Moneda;
+  estado: 'PENDIENTE' | 'PAGADA' | string;
+  fecha?: string | null;
+}
+
+/** Detalle de checkout de una pieza ganada (GET /sales/won/{piezaId}/checkout). */
+export interface CheckoutDetail {
+  ventaId?: string;
+  piezaId: string;
+  descripcion: string;
+  moneda: Moneda;
+  precioFinal: number;
+  comision: number;
+  costoEnvio: number;
+  totalEnvio: number;
+  totalRetiro: number;
+  estadoPago: string;
+  fechaLimitePago?: string | null;
+}
+
+export interface PayRequest {
+  medioPagoId: string;
+  retiraPersonalmente: boolean;
+  direccionEnvio?: string;
 }

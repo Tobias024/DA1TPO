@@ -12,24 +12,27 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Login: undefined;
   RegisterStep1: undefined;
-  RegisterStep2: { registrationId?: string } | undefined;
+  RegisterWaiting: { registrationId: string; registrationToken?: string };
+  RegisterStep2: { registrationId?: string; registrationToken?: string } | undefined;
   RegisterStep3: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
-  Auctions: undefined;
+  Auctions: { initialFilter?: string; initialCat?: string } | undefined;
+  NuevaSolicitud: undefined;
   Notifications: undefined;
   Profile: undefined;
 };
 
 export type MainStackParamList = {
   Tabs: undefined;
-  Discover: undefined;
   AuctionDetail: { auctionId: string };
-  LiveBidding: { auctionId: string };
+  LiveBidding: { auctionId: string; pieceId?: string };
   SoldItemDetail: { auctionId: string; pieceId?: string };
-  Acquisition: { saleId: string };
+  WonItems: undefined;
+  MyFines: undefined;
+  Acquisition: { saleId?: string; piezaId?: string };
   EditProfile: undefined;
   Metrics: undefined;
   PaymentMethods: undefined;
@@ -40,4 +43,5 @@ export type MainStackParamList = {
   RequestAccepted: { consignmentId: string };
   RequestRejected: { consignmentId: string };
   PieceLocation: { consignmentId: string };
+  FineDetail: { titulo?: string; mensaje?: string; ventaId?: string };
 };

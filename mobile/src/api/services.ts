@@ -2,7 +2,7 @@ import { api } from './client';
 import type {
   Auction, AuctionPage, Bid, BidPage, BidRequest, Consignment, CreateConsignmentRequest,
   LoginRequest, LoginResponse, MedioPago, AddPaymentMethodRequest, Notification,
-  NotificationPage, Piece, Sale, UserMetrics, UserProfile,
+  NotificationPage, Piece, Sale, UserMetrics, UserProfile, WonItem, CheckoutDetail, PayRequest, Fine,
 } from '@/types/api';
 
 // ─── AUTH ────────────────────────────────────────────────────────────
@@ -11,7 +11,12 @@ export const authApi = {
     api.post<LoginResponse>('/auth/login', body).then((r) => r.data),
 
   registerStep1: (body: Record<string, unknown>) =>
-    api.post<{ message: string; registrationId: string }>('/auth/register/step1', body).then((r) => r.data),
+    api.post<{ message: string; registrationId: string; registrationToken: string }>('/auth/register/step1', body).then((r) => r.data),
+
+  registerStatus: (registrationId: string) =>
+    api.get<{ estado: string; listoParaCompletar: boolean; registrationToken: string | null }>(
+      `/auth/register/${registrationId}/status`,
+    ).then((r) => r.data),
 
   registerStep2: (body: { registrationToken: string; password: string; passwordConfirm: string }) =>
     api.post<LoginResponse>('/auth/register/step2', body).then((r) => r.data),
@@ -26,6 +31,9 @@ export const usersApi = {
   updateMe: (body: Partial<UserProfile>) =>
     api.put<UserProfile>('/users/me', body).then((r) => r.data),
   metrics: () => api.get<UserMetrics>('/users/me/metrics').then((r) => r.data),
+  fines: () => api.get<Fine[]>('/users/me/fines').then((r) => r.data),
+  payFine: (body: { medioPagoId?: string } = {}) =>
+    api.post<{ message: string; tieneMulta: boolean }>('/users/me/fine/pay', body).then((r) => r.data),
 };
 
 // ─── AUCTIONS ────────────────────────────────────────────────────────
@@ -33,7 +41,8 @@ export const auctionsApi = {
   list: (params: { estado?: string; page?: number; size?: number } = {}) =>
     api.get<AuctionPage>('/auctions', { params }).then((r) => r.data),
   detail: (id: string) => api.get<Auction>(`/auctions/${id}`).then((r) => r.data),
-  catalog: (id: string) => api.get<Piece[]>(`/auctions/${id}/catalog`).then((r) => r.data),
+  catalog: (id: string) =>
+    api.get<Piece[]>(`/auctions/${id}/catalog`).then((r) => (Array.isArray(r.data) ? r.data : [])),
   join: (id: string) =>
     api.post<{ message: string; puedePujar: boolean }>(`/auctions/${id}/join`).then((r) => r.data),
   leave: (id: string) =>
@@ -42,8 +51,10 @@ export const auctionsApi = {
 
 // ─── BIDS ────────────────────────────────────────────────────────────
 export const bidsApi = {
-  history: (auctionId: string, page = 0, size = 50) =>
-    api.get<BidPage>(`/auctions/${auctionId}/bids`, { params: { page, size } }).then((r) => r.data),
+  // piezaId opcional: historial de ESE ítem (así la mejor oferta coincide con el
+  // historial). Sin piezaId: historial de toda la subasta.
+  history: (auctionId: string, piezaId?: string, page = 0, size = 50) =>
+    api.get<BidPage>(`/auctions/${auctionId}/bids`, { params: { piezaId, page, size } }).then((r) => r.data),
   place: (auctionId: string, body: BidRequest) =>
     api.post<Bid>(`/auctions/${auctionId}/bids`, body).then((r) => r.data),
 };
@@ -79,4 +90,9 @@ export const notificationsApi = {
 // ─── SALES ───────────────────────────────────────────────────────────
 export const salesApi = {
   list: () => api.get<Sale[]>('/sales').then((r) => r.data),
+  won: () => api.get<WonItem[]>('/sales/won').then((r) => r.data),
+  checkout: (piezaId: string) =>
+    api.get<CheckoutDetail>(`/sales/won/${piezaId}/checkout`).then((r) => r.data),
+  pay: (piezaId: string, body: PayRequest) =>
+    api.post<{ message: string; venta: Sale }>(`/sales/won/${piezaId}/pay`, body).then((r) => r.data),
 };

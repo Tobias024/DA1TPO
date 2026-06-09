@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface SubastaRepository extends JpaRepository<Subasta, String> {
     Page<Subasta> findByEstado(EstadoSubasta estado, Pageable pageable);
+    List<Subasta> findByEstado(EstadoSubasta estado);
     Page<Subasta> findByCategoriaRequeridaIn(List<CategoriaUsuario> categorias, Pageable pageable);
     Page<Subasta> findByEstadoAndCategoriaRequeridaIn(EstadoSubasta estado, List<CategoriaUsuario> categorias, Pageable pageable);
 }

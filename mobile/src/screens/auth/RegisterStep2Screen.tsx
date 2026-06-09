@@ -11,9 +11,9 @@ import type { AuthStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'RegisterStep2'>;
 
-export default function RegisterStep2Screen({ navigation }: Props) {
+export default function RegisterStep2Screen({ navigation, route }: Props) {
   const { refreshUser } = useSession();
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(route.params?.registrationToken ?? '');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,12 +49,12 @@ export default function RegisterStep2Screen({ navigation }: Props) {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.form}>
-        <Text style={styles.kicker}>Confirmación 1 / 2</Text>
-        <Text style={styles.title}>Completar Registro</Text>
+        <Text style={styles.kicker}>Verificación de Identidad — Etapa 2 de 3</Text>
+        <Text style={styles.title}>Completa tu registro</Text>
         <Text style={styles.intro}>
-          Ingresá el código que te enviamos al mail y elegí tu contraseña personal.
+          ¡Tu cuenta fue verificada! Elegí tu contraseña personal para completar el registro.
         </Text>
 
         <TextField label="Código de verificación" value={token} onChangeText={setToken} autoCapitalize="none" />
@@ -68,7 +68,7 @@ export default function RegisterStep2Screen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  form: { padding: 24, paddingTop: 48 },
+  form: { padding: 24, paddingTop: 100 },
   kicker: {
     fontSize: 14,
     color: colors.inputHint,
@@ -78,11 +78,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: colors.brandPrimary,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 20,
+    marginTop: 16,
+    textAlign: 'center'
   },
   intro: {
     fontSize: 14,
     color: colors.textPrimary,
-    marginBottom: 20,
+    marginBottom: 50,
   },
 });

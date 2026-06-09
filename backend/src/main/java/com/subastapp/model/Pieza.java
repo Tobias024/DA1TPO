@@ -1,10 +1,13 @@
 package com.subastapp.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.subastapp.model.enums.EstadoPieza;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,18 +33,30 @@ public class Pieza {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private EstadoPieza estado = EstadoPieza.EN_DEPOSITO;
 
-    // Images stored as comma-separated URLs or JSON array
-    @ElementCollection
+    // Ventana de puja del ítem: cada lote se remata en su horario (no todos a la vez).
+    // Si son null, el ítem se considera abierto mientras la subasta esté EN_CURSO.
+    private LocalDateTime inicioPuja;
+    private LocalDateTime finPuja;
+
+    // Images stored as comma-separated URLs or JSON array.
+    // EAGER: el catálogo/carrusel siempre necesita las imágenes al serializar la pieza.
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "pieza_imagenes", joinColumns = @JoinColumn(name = "pieza_id"))
     @Column(name = "imagen_url")
+    @Builder.Default
     private List<String> imagenes = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dueno_id")
     private Usuario dueno;
 
+    // @JsonIgnore: corta la recursión Pieza -> Subasta -> catalogo -> Pieza al
+    // serializar el catálogo. El front ya conoce la subasta por contexto.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subasta_id")
     private Subasta subasta;
@@ -55,6 +70,7 @@ public class Pieza {
     @Column(precision = 19, scale = 2)
     private BigDecimal mejorOferta;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mejor_postor_id")
     private Usuario mejorPostor;
@@ -76,5 +92,22 @@ public class Pieza {
     public BigDecimal calcularLimiteMaximoPuja() {
         BigDecimal base = mejorOferta != null ? mejorOferta : precioBase;
         return base.add(precioBase.multiply(new java.math.BigDecimal("0.20")));
+    }
+
+    /** Estado de la ventana de puja en este instante.
+     * (Sin @Transient: el módulo Jackson-Hibernate trata @Transient como @JsonIgnore;
+     * la entidad usa acceso por campo, así que este getter no se persiste igual.) */
+    @JsonGetter("estadoPuja")
+    public String getEstadoPujaJson() {
+        if (estado == EstadoPieza.VENDIDO || estado == EstadoPieza.ADJUDICADO) return "CERRADO";
+        LocalDateTime now = LocalDateTime.now();
+        if (inicioPuja != null && now.isBefore(inicioPuja)) return "PROXIMO";
+        if (finPuja != null && now.isAfter(finPuja)) return "CERRADO";
+        return "ABIERTO";
+    }
+
+    /** ¿Se puede pujar este ítem ahora? (ventana abierta y no vendido) */
+    public boolean pujaAbierta() {
+        return "ABIERTO".equals(getEstadoPujaJson());
     }
 }

@@ -1,98 +1,186 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, Pressable } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, RefreshControl, Pressable, TextInput } from 'react-native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import ScreenHeader from '@/components/ScreenHeader';
 import AuctionCard from '@/components/AuctionCard';
-import { colors } from '@/theme/colors';
+import { colors, categoriaColor, categoriaTextColor } from '@/theme/colors';
 import { auctionsApi } from '@/api/services';
-import type { Auction } from '@/types/api';
+import type { Auction, Categoria } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
+import type { MainTabParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
+type Route = RouteProp<MainTabParamList, 'Auctions'>;
+
+const CATS: Categoria[] = ['COMUN', 'ESPECIAL', 'PLATA', 'ORO', 'PLATINO'];
 
 const FILTERS = [
   { key: undefined as string | undefined, label: 'Todas' },
-  { key: 'ABIERTA', label: 'Activas' },
-  { key: 'PROGRAMADA', label: 'Próximas' },
+  { key: 'EN_CURSO', label: 'Activas' },
+  { key: 'PROXIMA', label: 'Próximas' },
   { key: 'CERRADA', label: 'Cerradas' },
 ];
 
 export default function AuctionsScreen() {
   const nav = useNavigation<Nav>();
+  const route = useRoute<Route>();
   const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [filter, setFilter] = useState<string | undefined>(undefined);
+  const [filter, setFilter] = useState<string | undefined>(route.params?.initialFilter);
+  const [cat, setCat] = useState<Categoria | null>((route.params?.initialCat as Categoria) ?? null);
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await auctionsApi.list({ estado: filter, size: 50 });
+      const r = await auctionsApi.list({ size: 50 });
       setAuctions(r.content ?? []);
-    } catch {
+    } catch (e){
+      console.log('Error cargando subastas:', e);
       setAuctions([]);
     } finally {
       setLoading(false);
     }
   }, [filter]);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  // Solo carga datos al enfocar
+  useFocusEffect(useCallback(() => {
+    load();
+  }, [load]));
+
+  // Solo aplica el filtro inicialmente cuando cambian los params
+  React.useEffect(() => {
+    if (route.params?.initialFilter !== undefined) {
+      setFilter(route.params.initialFilter);
+    }
+  }, [route.params?.initialFilter]);
+
+  const filtered = useMemo(() => {
+    const list = auctions.filter((a) => {
+      if (filter === 'EN_CURSO' && a.estado !== 'EN_CURSO') return false;
+      if (filter && filter !== 'EN_CURSO' && a.estado !== filter) return false;
+      if (cat && a.categoriaRequerida !== cat) return false;
+      if (query) {
+        const q = query.trim().toLowerCase();
+        const matchTitulo = a.titulo.toLowerCase().includes(q);
+        const matchCategoria = a.categoriaRequerida.toLowerCase().includes(q);
+        const matchDescripcion = a.descripcion?.toLowerCase().includes(q) ?? false;
+        const matchUbicacion = a.ubicacion?.toLowerCase().includes(q) ?? false;
+        if (!matchTitulo && !matchCategoria && !matchDescripcion && !matchUbicacion) return false;
+      }
+      return true;
+    });
+    // Orden: Activas (EN_CURSO) → Próximas (PROXIMA) → Cerradas (CERRADA) al final.
+    const orden: Record<string, number> = { EN_CURSO: 0, PROXIMA: 1, CERRADA: 2, CANCELADA: 3 };
+    return [...list].sort((a, b) => (orden[a.estado] ?? 9) - (orden[b.estado] ?? 9));
+  }, [auctions, filter, cat, query]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.surfaceCream }}>
-      <ScreenHeader title="Subastas" subtitle="Subastas activas y programadas" />
-
-      <View style={styles.filterRow}>
-        {FILTERS.map((f) => {
-          const active = filter === f.key;
-          return (
-            <Pressable
-              key={f.label}
-              onPress={() => setFilter(f.key)}
-              style={[styles.chip, active && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{f.label}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View style={{ flex: 1 }}>
+      <ScreenHeader title="SubastAR" />
 
       <FlatList
-        data={auctions}
+        data={filtered}
         keyExtractor={(a) => a.id}
         contentContainerStyle={{ padding: 20, paddingTop: 8 }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
-        ListEmptyComponent={
-          <Text style={styles.empty}>{loading ? 'Cargando…' : 'No hay subastas en esta categoría.'}</Text>
-        }
-        renderItem={({ item }) => {
-          if (item.estado === 'CERRADA') {
-            return (
-              <AuctionCard
-                auction={item}
-                onPress={() => nav.navigate('SoldItemDetail', { auctionId: item.id })}
-              />
-            );
-          }
-          return (
-            <AuctionCard
-              auction={item}
-              onPress={() => nav.navigate('AuctionDetail', { auctionId: item.id })}
+        ListHeaderComponent={
+          <View>
+            <Text style={styles.pageTitle}>Descubrir</Text>
+
+            <TextInput
+              placeholder="Buscar subastas…"
+              placeholderTextColor={colors.inputHint}
+              style={styles.search}
+              value={query}
+              onChangeText={setQuery}
             />
-          );
-        }}
+
+            <View style={styles.catsRow}>
+              {CATS.map((c) => {
+                const active = cat === c;
+                return (
+                  <Pressable
+                    key={c}
+                    onPress={() => setCat(active ? null : c)}
+                    style={[styles.catChip, {
+                      backgroundColor: active ? categoriaColor(c) : colors.inputBg,
+                      borderColor: categoriaTextColor(c),
+                    }]}
+                  >
+                    <Text style={[styles.catChipText, { color: categoriaTextColor(c) }]}>{c}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <View style={styles.filterRow}>
+              {FILTERS.map((f) => {
+                const active = filter === f.key;
+                return (
+                  <Pressable
+                    key={f.label}
+                    onPress={() => setFilter(f.key)}
+                    style={[styles.chip, active && styles.chipActive]}
+                  >
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{f.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          <Text style={styles.empty}>{loading ? 'Cargando…' : 'No hay subastas.'}</Text>
+        }
+        renderItem={({ item }) => (
+          <AuctionCard
+            auction={item}
+            onPress={() =>
+              item.estado === 'CERRADA'
+                ? nav.navigate('SoldItemDetail', { auctionId: item.id })
+                : nav.navigate('AuctionDetail', { auctionId: item.id })
+            }
+          />
+        )}
       />
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  pageTitle: { 
+    fontSize: 26, 
+    fontWeight: '700', 
+    color: colors.brandPrimary, 
+    paddingHorizontal: 20, 
+    paddingTop: 16, 
+    paddingBottom: 4,
+    textAlign: 'center',
+  },
+  search: {
+    backgroundColor: colors.inputBg,
+    borderRadius: 30,
+    borderWidth: 0.5,
+    borderColor: colors.inputBorder,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  catsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 0 },
+  catChip: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
+  catChipText: { fontSize: 11, fontWeight: '700' },
   filterRow: {
     flexDirection: 'row',
     gap: 8,
-    paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: colors.surfaceCream,
+    justifyContent: 'center',
   },
   chip: {
     paddingHorizontal: 14,

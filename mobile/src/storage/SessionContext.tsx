@@ -5,9 +5,11 @@ type Ctx = {
   user: SessionUser | null;
   loggedIn: boolean;
   bootstrapping: boolean;
+  activeAuctionId: string | null;
   signIn: (accessToken: string, refreshToken: string, user: SessionUser) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: (user: SessionUser) => void;
+  setActiveAuction: (id: string | null) => void;
 };
 
 const SessionContext = createContext<Ctx | null>(null);
@@ -16,8 +18,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [bootstrapping, setBootstrapping] = useState(true);
+  const [activeAuctionId, setActiveAuction] = useState<string | null>(null);
 
   useEffect(() => {
+    // Si una request devuelve 401 (token vencido/ inválido), cerramos sesión
+    // para volver al login en vez de quedar con pantallas vacías.
+    session.onUnauthorized(() => {
+      setUser(null);
+      setLoggedIn(false);
+      setActiveAuction(null);
+    });
     (async () => {
       const [token, u] = await Promise.all([session.getAccessToken(), session.getUser()]);
       setLoggedIn(!!token);
@@ -42,7 +52,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback((u: SessionUser) => setUser(u), []);
 
   return (
-    <SessionContext.Provider value={{ user, loggedIn, bootstrapping, signIn, signOut, refreshUser }}>
+    <SessionContext.Provider value={{ user, loggedIn, bootstrapping, activeAuctionId, signIn, signOut, refreshUser, setActiveAuction }}>
       {children}
     </SessionContext.Provider>
   );

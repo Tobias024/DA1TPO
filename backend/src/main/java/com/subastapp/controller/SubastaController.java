@@ -1,5 +1,6 @@
 package com.subastapp.controller;
 
+import com.subastapp.model.Pieza;
 import com.subastapp.model.Subasta;
 import com.subastapp.model.Usuario;
 import com.subastapp.model.enums.CategoriaUsuario;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -74,6 +76,33 @@ public class SubastaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Estado en vivo de la subasta: item actual + mejor oferta + límites (fallback de polling del WebSocket). */
+    @GetMapping("/{id}/state")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> estadoEnVivo(@PathVariable String id,
+                                          @AuthenticationPrincipal Usuario usuario) {
+        return subastaRepository.findById(id).map(subasta -> {
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("estado", subasta.getEstado());
+            resp.put("moneda", subasta.getMoneda());
+            Pieza item = subasta.getItemActual();
+            if (item != null) {
+                Map<String, Object> it = new LinkedHashMap<>();
+                it.put("id", item.getId());
+                it.put("descripcion", item.getDescripcion());
+                it.put("precioBase", item.getPrecioBase());
+                it.put("mejorOferta", item.getMejorOferta());
+                it.put("imagenes", item.getImagenes());
+                it.put("limiteMinimo", item.calcularLimiteMinimoPuja());
+                it.put("limiteMaximo", item.calcularLimiteMaximoPuja());
+                resp.put("itemActual", it);
+            } else {
+                resp.put("itemActual", null);
+            }
+            return ResponseEntity.ok(resp);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{id}/catalog")
     public ResponseEntity<?> catalogo(@PathVariable String id,
                                        @AuthenticationPrincipal Usuario usuario) {
@@ -91,6 +120,10 @@ public class SubastaController {
     @PostMapping("/{id}/join")
     public ResponseEntity<?> unirseSubasta(@PathVariable String id,
                                              @AuthenticationPrincipal Usuario usuario) {
+        if (usuario.isTieneMulta()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Tenés una multa pendiente. Regularizá tu situación para continuar."));
+        }
         if (usuario.getSubastaActivaId() != null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Ya está conectado a otra subasta. Debe desconectarse primero."));
@@ -98,6 +131,10 @@ public class SubastaController {
 
         return subastaRepository.findById(id)
                 .map(subasta -> {
+                    if (subasta.getEstado() != EstadoSubasta.EN_CURSO) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(Map.of("error", "La subasta no está en curso. Solo podés pujar mientras está en vivo."));
+                    }
                     if (!usuario.getCategoria().puedeAcceder(subasta.getCategoriaRequerida())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                 .body(Map.of("error", "Categoría insuficiente para acceder a esta subasta"));

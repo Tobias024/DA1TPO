@@ -16,7 +16,17 @@ export type SessionUser = {
   estado?: string;
 };
 
+// Handler que se dispara cuando el backend devuelve 401 (token inválido/expirado).
+// Lo registra SessionContext para forzar el logout y volver al login.
+let unauthorizedHandler: (() => void) | null = null;
+
 export const session = {
+  onUnauthorized(cb: () => void) {
+    unauthorizedHandler = cb;
+  },
+  notifyUnauthorized() {
+    if (unauthorizedHandler) unauthorizedHandler();
+  },
   async save(accessToken: string, refreshToken: string, user: SessionUser) {
     await AsyncStorage.multiSet([
       [K.ACCESS, accessToken],

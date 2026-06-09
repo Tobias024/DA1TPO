@@ -1,0 +1,29 @@
+meta {
+  name: 05 Reset demo (subastas)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/admin/reset-demo
+  body: none
+  auth: none
+}
+
+docs {
+  Resetea las subastas de demo cuando se acabó el tiempo de todas.
+
+  Borra subastas/pujas/ventas/notificaciones y las vuelve a sembrar con ventanas
+  de puja FRESCAS (relativas a este momento), sin reiniciar el backend. También
+  limpia la multa del usuario demo.
+
+  Cómo usarlo en Bruno:
+    1. Abrí la colección (carpeta Bruno/) en Bruno.
+    2. Elegí el environment "Local" (arriba a la derecha).
+    3. Abrí "06 - Admin (simula empresa)" → "05 Reset demo (subastas)".
+    4. Tocá Send (▶). Tiene que responder 200.
+    5. Recargá la app: subastas nuevas con un lote abierto.
+
+  No necesita login (endpoint solo activo en perfil dev).
+  Equivalente por terminal: curl -X POST http://localhost:8080/api/v1/admin/reset-demo
+}

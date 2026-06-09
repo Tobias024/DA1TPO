@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CommonActions, useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import PrimaryButton from '@/components/PrimaryButton';
 import { colors } from '@/theme/colors';
 
@@ -8,7 +9,7 @@ export default function RequestSentScreen() {
   const nav = useNavigation();
   return (
     <View style={styles.wrap}>
-      <Text style={styles.icon}>✓</Text>
+      <Ionicons name="checkmark-circle" size={88} color={colors.brandPrimary} style={{ marginBottom: 8 }} />
       <Text style={styles.title}>Solicitud Enviada</Text>
       <Text style={styles.msg}>
         Tu artículo está siendo revisado. Te contactaremos a la brevedad por mail.
@@ -29,7 +30,6 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: colors.surfaceCream,
     alignItems: 'center', justifyContent: 'center', padding: 32,
   },
-  icon: { fontSize: 80, color: colors.brandPrimary, marginBottom: 8 },
   title: { fontSize: 28, fontWeight: '700', color: colors.brandPrimary, marginBottom: 12 },
   msg: { fontSize: 16, color: colors.textPrimary, textAlign: 'center' },
 });

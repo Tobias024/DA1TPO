@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import PrimaryButton from '@/components/PrimaryButton';
 import TextField from '@/components/TextField';
 import Card from '@/components/Card';
@@ -55,9 +56,9 @@ export default function ConsignmentFormScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
-      <Text style={styles.kicker}>SUBASTAR ALGO PROPIO</Text>
-      <Text style={styles.title}>Subastar algo propio</Text>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 48 }}>
+      <Text style={styles.kicker}>NUEVA SOLICITUD</Text>
+      <Text style={styles.title}>Nueva solicitud</Text>
       <Text style={styles.intro}>
         Completá los datos. Si la empresa lo aprueba, te avisaremos para enviarlo a inspección.
       </Text>
@@ -72,19 +73,33 @@ export default function ConsignmentFormScreen() {
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.section}>Fotografías</Text>
         <Text style={styles.minPhotos}>Mínimo {MIN_FOTOS} fotografías ({fotos.length}/{MIN_FOTOS})</Text>
+        {fotos.length > 0 ? (
+          <View style={styles.fotoGrid}>
+            {fotos.map((_, i) => (
+              <View key={i} style={styles.fotoPlaceholder}>
+                <Ionicons name="camera" size={20} color={colors.inputHint} />
+                <Text style={styles.fotoLabel}>Foto {i + 1}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
         <PrimaryButton title="+ Agregar foto" variant="outlined" onPress={addFoto} />
       </Card>
 
       <Card style={{ marginBottom: 16 }}>
         <Text style={styles.section}>Declaraciones</Text>
         <Pressable onPress={() => setPropiedad((v) => !v)} style={styles.cbRow}>
-          <View style={[styles.cb, propiedad && styles.cbOn]}>{propiedad ? <Text style={styles.cbTick}>✓</Text> : null}</View>
+          <View style={[styles.cb, propiedad && styles.cbOn]}>
+            {propiedad ? <Ionicons name="checkmark" size={14} color={colors.onPrimary} /> : null}
+          </View>
           <Text style={styles.cbText}>
             Declaro que el bien me pertenece y no posee ningún impedimento legal.
           </Text>
         </Pressable>
         <Pressable onPress={() => setOrigen((v) => !v)} style={styles.cbRow}>
-          <View style={[styles.cb, origen && styles.cbOn]}>{origen ? <Text style={styles.cbTick}>✓</Text> : null}</View>
+          <View style={[styles.cb, origen && styles.cbOn]}>
+            {origen ? <Ionicons name="checkmark" size={14} color={colors.onPrimary} /> : null}
+          </View>
           <Text style={styles.cbText}>Acredito el origen lícito del bien.</Text>
         </Pressable>
       </Card>
@@ -100,6 +115,13 @@ const styles = StyleSheet.create({
   intro: { fontSize: 14, color: colors.textPrimary, marginBottom: 16 },
   section: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginBottom: 12 },
   minPhotos: { fontSize: 13, color: colors.inputHint, marginBottom: 10 },
+  fotoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  fotoPlaceholder: {
+    width: 72, height: 72, borderRadius: 8,
+    backgroundColor: colors.inputBg, borderWidth: 1, borderColor: colors.inputBorder,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  fotoLabel: { fontSize: 10, color: colors.inputHint, marginTop: 2 },
   cbRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   cb: {
     width: 22, height: 22, borderRadius: 4,
@@ -107,6 +129,5 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   cbOn: { borderColor: colors.brandPrimary, backgroundColor: colors.brandPrimary },
-  cbTick: { color: colors.onPrimary, fontWeight: '700' },
   cbText: { flex: 1, fontSize: 14, color: colors.textPrimary },
 });

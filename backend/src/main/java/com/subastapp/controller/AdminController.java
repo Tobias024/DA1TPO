@@ -1,5 +1,6 @@
 package com.subastapp.controller;
 
+import com.subastapp.config.DevDataSeeder;
 import com.subastapp.model.Consignacion;
 import com.subastapp.model.enums.EstadoConsignacion;
 import com.subastapp.repository.ConsignacionRepository;
@@ -30,6 +31,20 @@ public class AdminController {
 
     private final ConsignacionRepository consignaciones;
     private final SubastaRepository subastas;
+    private final DevDataSeeder devDataSeeder;
+
+    /**
+     * Resetea la demo: borra subastas/pujas/ventas/notificaciones y las regenera con
+     * ventanas de puja frescas (relativas a ahora). Útil cuando se acabó el tiempo de
+     * todas las subastas y querés volver a probar el ciclo en vivo sin reiniciar.
+     */
+    @PostMapping("/reset-demo")
+    public ResponseEntity<?> resetDemo() {
+        devDataSeeder.resetDemo();
+        return ResponseEntity.ok(Map.of(
+                "message", "Subastas de demo regeneradas con ventanas frescas. Recargá la app."
+        ));
+    }
 
     /**
      * Empresa: empieza la inspección física de la consignación.

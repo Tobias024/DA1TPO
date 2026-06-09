@@ -42,6 +42,7 @@ public class Subasta {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private EstadoSubasta estado = EstadoSubasta.PROXIMA;
 
     private String streamingUrl;
@@ -52,6 +53,7 @@ public class Subasta {
 
     @OneToMany(mappedBy = "subasta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("numeroItem ASC")
+    @Builder.Default
     private List<Pieza> catalogo = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

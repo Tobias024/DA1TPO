@@ -36,7 +36,7 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.title}>Editar Perfil</Text>
       <TextField label="Nombre" value={nombre} onChangeText={setNombre} />
       <TextField label="Apellido" value={apellido} onChangeText={setApellido} />

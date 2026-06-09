@@ -38,6 +38,7 @@ public class Puja {
     @JoinColumn(name = "medio_pago_id", nullable = false)
     private MedioPago medioPago;
 
+    @lombok.Builder.Default
     private boolean confirmada = false;
 
     @PrePersist

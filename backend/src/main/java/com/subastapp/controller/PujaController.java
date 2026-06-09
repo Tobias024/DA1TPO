@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,16 +32,23 @@ public class PujaController {
     @GetMapping
     public ResponseEntity<?> historialPujas(
             @PathVariable String auctionId,
+            @RequestParam(required = false) String piezaId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
 
+        // Con piezaId: solo el historial de ESE ítem (así la mejor oferta mostrada
+        // coincide con el historial). Sin piezaId: historial de toda la subasta.
+        if (piezaId != null && !piezaId.isBlank()) {
+            var lista = pujaRepository.findBySubastaIdAndPiezaIdOrderByTimestampAsc(auctionId, piezaId);
+            return ResponseEntity.ok(Map.of("content", lista));
+        }
         var pujas = pujaRepository.findBySubastaIdOrderByTimestampAsc(
                 auctionId, PageRequest.of(page, size));
         return ResponseEntity.ok(pujas);
     }
 
     @PostMapping
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ResponseEntity<?> realizarPuja(
             @PathVariable String auctionId,
             @RequestBody Map<String, Object> body,
@@ -81,13 +89,33 @@ public class PujaController {
                     .body(Map.of("error", "Medio de pago inválido o no verificado"));
         }
 
-        // 6. Validate bid amount
-        Pieza pieza = subasta.getItemActual();
+        // 6. Resolver el ítem a pujar: el seleccionado (piezaId) o, si no vino, el item actual.
+        String piezaId = (String) body.get("piezaId");
+        Pieza pieza = null;
+        if (piezaId != null) {
+            pieza = subasta.getCatalogo().stream()
+                    .filter(p -> p.getId().equals(piezaId)).findFirst().orElse(null);
+        }
+        if (pieza == null) pieza = subasta.getItemActual();
         if (pieza == null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "No hay item activo en esta subasta"));
         }
 
+        // 6b. Validar la ventana de tiempo del ítem (cada lote se remata en su horario).
+        String estadoPuja = pieza.getEstadoPujaJson();
+        if ("CERRADO".equals(estadoPuja)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "La puja de este ítem ya cerró"));
+        }
+        if ("PROXIMO".equals(estadoPuja)) {
+            Map<String, Object> resp = new java.util.HashMap<>();
+            resp.put("error", "La puja de este ítem todavía no abrió");
+            resp.put("abrePuja", pieza.getInicioPuja());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(resp);
+        }
+
+        // 7. Validate bid amount
         BigDecimal monto = new BigDecimal(body.get("monto").toString());
         BigDecimal minimo = pieza.calcularLimiteMinimoPuja();
         BigDecimal maximo = pieza.calcularLimiteMaximoPuja();

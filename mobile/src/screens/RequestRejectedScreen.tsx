@@ -21,7 +21,7 @@ export default function RequestRejectedScreen() {
   }, [params.consignmentId]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceCream }} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.title}>Solicitud Rechazada</Text>
 
       <Text style={styles.label}>Motivos del rechazo</Text>
