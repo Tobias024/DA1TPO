@@ -486,6 +486,27 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/UserProfile' }
         '401': { description: No autenticado. }
+    put:
+      tags: [Users]
+      summary: Actualizar datos editables del perfil (nombre, apellido, domicilio, país)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                apellido: { type: string }
+                domicilioLegal: { type: string }
+                paisOrigen: { type: string, description: "ISO 3166-1 alpha-3" }
+      responses:
+        '200':
+          description: Perfil actualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfile' }
+        '401': { description: No autenticado. }
 
   /users/me/metrics:
     get:
