@@ -7,7 +7,7 @@ info:
     foto de DNI, gestión de medios de pago, subastas con categoría y moneda,
     pujas con reglas de mínimo/máximo, consignaciones con inspección y póliza
     de seguro, notificaciones, métricas y ventas.
-  version: 2.0.0
+  version: 2.1.0
 
 servers:
   - url: http://localhost:8080/api/v1
@@ -31,7 +31,14 @@ tags:
   - name: Notifications
     description: Centro de notificaciones del usuario.
   - name: Sales
-    description: Historial de ventas (artículos adquiridos).
+    description: Historial de ventas (artículos adquiridos) y multas.
+  - name: Catalogos
+    description: Catálogos de referencia (países).
+  - name: Admin
+    description: >
+      Endpoints administrativos de SOLO desarrollo (perfil `dev`). Simulan el lado
+      "empresa subastadora" y permiten resetear los datos de demo. No requieren JWT
+      y no forman parte del contrato público de la app.
 
 components:
   securitySchemes:
@@ -145,7 +152,7 @@ components:
           enum: [ARS, USD]
         estado:
           type: string
-          enum: [PROGRAMADA, ABIERTA, CERRADA]
+          enum: [PROXIMA, EN_CURSO, CERRADA, CANCELADA]
         streamingUrl: { type: string, nullable: true }
         rematador:
           type: object
@@ -170,31 +177,29 @@ components:
 
     Piece:
       type: object
-      description: "Pieza/ítem del catálogo. Puede estar compuesta por varios elementos (ej. Juego de Té de 18 piezas)."
+      description: "Pieza/ítem del catálogo de una subasta."
       properties:
         id: { type: string }
-        numero: { type: integer }
+        numeroItem: { type: integer }
         descripcion: { type: string }
         precioBase: { type: number, format: double }
-        moneda: { type: string, enum: [ARS, USD] }
-        dueñoActualId: { type: string }
-        fotos:
+        estado:
+          type: string
+          description: "Estado del ciclo de vida del bien (persistido)."
+          enum: [EN_DEPOSITO, EN_EXHIBICION, EN_SUBASTA, ADJUDICADO, VENDIDO, DEVUELTO, RETIRADO]
+        estadoPuja:
+          type: string
+          description: "Estado de la ventana de puja del ítem en este instante (calculado, no persistido)."
+          enum: [PROXIMO, ABIERTO, CERRADO]
+        mejorOferta: { type: number, format: double, nullable: true }
+        inicioPuja: { type: string, format: date-time, nullable: true, description: "Inicio de la ventana de puja del ítem." }
+        finPuja: { type: string, format: date-time, nullable: true, description: "Fin de la ventana de puja del ítem." }
+        imagenes:
           type: array
           items: { type: string }
-          description: "Mínimo 6 fotos por pieza."
-        obraArte:
-          $ref: '#/components/schemas/ObraArte'
-          nullable: true
-        vendido: { type: boolean }
-        precioVenta: { type: number, format: double, nullable: true }
-
-    ObraArte:
-      type: object
-      description: "Datos extra para obras de arte u objetos de diseñador."
-      properties:
-        artista: { type: string }
-        fecha: { type: string }
-        historia: { type: string }
+        depositoNombre: { type: string, nullable: true }
+        depositoDireccion: { type: string, nullable: true }
+        depositoSector: { type: string, nullable: true }
 
     Bid:
       type: object
@@ -268,7 +273,7 @@ components:
         declaraOrigenLicito: { type: boolean }
         estado:
           type: string
-          enum: [ENVIADA, EN_INSPECCION, ACEPTADA, RECHAZADA, EN_SUBASTA, VENDIDA]
+          enum: [PENDIENTE, EN_INSPECCION, ACEPTADO, RECHAZADO, PENDIENTE_CONFIRMACION_USUARIO, EN_SUBASTA, VENDIDO, DEVUELTO]
         # Datos completados por la empresa cuando inspecciona y propone
         valorBaseOfrecido: { type: number, format: double, nullable: true }
         comision: { type: number, format: double, nullable: true }
@@ -312,7 +317,7 @@ components:
         id: { type: string }
         tipo:
           type: string
-          enum: [SOLICITUD_ACEPTADA, SOLICITUD_RECHAZADA, NUEVA_SUBASTA, SUBASTA_ADQUIRIDA, MULTA_APLICADA]
+          enum: [CUENTA_APROBADA, COMPLETAR_REGISTRO, VENTA_GANADA, PAGO_REQUERIDO, MULTA_APLICADA, CONSIGNACION_ACEPTADA, CONSIGNACION_RECHAZADA, OFERTA_BASE_PROPUESTA, BIEN_DEVUELTO]
         titulo: { type: string }
         mensaje: { type: string }
         leida: { type: boolean }
@@ -344,6 +349,20 @@ components:
         costoEnvio: { type: number, format: double }
         medioPago: { $ref: '#/components/schemas/MedioPago' }
         fecha: { type: string, format: date-time }
+
+    Fine:
+      type: object
+      description: "Multa del usuario (una por venta incumplida). Las pagadas quedan como historial."
+      properties:
+        ventaId: { type: string }
+        piezaId: { type: string, nullable: true }
+        descripcion: { type: string, nullable: true }
+        monto: { type: number, format: double }
+        moneda: { type: string, enum: [ARS, USD] }
+        estado:
+          type: string
+          enum: [PENDIENTE, PAGADA]
+        fecha: { type: string, format: date-time, nullable: true }
 
     Error:
       type: object
@@ -467,27 +486,6 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/UserProfile' }
         '401': { description: No autenticado. }
-    put:
-      tags: [Users]
-      summary: Actualizar perfil
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                nombre: { type: string }
-                apellido: { type: string }
-                domicilioLegal: { type: string }
-                paisOrigen: { type: string }
-      responses:
-        '200':
-          description: Perfil actualizado.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UserProfile' }
-        '400': { description: Datos inválidos. }
 
   /users/me/metrics:
     get:
@@ -514,7 +512,9 @@ paths:
                 medioPagoId: { type: string }
       responses:
         '200':
-          description: Multa regularizada.
+          description: >
+            Multa regularizada. El/los ítems impagos vuelven a estado PENDIENTE_PAGO
+            con un nuevo plazo de `plazoPagoHoras` (72 hs) para pagar el producto.
           content:
             application/json:
               schema:
@@ -522,8 +522,22 @@ paths:
                 properties:
                   message: { type: string }
                   tieneMulta: { type: boolean }
+                  plazoPagoHoras: { type: integer, example: 72 }
         '403': { description: Medio de pago inválido. }
         '409': { description: No hay multa pendiente. }
+
+  /users/me/fines:
+    get:
+      tags: [Users]
+      summary: Multas del usuario (pendientes y pagadas) — pantalla Mis Multas
+      responses:
+        '200':
+          description: Lista de multas (una por venta incumplida).
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Fine' }
 
   # ─── AUCTIONS ──────────────────────────────────────────────────────
   /auctions:
@@ -533,7 +547,7 @@ paths:
       parameters:
         - in: query
           name: estado
-          schema: { type: string, enum: [PROXIMA, ABIERTA, EN_CURSO, CERRADA, CANCELADA] }
+          schema: { type: string, enum: [PROXIMA, EN_CURSO, CERRADA, CANCELADA] }
         - in: query
           name: page
           schema: { type: integer, default: 0 }
@@ -660,6 +674,10 @@ paths:
         - in: path
           name: auctionId
           required: true
+          schema: { type: string }
+        - in: query
+          name: piezaId
+          description: "Si se pasa, devuelve solo el historial de ESE ítem (así la mejor oferta coincide con el historial). Sin él, historial de toda la subasta."
           schema: { type: string }
         - in: query
           name: page
@@ -886,13 +904,18 @@ paths:
                 items:
                   type: object
                   properties:
+                    ventaId: { type: string }
                     piezaId: { type: string }
                     subastaId: { type: string }
                     descripcion: { type: string }
                     imagen: { type: string, nullable: true }
                     montoGanador: { type: number }
                     moneda: { type: string }
-                    estadoPago: { type: string }
+                    estadoPago: { type: string, enum: [PENDIENTE_PAGO, PAGADO, INCUMPLIDO] }
+                    fechaLimitePago: { type: string, format: date-time, nullable: true }
+                    vencido: { type: boolean, description: "PENDIENTE_PAGO con plazo vencido." }
+                    multa: { type: number, format: double, nullable: true }
+                    multaPagada: { type: boolean, description: "true si la multa del ítem ya fue regularizada." }
 
   /sales/won/{piezaId}/checkout:
     get:
@@ -951,3 +974,111 @@ paths:
         '403': { description: Medio inválido o no ganaste la pieza. }
         '409': { description: La pieza ya fue pagada. }
         '422': { description: Cheque sin saldo suficiente. }
+
+  # ─── CATALOGOS ─────────────────────────────────────────────────────
+  /paises/todos:
+    get:
+      tags: [Catalogos]
+      summary: Catálogo de países (registro / nacionalidad)
+      security: []
+      responses:
+        '200':
+          description: Lista de países.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    numero: { type: integer }
+                    nombre: { type: string }
+                    nombreCorto: { type: string, description: "ISO 3166-1 alpha-3", example: "ARG" }
+                    capital: { type: string }
+                    nacionalidad: { type: string }
+                    idiomas: { type: string }
+
+  # ─── ADMIN (solo perfil dev — simula empresa) ──────────────────────
+  /admin/reset-demo:
+    post:
+      tags: [Admin]
+      summary: Resetear datos de demo (solo dev)
+      description: >
+        Borra subastas/pujas/ventas/notificaciones y las regenera con ventanas de
+        puja frescas (relativas a ahora), sin reiniciar el backend. Limpia la multa
+        del usuario demo. Útil para volver a probar el ciclo en vivo.
+      security: []
+      responses:
+        '200':
+          description: Demo regenerada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+
+  /admin/consignments/{id}/start-inspection:
+    patch:
+      tags: [Admin]
+      summary: Empresa empieza la inspección (solo dev) — PENDIENTE → EN_INSPECCION
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Consignación en inspección. }
+        '404': { description: No encontrada. }
+
+  /admin/consignments/{id}/propose:
+    patch:
+      tags: [Admin]
+      summary: Empresa propone valor base + comisión (solo dev) — EN_INSPECCION → PENDIENTE_CONFIRMACION_USUARIO
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [precioBaseOfrecido, comision]
+              properties:
+                precioBaseOfrecido: { type: number, format: double }
+                comision: { type: number, format: double }
+                subastaId: { type: string, nullable: true }
+      responses:
+        '200': { description: Propuesta enviada. }
+        '400': { description: precioBaseOfrecido y comision requeridos. }
+        '404': { description: No encontrada. }
+
+  /admin/consignments/{id}/reject:
+    patch:
+      tags: [Admin]
+      summary: Empresa rechaza tras inspección (solo dev) — EN_INSPECCION → RECHAZADO
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                causaRechazo: { type: string }
+                gastosDevolucion: { type: number, format: double }
+      responses:
+        '200': { description: Rechazada. }
+        '404': { description: No encontrada. }
+
+  /admin/consignments/{id}/mark-sold:
+    patch:
+      tags: [Admin]
+      summary: Empresa marca la pieza como vendida (solo dev) — EN_SUBASTA → VENDIDO
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Marcada vendida. }
+        '409': { description: La consignación no está en subasta. }
+        '404': { description: No encontrada. }
