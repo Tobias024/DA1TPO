@@ -33,6 +33,22 @@ public class UsuarioController {
 
     @GetMapping("/users/me")
     public ResponseEntity<?> perfil(@AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(perfilMap(usuario));
+    }
+
+    /** Actualiza datos editables del perfil (nombre, apellido, domicilio, país). */
+    @PutMapping("/users/me")
+    public ResponseEntity<?> actualizarPerfil(@AuthenticationPrincipal Usuario usuario,
+                                              @RequestBody Map<String, Object> body) {
+        if (body.get("nombre") instanceof String s && !s.isBlank()) usuario.setNombre(s.trim());
+        if (body.get("apellido") instanceof String s && !s.isBlank()) usuario.setApellido(s.trim());
+        if (body.get("domicilioLegal") instanceof String s) usuario.setDomicilioLegal(s.trim());
+        if (body.get("paisOrigen") instanceof String s) usuario.setPaisOrigen(s.trim());
+        usuarioRepository.save(usuario);
+        return ResponseEntity.ok(perfilMap(usuario));
+    }
+
+    private Map<String, Object> perfilMap(Usuario usuario) {
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("id", usuario.getId());
         resp.put("nombre", usuario.getNombre());
@@ -44,7 +60,7 @@ public class UsuarioController {
         resp.put("estado", usuario.getEstado());
         resp.put("tieneMulta", usuario.isTieneMulta());
         resp.put("montoPendienteMulta", usuario.getMontoPendienteMulta());
-        return ResponseEntity.ok(resp);
+        return resp;
     }
 
     /** Regulariza/paga la multa pendiente del usuario (libera el bloqueo para pujar/unirse). */
