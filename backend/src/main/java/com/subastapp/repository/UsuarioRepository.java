@@ -1,9 +1,11 @@
 package com.subastapp.repository;
 
 import com.subastapp.model.Usuario;
+import com.subastapp.model.enums.EstadoUsuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +15,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     boolean existsByEmail(String email);
     boolean existsByDocumento(String documento);
     Optional<Usuario> findByRegistrationToken(String token);
+    List<Usuario> findByEstado(EstadoUsuario estado);
 }

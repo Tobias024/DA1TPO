@@ -10,4 +10,5 @@ import java.util.List;
 public interface MedioPagoRepository extends JpaRepository<MedioPago, String> {
     List<MedioPago> findByUsuarioId(String usuarioId);
     boolean existsByUsuarioIdAndVerificadoTrue(String usuarioId);
+    List<MedioPago> findByVerificadoFalse();
 }

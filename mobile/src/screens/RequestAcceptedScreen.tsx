@@ -54,8 +54,8 @@ export default function RequestAcceptedScreen() {
       </Text>
 
       <Card>
-        <Row k="Subasta asignada" v={c?.subastaAsignadaId ?? '—'} />
-        <Row k="Fecha" v={c?.fechaSubastaAsignada ? new Date(c.fechaSubastaAsignada).toLocaleString('es-AR') : '—'} />
+        <Row k="Subasta" v={c?.subastaTitulo ?? 'La empresa la asignará al aceptar'} />
+        <Row k="Fecha" v={c?.subastaFecha ? new Date(c.subastaFecha).toLocaleString('es-AR') : '—'} />
         <Row k="Valor base ofrecido" v={(c?.precioBaseOfrecido ?? c?.valorBaseOfrecido) ? `$ ${(c!.precioBaseOfrecido ?? c!.valorBaseOfrecido)!.toLocaleString('es-AR')}` : '—'} highlight />
         <Row k="Comisiones" v={c?.comision ? `$ ${c.comision.toLocaleString('es-AR')}` : '—'} />
         {c?.polizaSeguro ? (

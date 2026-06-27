@@ -32,12 +32,11 @@ public class MedioPago {
     private Moneda moneda;
 
     /**
-     * Verificación a cargo de la empresa subastadora (sistema externo, fuera de
-     * scope de esta entrega). En la app móvil se asume verificado por default
-     * — el lado servidor podrá invalidarlo cuando exista la integración.
+     * Verificación a cargo de la empresa/admin. Un medio nace SIN verificar; la
+     * empresa lo verifica (endpoint admin) antes de habilitar al usuario a pujar.
      */
     @lombok.Builder.Default
-    private boolean verificado = true;
+    private boolean verificado = false;
 
     // CUENTA_BANCARIA fields
     private String banco;

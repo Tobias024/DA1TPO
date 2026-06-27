@@ -1,0 +1,21 @@
+meta {
+  name: 10 Rechazar Medio de Pago
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/admin/payment-methods/{{medioPagoId}}/reject
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "motivo": "Los datos del medio de pago no pudieron verificarse."
+  }
+}
+
+docs {
+  Empresa: rechaza un medio de pago (queda sin verificar). Notifica al usuario.
+}

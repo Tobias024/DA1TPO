@@ -4,10 +4,12 @@ import com.subastapp.model.Consignacion;
 import com.subastapp.model.Usuario;
 import com.subastapp.model.enums.EstadoConsignacion;
 import com.subastapp.repository.ConsignacionRepository;
+import com.subastapp.util.ConsignacionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,16 +23,19 @@ public class ConsignacionController {
     private final ConsignacionRepository consignacionRepository;
 
     @GetMapping
-    public ResponseEntity<List<Consignacion>> listar(@AuthenticationPrincipal Usuario usuario) {
-        return ResponseEntity.ok(consignacionRepository.findByUsuarioIdOrderByFechaSolicitudDesc(usuario.getId()));
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> listar(@AuthenticationPrincipal Usuario usuario) {
+        return ResponseEntity.ok(ConsignacionMapper.toDtoList(
+                consignacionRepository.findByUsuarioIdOrderByFechaSolicitudDesc(usuario.getId())));
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> detalle(@PathVariable String id,
                                       @AuthenticationPrincipal Usuario usuario) {
         return consignacionRepository.findById(id)
                 .filter(c -> c.getUsuario().getId().equals(usuario.getId()))
-                .map(ResponseEntity::ok)
+                .map(c -> ResponseEntity.ok(ConsignacionMapper.toDto(c)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -84,9 +89,10 @@ public class ConsignacionController {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
                                 .body(Map.of("error", "No hay oferta pendiente de aceptación"));
                     }
-                    c.setEstado(EstadoConsignacion.EN_SUBASTA);
+                    c.setEstado(EstadoConsignacion.ACEPTADO);
                     consignacionRepository.save(c);
-                    return ResponseEntity.ok(Map.of("message", "Oferta aceptada. El bien quedará incluido en la subasta."));
+                    return ResponseEntity.ok(Map.of("message",
+                            "Oferta aceptada. La empresa asignará tu bien a una subasta y te avisará."));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

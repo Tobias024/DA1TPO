@@ -74,6 +74,7 @@ public class DevDataSeeder implements CommandLineRunner {
 
         Usuario u = obtenerOCrearUsuarioDemo();
         sembrarMedioPagoSiHaceFalta(u);
+        sembrarUsuariosPendientesSiHaceFalta();
         sembrarSubastasSiHaceFalta();
         sembrarConsignacionesSiHaceFalta(u);
         sembrarPujasSiHaceFalta(u);
@@ -143,6 +144,29 @@ public class DevDataSeeder implements CommandLineRunner {
         });
     }
 
+    /**
+     * Usuarios en PENDIENTE_VERIFICACION (sin password) para demostrar el flujo real
+     * de aprobación/rechazo por la empresa: PATCH /admin/users/{id}/approve|reject.
+     */
+    private void sembrarUsuariosPendientesSiHaceFalta() {
+        crearUsuarioPendiente("22222222", "Lucía", "Gómez", "lucia.gomez@subastar.ar");
+        crearUsuarioPendiente("33333333", "Marcos", "Díaz", "marcos.diaz@subastar.ar");
+    }
+
+    private void crearUsuarioPendiente(String doc, String nombre, String apellido, String email) {
+        if (usuarios.findByDocumento(doc).isPresent()) return;
+        usuarios.save(Usuario.builder()
+                .nombre(nombre)
+                .apellido(apellido)
+                .email(email)
+                .documento(doc)
+                .password("PENDING") // todavía no fijó contraseña (paso 2)
+                .domicilioLegal("Calle Falsa 123")
+                .paisOrigen("ARG")
+                .estado(EstadoUsuario.PENDIENTE_VERIFICACION)
+                .build());
+    }
+
     private void sembrarMedioPagoSiHaceFalta(Usuario u) {
         if (!mediosPago.findByUsuarioId(u.getId()).isEmpty()) return;
         // Tarjeta de crédito local
@@ -187,6 +211,17 @@ public class DevDataSeeder implements CommandLineRunner {
                 .numeroCheque("CHQ-2026-00042")
                 .montoCheque(new BigDecimal("500000"))
                 .montoUsado(BigDecimal.ZERO)
+                .build());
+        // Tarjeta SIN verificar — blanco del flujo admin /payment-methods/{id}/verify.
+        mediosPago.save(MedioPago.builder()
+                .usuario(u)
+                .tipo(TipoMedioPago.TARJETA_CREDITO)
+                .moneda(Moneda.ARS)
+                .verificado(false)
+                .ultimosDigitosTarjeta("7777")
+                .titularTarjeta("JUAN PEREZ")
+                .vencimientoTarjeta("05/29")
+                .esInternacional(false)
                 .build());
     }
 
@@ -590,6 +625,21 @@ public class DevDataSeeder implements CommandLineRunner {
                 .fotos(images("cons-sub-01", "cons-sub-02", "cons-sub-03", "cons-sub-04", "cons-sub-05", "cons-sub-06"))
                 .estado(EstadoConsignacion.EN_SUBASTA)
                 .precioBaseOfrecido(new BigDecimal("520000"))
+                .comision(new BigDecimal("0.12"))
+                .build());
+
+        // 6. ACEPTADO — el usuario aceptó la oferta; la empresa debe asignarlo a una
+        // subasta (demo del flujo admin PATCH /admin/consignments/{id}/assign).
+        consignaciones.save(Consignacion.builder()
+                .usuario(u)
+                .tipoBien("Escultura de mármol")
+                .descripcion("Escultura de mármol de Carrara, figura clásica, 60 cm. Base de madera tallada.")
+                .categoria("ARTE")
+                .declaraPropiedad(true)
+                .declaraOrigenLicito(true)
+                .fotos(images("cons-acpt-01", "cons-acpt-02", "cons-acpt-03", "cons-acpt-04", "cons-acpt-05", "cons-acpt-06"))
+                .estado(EstadoConsignacion.ACEPTADO)
+                .precioBaseOfrecido(new BigDecimal("340000"))
                 .comision(new BigDecimal("0.12"))
                 .build());
     }

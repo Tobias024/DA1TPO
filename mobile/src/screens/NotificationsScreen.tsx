@@ -18,10 +18,14 @@ const ICON: Record<TipoNotificacion, IconSpec> = {
   CONSIGNACION_ACEPTADA: { name: 'checkmark-circle', color: colors.greenLive },
   CONSIGNACION_RECHAZADA: { name: 'close-circle', color: colors.redLive },
   OFERTA_BASE_PROPUESTA: { name: 'pricetag', color: colors.brandPrimary },
+  ASIGNADO_A_SUBASTA: { name: 'hammer', color: colors.brandPrimary },
   VENTA_GANADA: { name: 'trophy', color: colors.catOro },
   PAGO_REQUERIDO: { name: 'card', color: colors.brandPrimary },
   MULTA_APLICADA: { name: 'warning', color: colors.orangePending },
   CUENTA_APROBADA: { name: 'shield-checkmark', color: colors.greenLive },
+  CUENTA_RECHAZADA: { name: 'close-circle', color: colors.redLive },
+  MEDIO_PAGO_VERIFICADO: { name: 'card', color: colors.greenLive },
+  MEDIO_PAGO_RECHAZADO: { name: 'card', color: colors.redLive },
   COMPLETAR_REGISTRO: { name: 'person-add', color: colors.brandPrimary },
   BIEN_DEVUELTO: { name: 'return-down-back', color: colors.inputHint },
 };
@@ -58,6 +62,10 @@ export default function NotificationsScreen() {
         break;
       case 'CONSIGNACION_RECHAZADA':
         if (n.referenciaId) nav.navigate('RequestRejected', { consignmentId: n.referenciaId });
+        break;
+      case 'ASIGNADO_A_SUBASTA':
+        // referenciaId = consignacionId → ubicación/póliza del bien ya en subasta.
+        if (n.referenciaId) nav.navigate('PieceLocation', { consignmentId: n.referenciaId });
         break;
       case 'VENTA_GANADA': {
         // La notif trae el id de la venta; resolvemos el item ganado para abrir su

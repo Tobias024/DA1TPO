@@ -33,6 +33,16 @@ export default function PieceLocationScreen() {
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.title}>Ubicación de Pieza</Text>
 
+      {c?.subastaTitulo ? (
+        <Card style={{ marginBottom: 12 }}>
+          <Text style={styles.lbl}>Subasta asignada</Text>
+          <Text style={styles.val}>{c.subastaTitulo}</Text>
+          {c.subastaFecha ? (
+            <Text style={styles.numero}>{new Date(c.subastaFecha).toLocaleString('es-AR')}</Text>
+          ) : null}
+        </Card>
+      ) : null}
+
       <Card style={{ marginBottom: 12 }}>
         <Text style={styles.lbl}>Depósito</Text>
         <Text style={styles.val}>{c?.ubicacionDeposito ?? '—'}</Text>

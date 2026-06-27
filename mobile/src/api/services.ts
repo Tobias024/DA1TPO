@@ -14,7 +14,14 @@ export const authApi = {
     api.post<{ message: string; registrationId: string; registrationToken: string }>('/auth/register/step1', body).then((r) => r.data),
 
   registerStatus: (registrationId: string) =>
-    api.get<{ estado: string; listoParaCompletar: boolean; registrationToken: string | null }>(
+    api.get<{
+      estado: string;
+      listoParaCompletar: boolean;
+      aprobado: boolean;
+      rechazado: boolean;
+      motivoRechazo: string | null;
+      registrationToken: string | null;
+    }>(
       `/auth/register/${registrationId}/status`,
     ).then((r) => r.data),
 

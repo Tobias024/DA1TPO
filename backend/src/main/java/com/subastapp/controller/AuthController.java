@@ -62,19 +62,15 @@ public class AuthController {
                 .estado(EstadoUsuario.PENDIENTE_VERIFICACION)
                 .build();
 
-        // Verificación externa de la empresa (sistema legacy fuera de scope): se simula
-        // de forma instantánea — se emite el token de registro y se habilita el paso 2.
-        usuario.setEstado(EstadoUsuario.PENDIENTE_COMPLETAR_REGISTRO);
-        usuario.setRegistrationToken(UUID.randomUUID().toString());
-        usuario.setRegistrationTokenExpiry(LocalDateTime.now().plusHours(24));
-
+        // La empresa/admin debe APROBAR la solicitud (endpoint admin) antes de que el
+        // usuario pueda fijar su contraseña: la aprobación emite el registrationToken y
+        // asigna la categoría. Acá la cuenta queda PENDIENTE_VERIFICACION (sin token).
         usuarioRepository.save(usuario);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
-                        "message", "Registro iniciado. Tu cuenta está en verificación.",
-                        "registrationId", usuario.getId(),
-                        "registrationToken", usuario.getRegistrationToken()
+                        "message", "Registro iniciado. La empresa revisará tus datos y aprobará (o rechazará) tu cuenta.",
+                        "registrationId", usuario.getId()
                 ));
     }
 
@@ -84,9 +80,13 @@ public class AuthController {
         return usuarioRepository.findById(registrationId)
                 .map(usuario -> {
                     boolean listo = usuario.getEstado() == EstadoUsuario.PENDIENTE_COMPLETAR_REGISTRO;
+                    boolean rechazado = usuario.getEstado() == EstadoUsuario.RECHAZADO;
                     Map<String, Object> resp = new HashMap<>();
                     resp.put("estado", usuario.getEstado());
                     resp.put("listoParaCompletar", listo);
+                    resp.put("aprobado", listo || usuario.getEstado() == EstadoUsuario.APROBADO);
+                    resp.put("rechazado", rechazado);
+                    resp.put("motivoRechazo", rechazado ? usuario.getMotivoRechazo() : null);
                     resp.put("registrationToken", listo ? usuario.getRegistrationToken() : null);
                     return ResponseEntity.ok(resp);
                 })

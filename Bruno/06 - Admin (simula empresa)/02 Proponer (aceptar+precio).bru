@@ -13,17 +13,14 @@ patch {
 body:json {
   {
     "precioBaseOfrecido": 250000,
-    "comision": 0.15,
-    "subastaId": "{{auctionId}}"
+    "comision": 0.15
   }
 }
 
 docs {
   Simula la aceptación del bien por la empresa con propuesta de valor base
-  + comisión + subasta asignada.
+  + comisión. La SUBASTA ya NO se elige acá — es un paso explícito posterior
+  (12 Asignar a Subasta), tras que el usuario acepte la oferta.
 
   Transición: EN_INSPECCION → PENDIENTE_CONFIRMACION_USUARIO.
-
-  El campo `subastaId` es opcional. Si lo querés, agarrá uno de
-  03 - Subastas/01 Listar Activas.
 }

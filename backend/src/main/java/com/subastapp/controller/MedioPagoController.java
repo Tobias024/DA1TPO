@@ -51,14 +51,14 @@ public class MedioPagoController {
                 .vencimientoTarjeta((String) body.get("vencimiento"))
                 .montoCheque(num(body, "montoCheque", "montoGarantia"))
                 .numeroCheque((String) body.get("numeroCheque"))
-                // La verificación efectiva queda a cargo de la empresa subastadora
-                // (sistema externo, fuera de scope de esta entrega). Default `true`.
-                .verificado(true)
+                // Nace SIN verificar: la empresa/admin debe verificarlo antes de
+                // habilitar al usuario a pujar (endpoint admin /payment-methods/{id}/verify).
+                .verificado(false)
                 .build();
 
         medioPagoRepository.save(medioPago);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "Medio de pago agregado.",
+                .body(Map.of("message", "Medio de pago agregado. Queda pendiente de verificación de la empresa antes de poder pujar.",
                         "id", medioPago.getId()));
     }
 

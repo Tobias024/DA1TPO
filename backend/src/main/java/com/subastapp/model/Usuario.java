@@ -61,6 +61,10 @@ public class Usuario implements UserDetails {
     private String registrationToken;
     private java.time.LocalDateTime registrationTokenExpiry;
 
+    // Motivo de rechazo cuando la empresa/admin rechaza la solicitud de registro.
+    @Column(columnDefinition = "TEXT")
+    private String motivoRechazo;
+
     // Current active auction session (only 1 allowed at a time)
     private String subastaActivaId;
 

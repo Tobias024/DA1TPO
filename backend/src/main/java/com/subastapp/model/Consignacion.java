@@ -76,6 +76,9 @@ public class Consignacion {
     @JoinColumn(name = "subasta_id")
     private Subasta subastaAsignada;
 
+    // Momento en que la empresa asignó el bien a una subasta/catálogo.
+    private LocalDateTime fechaSubastaAsignada;
+
     // Created piece after acceptance
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "pieza_id")

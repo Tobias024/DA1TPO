@@ -17,7 +17,7 @@ const ESTADO_LABEL: Record<string, string> = {
   PENDIENTE: 'Enviada — pendiente de inspección',
   EN_INSPECCION: 'En inspección',
   PENDIENTE_CONFIRMACION_USUARIO: 'Propuesta lista — revisá las condiciones',
-  ACEPTADO: 'Aceptada',
+  ACEPTADO: 'Aceptada — esperando asignación a subasta',
   RECHAZADO: 'Rechazada',
   EN_SUBASTA: 'En subasta',
   VENDIDO: 'Vendida',
@@ -64,7 +64,9 @@ export default function MyConsignmentsScreen() {
           <Card onPress={() => open(item)} style={{ marginBottom: 10 }}>
             <Text style={styles.title}>{item.nombreBien ?? item.tipoBien ?? item.descripcion ?? 'Bien consignado'}</Text>
             <Text style={[styles.estado, { color: ESTADO_COLOR(item.estado) }]}>
-              {ESTADO_LABEL[item.estado] ?? item.estado}
+              {item.estado === 'EN_SUBASTA' && item.subastaTitulo
+                ? `En subasta: ${item.subastaTitulo}`
+                : (ESTADO_LABEL[item.estado] ?? item.estado)}
             </Text>
             {(item.precioBaseOfrecido ?? item.valorBaseOfrecido) ? (
               <Text style={styles.base}>Valor base: $ {(item.precioBaseOfrecido ?? item.valorBaseOfrecido)!.toLocaleString('es-AR')}</Text>
