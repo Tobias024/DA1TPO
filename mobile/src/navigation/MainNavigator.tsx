@@ -30,7 +30,7 @@ export default function MainNavigator() {
         headerStyle: { backgroundColor: colors.brandPrimary },
         headerTintColor: colors.onPrimary,
         headerTitleStyle: { fontWeight: '700' },
-        contentStyle: { backgroundColor: 'transparent' },
+        contentStyle: { backgroundColor: colors.surfaceCream },
       }}
     >
       <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />

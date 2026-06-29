@@ -1,0 +1,28 @@
+meta {
+  name: 06 Aprobar Usuario
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/admin/users/{{userPendingId}}/approve
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "categoria": "ORO"
+  }
+}
+
+docs {
+  Empresa: aprueba una solicitud de registro y le asigna la categoría.
+  Transición: PENDIENTE_VERIFICACION → PENDIENTE_COMPLETAR_REGISTRO.
+
+  Devuelve el `registrationToken` (en producción iría por email) para poder
+  completar el paso 2 desde 01 - Auth/03 Register Step2.
+
+  Conseguí el id con 08 Listar Usuarios Pendientes (el seeder deja 22222222 y
+  33333333 pendientes). categoria: COMUN | ESPECIAL | PLATA | ORO | PLATINO.
+}

@@ -1,0 +1,16 @@
+meta {
+  name: 11 Listar Medios Pendientes
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/admin/payment-methods
+  body: none
+  auth: none
+}
+
+docs {
+  Empresa: lista los medios de pago pendientes de verificación (verificado=false).
+  Copiá un `id` para usarlo en 09 Verificar / 10 Rechazar (variable medioPagoId).
+}

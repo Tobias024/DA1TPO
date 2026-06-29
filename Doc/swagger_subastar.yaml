@@ -1067,10 +1067,10 @@ paths:
               properties:
                 precioBaseOfrecido: { type: number, format: double }
                 comision: { type: number, format: double }
-                subastaId: { type: string, nullable: true }
       responses:
         '200': { description: Propuesta enviada. }
         '400': { description: precioBaseOfrecido y comision requeridos. }
+        '409': { description: La consignación no está en inspección. }
         '404': { description: No encontrada. }
 
   /admin/consignments/{id}/reject:
@@ -1103,3 +1103,139 @@ paths:
         '200': { description: Marcada vendida. }
         '409': { description: La consignación no está en subasta. }
         '404': { description: No encontrada. }
+
+  /admin/consignments/{id}/assign:
+    patch:
+      tags: [Admin]
+      summary: Empresa asigna un bien ACEPTADO a una subasta (solo dev) — ACEPTADO → EN_SUBASTA
+      description: >
+        Momento explícito en que la empresa decide en qué subasta/catálogo entra el
+        bien. Crea la Pieza (con depósito + póliza de seguro), la agrega al catálogo
+        de la subasta y notifica al vendedor.
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subastaId]
+              properties:
+                subastaId: { type: string }
+                numeroItem: { type: integer, nullable: true }
+                deposito:
+                  type: object
+                  properties:
+                    nombre: { type: string }
+                    direccion: { type: string }
+                    sector: { type: string }
+                poliza:
+                  type: object
+                  properties:
+                    numeroPoliza: { type: string }
+                    compania: { type: string }
+                    contactoCompania: { type: string }
+                    montoAsegurado: { type: number, format: double }
+      responses:
+        '200': { description: Asignada; devuelve piezaId + subastaTitulo. }
+        '400': { description: subastaId requerido. }
+        '404': { description: Consignación o subasta no encontrada. }
+        '409': { description: La consignación no está ACEPTADA o ya fue asignada. }
+        '422': { description: Falta el precio base ofrecido. }
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: Listar usuarios por estado (solo dev)
+      security: []
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema: { type: string, default: PENDIENTE_VERIFICACION }
+      responses:
+        '200': { description: Lista de usuarios. }
+        '400': { description: Estado inválido. }
+
+  /admin/users/{id}/approve:
+    patch:
+      tags: [Admin]
+      summary: Empresa aprueba el registro y asigna categoría (solo dev) — PENDIENTE_VERIFICACION → PENDIENTE_COMPLETAR_REGISTRO
+      description: >
+        Reemplaza la verificación simulada por una aprobación real de la empresa.
+        Emite el registrationToken (para completar el paso 2) y asigna la categoría.
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoria:
+                  type: string
+                  enum: [COMUN, ESPECIAL, PLATA, ORO, PLATINO]
+      responses:
+        '200': { description: Aprobado; devuelve estado, categoria y registrationToken. }
+        '400': { description: Categoría inválida. }
+        '404': { description: No encontrado. }
+        '409': { description: El usuario no está pendiente de verificación. }
+
+  /admin/users/{id}/reject:
+    patch:
+      tags: [Admin]
+      summary: Empresa rechaza el registro (solo dev) — PENDIENTE_VERIFICACION → RECHAZADO
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivoRechazo: { type: string }
+      responses:
+        '200': { description: Rechazado; devuelve estado y motivoRechazo. }
+        '404': { description: No encontrado. }
+        '409': { description: El usuario no está pendiente de verificación. }
+
+  /admin/payment-methods:
+    get:
+      tags: [Admin]
+      summary: Listar medios de pago pendientes de verificación (solo dev)
+      security: []
+      responses:
+        '200': { description: Lista de medios sin verificar. }
+
+  /admin/payment-methods/{id}/verify:
+    patch:
+      tags: [Admin]
+      summary: Empresa verifica un medio de pago (solo dev) — habilita a pujar
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Verificado. }
+        '404': { description: No encontrado. }
+
+  /admin/payment-methods/{id}/reject:
+    patch:
+      tags: [Admin]
+      summary: Empresa rechaza un medio de pago (solo dev) — queda sin verificar
+      security: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo: { type: string }
+      responses:
+        '200': { description: Rechazado. }
+        '404': { description: No encontrado. }

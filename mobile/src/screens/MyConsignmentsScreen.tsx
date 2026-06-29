@@ -17,7 +17,7 @@ const ESTADO_LABEL: Record<string, string> = {
   PENDIENTE: 'Enviada — pendiente de inspección',
   EN_INSPECCION: 'En inspección',
   PENDIENTE_CONFIRMACION_USUARIO: 'Propuesta lista — revisá las condiciones',
-  ACEPTADO: 'Aceptada',
+  ACEPTADO: 'Aceptada — esperando asignación a subasta',
   RECHAZADO: 'Rechazada',
   EN_SUBASTA: 'En subasta',
   VENDIDO: 'Vendida',
@@ -45,8 +45,13 @@ export default function MyConsignmentsScreen() {
   const open = (c: Consignment) => {
     if (c.estado === 'PENDIENTE_CONFIRMACION_USUARIO' || c.estado === 'ACEPTADO') {
       nav.navigate('RequestAccepted', { consignmentId: c.id });
-    } else if (c.estado === 'RECHAZADO') {
+    } else if (c.estado === 'RECHAZADO' || c.estado === 'DEVUELTO') {
+      // RECHAZADO = la empresa rechazó; DEVUELTO = el usuario rechazó la oferta.
+      // Ambos muestran motivo/gastos de envío (no tienen pieza, así que no van a PieceLocation).
       nav.navigate('RequestRejected', { consignmentId: c.id });
+    } else if (c.estado === 'PENDIENTE') {
+      // Aún sin pieza/depósito asignado → pantalla de envío para confirmar el despacho.
+      nav.navigate('RequestSent', { consignmentId: c.id });
     } else {
       nav.navigate('PieceLocation', { consignmentId: c.id });
     }
@@ -64,7 +69,9 @@ export default function MyConsignmentsScreen() {
           <Card onPress={() => open(item)} style={{ marginBottom: 10 }}>
             <Text style={styles.title}>{item.nombreBien ?? item.tipoBien ?? item.descripcion ?? 'Bien consignado'}</Text>
             <Text style={[styles.estado, { color: ESTADO_COLOR(item.estado) }]}>
-              {ESTADO_LABEL[item.estado] ?? item.estado}
+              {item.estado === 'EN_SUBASTA' && item.subastaTitulo
+                ? `En subasta: ${item.subastaTitulo}`
+                : (ESTADO_LABEL[item.estado] ?? item.estado)}
             </Text>
             {(item.precioBaseOfrecido ?? item.valorBaseOfrecido) ? (
               <Text style={styles.base}>Valor base: $ {(item.precioBaseOfrecido ?? item.valorBaseOfrecido)!.toLocaleString('es-AR')}</Text>

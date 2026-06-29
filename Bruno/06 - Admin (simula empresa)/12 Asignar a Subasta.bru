@@ -1,0 +1,31 @@
+meta {
+  name: 12 Asignar a Subasta
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{baseUrl}}/admin/consignments/{{consignmentId}}/assign
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "subastaId": "{{auctionId}}"
+  }
+}
+
+docs {
+  Empresa: momento EXPLÍCITO en que el bien aceptado se incluye en una subasta.
+  Crea la Pieza (con depósito + póliza de seguro), la agrega al catálogo de la
+  subasta y notifica al vendedor.
+
+  Pre: la consignación debe estar ACEPTADA por el usuario (el seeder deja una
+  lista: ver 05 - Consignaciones/01 Listar). subastaId: una PROXIMA de
+  03 - Subastas/01 Listar Activas (ej. "Antigüedades y Mobiliario").
+
+  Transición: ACEPTADO → EN_SUBASTA.
+  Opcionales en el body: numeroItem, deposito{nombre,direccion,sector},
+  poliza{numeroPoliza,compania,contactoCompania,montoAsegurado}.
+}

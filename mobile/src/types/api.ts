@@ -4,17 +4,28 @@ export type Categoria = 'COMUN' | 'ESPECIAL' | 'PLATA' | 'ORO' | 'PLATINO';
 export type Moneda = 'ARS' | 'USD';
 export type EstadoSubasta = 'PROXIMA' | 'EN_CURSO' | 'CERRADA' | 'CANCELADA';
 export type EstadoPieza = 'EN_DEPOSITO' | 'EN_EXHIBICION' | 'EN_SUBASTA' | 'ADJUDICADO' | 'VENDIDO' | 'DEVUELTO' | 'RETIRADO';
-export type EstadoUsuario = 'PENDIENTE_VERIFICACION' | 'APROBADO' | 'SUSPENDIDO';
+export type EstadoUsuario =
+  | 'PENDIENTE_VERIFICACION'
+  | 'PENDIENTE_COMPLETAR_REGISTRO'
+  | 'APROBADO'
+  | 'RECHAZADO'
+  | 'SUSPENDIDO';
 export type TipoMedioPago = 'CUENTA_BANCARIA' | 'TARJETA_CREDITO' | 'CHEQUE_CERTIFICADO';
 export type TipoNotificacion =
   | 'CUENTA_APROBADA'
+  | 'CUENTA_RECHAZADA'
   | 'COMPLETAR_REGISTRO'
   | 'VENTA_GANADA'
   | 'PAGO_REQUERIDO'
   | 'MULTA_APLICADA'
+  | 'MEDIO_PAGO_VERIFICADO'
+  | 'MEDIO_PAGO_RECHAZADO'
+  | 'CONSIGNACION_RECIBIDA'
+  | 'CONSIGNACION_EN_INSPECCION'
   | 'CONSIGNACION_ACEPTADA'
   | 'CONSIGNACION_RECHAZADA'
   | 'OFERTA_BASE_PROPUESTA'
+  | 'ASIGNADO_A_SUBASTA'
   | 'BIEN_DEVUELTO';
 export type EstadoConsignacion =
   | 'PENDIENTE'
@@ -153,6 +164,8 @@ export interface MedioPago {
   tipo: TipoMedioPago;
   moneda?: Moneda;
   verificado: boolean;
+  rechazado?: boolean;
+  motivoRechazo?: string | null;
   proveedor: string;
   ultimosDigitos?: string;
   // Tarjeta de crédito (datos enmascarados)
@@ -215,9 +228,14 @@ export interface Consignment {
   descripcionDetallada?: string;
   valorBaseOfrecido?: number | null;
   ubicacionDeposito?: string | null;
+  deposito?: { nombre?: string | null; direccion?: string | null; sector?: string | null } | null;
   subastaAsignadaId?: string | null;
+  subastaTitulo?: string | null;
+  subastaFecha?: string | null;
   fechaSubastaAsignada?: string | null;
   motivoRechazo?: string | null;
+  envioConfirmado?: boolean;
+  fechaEnvio?: string | null;
 }
 
 export interface CreateConsignmentRequest {

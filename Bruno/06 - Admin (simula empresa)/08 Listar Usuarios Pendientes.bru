@@ -1,0 +1,20 @@
+meta {
+  name: 08 Listar Usuarios Pendientes
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/admin/users?estado=PENDIENTE_VERIFICACION
+  body: none
+  auth: none
+}
+
+params:query {
+  estado: PENDIENTE_VERIFICACION
+}
+
+docs {
+  Empresa: lista los usuarios en un estado dado (default PENDIENTE_VERIFICACION).
+  Copiá un `id` para usarlo en 06 Aprobar / 07 Rechazar (variable userPendingId).
+}

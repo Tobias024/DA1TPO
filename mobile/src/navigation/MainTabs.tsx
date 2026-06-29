@@ -7,10 +7,26 @@ import HomeScreen from '@/screens/HomeScreen';
 import AuctionsScreen from '@/screens/AuctionsScreen';
 import NotificationsScreen from '@/screens/NotificationsScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
+import ScreenBackground from '@/components/ScreenBackground';
 import { colors } from '@/theme/colors';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
+
+// Cada pantalla de tab va sobre un fondo OPACO (con textura) para que la entrante
+// tape a la saliente durante el cambio → no se ven las dos superpuestas. Los
+// componentes envueltos se definen a nivel de módulo para no re-montar en cada render.
+const withBg = (C: React.ComponentType) => function WithBg() {
+  return (
+    <ScreenBackground>
+      <C />
+    </ScreenBackground>
+  );
+};
+const HomeWithBg = withBg(HomeScreen);
+const AuctionsWithBg = withBg(AuctionsScreen);
+const NotificationsWithBg = withBg(NotificationsScreen);
+const ProfileWithBg = withBg(ProfileScreen);
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -43,6 +59,7 @@ export default function MainTabs() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        animation: 'none', // swap instantáneo, sin fundido cruzado
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.inputHint,
         tabBarStyle: {
@@ -55,8 +72,8 @@ export default function MainTabs() {
         },
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: tabIcon('home', 'home-outline') }} />
-      <Tab.Screen name="Auctions" component={AuctionsScreen} options={{ tabBarIcon: tabIcon('search', 'search-outline') }} />
+      <Tab.Screen name="Home" component={HomeWithBg} options={{ tabBarIcon: tabIcon('home', 'home-outline') }} />
+      <Tab.Screen name="Auctions" component={AuctionsWithBg} options={{ tabBarIcon: tabIcon('search', 'search-outline') }} />
       <Tab.Screen
         name="NuevaSolicitud"
         component={NoopScreen}
@@ -69,8 +86,8 @@ export default function MainTabs() {
           },
         })}
       />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ tabBarIcon: tabIcon('notifications', 'notifications-outline') }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarIcon: tabIcon('person', 'person-outline') }} />
+      <Tab.Screen name="Notifications" component={NotificationsWithBg} options={{ tabBarIcon: tabIcon('notifications', 'notifications-outline') }} />
+      <Tab.Screen name="Profile" component={ProfileWithBg} options={{ tabBarIcon: tabIcon('person', 'person-outline') }} />
     </Tab.Navigator>
   );
 }

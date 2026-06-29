@@ -1,0 +1,25 @@
+meta {
+  name: 07 Rechazar Usuario
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/admin/users/{{userPendingId}}/reject
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "motivoRechazo": "No pudimos validar la autenticidad del documento."
+  }
+}
+
+docs {
+  Empresa: rechaza una solicitud de registro.
+  Transición: PENDIENTE_VERIFICACION → RECHAZADO.
+
+  La app, en la pantalla "esperando aprobación", detecta el rechazo y le muestra
+  el motivo al usuario.
+}

@@ -58,9 +58,11 @@ export default function AddPaymentMethodScreen() {
         numeroCheque: numeroCheque || undefined,
         montoGarantia: tipo === 'CHEQUE_CERTIFICADO' ? Number(garantia) : undefined,
       });
-      Alert.alert('Listo', 'Medio de pago agregado correctamente.', [
-        { text: 'OK', onPress: () => nav.goBack() },
-      ]);
+      Alert.alert(
+        'Listo',
+        'Medio de pago agregado. Queda pendiente de verificación de la empresa antes de poder pujar.',
+        [{ text: 'OK', onPress: () => nav.goBack() }],
+      );
     } catch {
       Alert.alert('Error', 'No se pudo agregar.');
     } finally {

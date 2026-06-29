@@ -1,0 +1,19 @@
+meta {
+  name: 09 Verificar Medio de Pago
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{baseUrl}}/admin/payment-methods/{{medioPagoId}}/verify
+  body: none
+  auth: none
+}
+
+docs {
+  Empresa: verifica un medio de pago → habilita al usuario a pujar.
+  Los medios nacen SIN verificar; hasta que la empresa no verifique, la puja
+  devuelve 403 "Medio de pago no verificado".
+
+  Conseguí el id con 11 Listar Medios Pendientes.
+}

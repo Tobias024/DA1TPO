@@ -39,7 +39,7 @@ export default function ConsignmentFormScreen() {
     }
     setLoading(true);
     try {
-      await consignmentsApi.create({
+      const created = await consignmentsApi.create({
         nombreBien: nombre,
         descripcionDetallada: descripcion,
         historia: historia || undefined,
@@ -47,7 +47,7 @@ export default function ConsignmentFormScreen() {
         declaraPropiedad: propiedad,
         declaraOrigenLicito: origen,
       });
-      nav.replace('RequestSent');
+      nav.replace('RequestSent', { consignmentId: created?.id });
     } catch {
       Alert.alert('Error', 'No se pudo enviar la solicitud.');
     } finally {
