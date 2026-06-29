@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ScreenHeader from '@/components/ScreenHeader';
 import Card from '@/components/Card';
 import { colors } from '@/theme/colors';
-import { notificationsApi, salesApi } from '@/api/services';
+import { consignmentsApi, notificationsApi, salesApi } from '@/api/services';
 import type { Notification, TipoNotificacion } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
@@ -66,9 +66,20 @@ export default function NotificationsScreen() {
         // Informativa: el bien fue recibido y está en inspección. Sin navegación.
         break;
       case 'CONSIGNACION_ACEPTADA':
-      case 'OFERTA_BASE_PROPUESTA':
-        if (n.referenciaId) nav.navigate('RequestAccepted', { consignmentId: n.referenciaId });
+      case 'OFERTA_BASE_PROPUESTA': {
+        // Solo lleva al form de confirmar precio si todavía hay una oferta pendiente.
+        // Si ya la aceptó/rechazó (o avanzó), va a Mis Subastas.
+        if (!n.referenciaId) break;
+        try {
+          const c = await consignmentsApi.detail(n.referenciaId);
+          if (c.estado === 'PENDIENTE_CONFIRMACION_USUARIO')
+            nav.navigate('RequestAccepted', { consignmentId: n.referenciaId });
+          else nav.navigate('MyConsignments');
+        } catch {
+          nav.navigate('RequestAccepted', { consignmentId: n.referenciaId });
+        }
         break;
+      }
       case 'CONSIGNACION_RECHAZADA':
       case 'BIEN_DEVUELTO':
         // Rechazo de la empresa o devolución por rechazo del usuario → motivo + gastos de envío.

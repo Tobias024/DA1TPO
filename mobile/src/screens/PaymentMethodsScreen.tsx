@@ -80,13 +80,17 @@ export default function PaymentMethodsScreen() {
 
               <View style={styles.estadoRow}>
                 <Ionicons
-                  name={item.verificado ? 'checkmark-circle' : 'time-outline'}
+                  name={item.verificado ? 'checkmark-circle' : item.rechazado ? 'close-circle' : 'time-outline'}
                   size={14}
-                  color={item.verificado ? colors.greenLive : colors.orangePending}
+                  color={item.verificado ? colors.greenLive : item.rechazado ? colors.redLive : colors.orangePending}
                   style={{ marginRight: 4 }}
                 />
-                <Text style={[styles.estado, { color: item.verificado ? colors.greenLive : colors.orangePending }]}>
-                  {item.verificado ? 'Verificado' : 'Pendiente de verificación'}
+                <Text style={[styles.estado, { color: item.verificado ? colors.greenLive : item.rechazado ? colors.redLive : colors.orangePending }]}>
+                  {item.verificado
+                    ? 'Verificado'
+                    : item.rechazado
+                      ? `Rechazado${item.motivoRechazo ? `: ${item.motivoRechazo}` : ''}`
+                      : 'Pendiente de verificación'}
                 </Text>
               </View>
 

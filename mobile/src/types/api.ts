@@ -164,6 +164,8 @@ export interface MedioPago {
   tipo: TipoMedioPago;
   moneda?: Moneda;
   verificado: boolean;
+  rechazado?: boolean;
+  motivoRechazo?: string | null;
   proveedor: string;
   ultimosDigitos?: string;
   // Tarjeta de crédito (datos enmascarados)

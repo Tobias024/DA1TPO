@@ -27,6 +27,8 @@ public final class MedioPagoMapper {
         m.put("tipo", mp.getTipo());
         m.put("moneda", mp.getMoneda());
         m.put("verificado", mp.isVerificado());
+        m.put("rechazado", mp.isRechazado());
+        m.put("motivoRechazo", mp.getMotivoRechazo());
         m.put("proveedor", proveedor(mp));
         m.put("ultimosDigitos", mp.getUltimosDigitosTarjeta());
 

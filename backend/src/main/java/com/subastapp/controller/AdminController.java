@@ -181,7 +181,7 @@ public class AdminController {
     /** Lista medios de pago pendientes de verificación. */
     @GetMapping("/payment-methods")
     public ResponseEntity<?> listPendingPayments() {
-        List<Map<String, Object>> out = mediosPago.findByVerificadoFalse().stream().map(mp -> {
+        List<Map<String, Object>> out = mediosPago.findByVerificadoFalseAndRechazadoFalse().stream().map(mp -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", mp.getId());
             m.put("tipo", mp.getTipo() != null ? mp.getTipo().name() : null);
@@ -199,6 +199,8 @@ public class AdminController {
         MedioPago mp = mediosPago.findById(id).orElse(null);
         if (mp == null) return ResponseEntity.notFound().build();
         mp.setVerificado(true);
+        mp.setRechazado(false); // re-verificar limpia un rechazo previo
+        mp.setMotivoRechazo(null);
         mediosPago.save(mp);
         crearNotif(mp.getUsuario(), TipoNotificacion.MEDIO_PAGO_VERIFICADO, "Medio de pago verificado",
                 "Tu medio de pago fue verificado por la empresa. Ya podés pujar.", mp.getId());
@@ -211,14 +213,16 @@ public class AdminController {
                                            @RequestBody(required = false) Map<String, String> body) {
         MedioPago mp = mediosPago.findById(id).orElse(null);
         if (mp == null) return ResponseEntity.notFound().build();
-        mp.setVerificado(false);
-        mediosPago.save(mp);
         String motivo = body != null && body.get("motivo") != null
                 ? body.get("motivo")
                 : "El medio de pago no pudo ser verificado.";
+        mp.setVerificado(false);
+        mp.setRechazado(true);
+        mp.setMotivoRechazo(motivo);
+        mediosPago.save(mp);
         crearNotif(mp.getUsuario(), TipoNotificacion.MEDIO_PAGO_RECHAZADO, "Medio de pago rechazado",
                 motivo, mp.getId());
-        return ResponseEntity.ok(Map.of("id", mp.getId(), "verificado", false));
+        return ResponseEntity.ok(Map.of("id", mp.getId(), "verificado", false, "rechazado", true));
     }
 
     // =================================================================

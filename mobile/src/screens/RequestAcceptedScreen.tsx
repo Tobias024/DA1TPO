@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Card from '@/components/Card';
 import PrimaryButton from '@/components/PrimaryButton';
 import TextField from '@/components/TextField';
@@ -10,9 +11,10 @@ import type { Consignment } from '@/types/api';
 import type { MainStackParamList } from '@/navigation/types';
 
 type Rt = RouteProp<MainStackParamList, 'RequestAccepted'>;
+type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 export default function RequestAcceptedScreen() {
-  const nav = useNavigation();
+  const nav = useNavigation<Nav>();
   const { params } = useRoute<Rt>();
   const [c, setC] = useState<Consignment | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export default function RequestAcceptedScreen() {
     setLoading(true);
     try {
       await consignmentsApi.acceptOffer(c.id);
-      Alert.alert('Listo', 'Propuesta aceptada.', [{ text: 'OK', onPress: () => nav.goBack() }]);
+      Alert.alert('Listo', 'Propuesta aceptada.', [{ text: 'OK', onPress: () => nav.navigate('MyConsignments') }]);
     } catch { Alert.alert('Error'); } finally { setLoading(false); }
   };
 
@@ -42,9 +44,11 @@ export default function RequestAcceptedScreen() {
     setLoading(true);
     try {
       await consignmentsApi.rejectOffer(c.id);
-      Alert.alert('Listo', 'Propuesta rechazada.', [{ text: 'OK', onPress: () => nav.goBack() }]);
+      Alert.alert('Listo', 'Propuesta rechazada.', [{ text: 'OK', onPress: () => nav.navigate('MyConsignments') }]);
     } catch { Alert.alert('Error'); } finally { setLoading(false); }
   };
+
+  const editable = c?.estado === 'PENDIENTE_CONFIRMACION_USUARIO';
 
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
@@ -63,15 +67,30 @@ export default function RequestAcceptedScreen() {
         ) : null}
       </Card>
 
-      <Text style={styles.sectionTitle}>Cuenta para cobros</Text>
-      <Text style={styles.sectionHint}>
-        Declarás la cuenta a la vista donde recibirás el producido de la venta. Puede ser del exterior y debe declararse antes del inicio de la subasta.
-      </Text>
-      <TextField label="CBU / IBAN / Cuenta" value={cbu} onChangeText={setCbu} />
-      <TextField label="Banco o entidad" value={banco} onChangeText={setBanco} />
+      {editable ? (
+        <>
+          <Text style={styles.sectionTitle}>Cuenta para cobros</Text>
+          <Text style={styles.sectionHint}>
+            Declarás la cuenta a la vista donde recibirás el producido de la venta. Puede ser del exterior y debe declararse antes del inicio de la subasta.
+          </Text>
+          <TextField label="CBU / IBAN / Cuenta" value={cbu} onChangeText={setCbu} />
+          <TextField label="Banco o entidad" value={banco} onChangeText={setBanco} />
 
-      <PrimaryButton title="Aceptar Propuesta" onPress={accept} loading={loading} style={{ marginTop: 16 }} />
-      <PrimaryButton title="Rechazar" variant="outlined" onPress={reject} loading={loading} style={{ marginTop: 8 }} />
+          <PrimaryButton title="Aceptar Propuesta" onPress={accept} loading={loading} style={{ marginTop: 16 }} />
+          <PrimaryButton title="Rechazar" variant="outlined" onPress={reject} loading={loading} style={{ marginTop: 8 }} />
+        </>
+      ) : (
+        <>
+          <Text style={styles.sectionHint}>
+            Ya confirmaste esta propuesta. La empresa asignará tu bien a una subasta y te avisará la fecha.
+          </Text>
+          <PrimaryButton
+            title="Ver en Mis Subastas"
+            onPress={() => nav.navigate('MyConsignments')}
+            style={{ marginTop: 16 }}
+          />
+        </>
+      )}
     </ScrollView>
   );
 }

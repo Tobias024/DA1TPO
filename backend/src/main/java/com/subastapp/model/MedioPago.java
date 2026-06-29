@@ -38,6 +38,16 @@ public class MedioPago {
     @lombok.Builder.Default
     private boolean verificado = false;
 
+    /**
+     * Rechazo explícito por la empresa/admin. Distingue un medio rechazado de uno
+     * simplemente pendiente (ambos con verificado=false): los rechazados NO vuelven
+     * a la lista de pendientes.
+     */
+    @lombok.Builder.Default
+    private boolean rechazado = false;
+
+    private String motivoRechazo;
+
     // CUENTA_BANCARIA fields
     private String banco;
     private String numeroCuenta;
