@@ -39,7 +39,7 @@ export type MainStackParamList = {
   AddPaymentMethod: undefined;
   MyConsignments: undefined;
   ConsignmentForm: undefined;
-  RequestSent: undefined;
+  RequestSent: { consignmentId?: string } | undefined;
   RequestAccepted: { consignmentId: string };
   RequestRejected: { consignmentId: string };
   PieceLocation: { consignmentId: string };

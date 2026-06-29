@@ -84,6 +84,14 @@ public class Consignacion {
     @JoinColumn(name = "pieza_id")
     private Pieza pieza;
 
+    // Confirmación de envío del bien por parte del usuario.
+    // Flag liviano: NO es un estado de la máquina (la transición a EN_INSPECCION la hace la empresa).
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean envioConfirmado = false;
+
+    private LocalDateTime fechaEnvio;
+
     private LocalDateTime fechaSolicitud;
 
     @PrePersist

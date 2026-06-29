@@ -45,8 +45,13 @@ export default function MyConsignmentsScreen() {
   const open = (c: Consignment) => {
     if (c.estado === 'PENDIENTE_CONFIRMACION_USUARIO' || c.estado === 'ACEPTADO') {
       nav.navigate('RequestAccepted', { consignmentId: c.id });
-    } else if (c.estado === 'RECHAZADO') {
+    } else if (c.estado === 'RECHAZADO' || c.estado === 'DEVUELTO') {
+      // RECHAZADO = la empresa rechazó; DEVUELTO = el usuario rechazó la oferta.
+      // Ambos muestran motivo/gastos de envío (no tienen pieza, así que no van a PieceLocation).
       nav.navigate('RequestRejected', { consignmentId: c.id });
+    } else if (c.estado === 'PENDIENTE') {
+      // Aún sin pieza/depósito asignado → pantalla de envío para confirmar el despacho.
+      nav.navigate('RequestSent', { consignmentId: c.id });
     } else {
       nav.navigate('PieceLocation', { consignmentId: c.id });
     }

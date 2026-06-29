@@ -20,6 +20,8 @@ export type TipoNotificacion =
   | 'MULTA_APLICADA'
   | 'MEDIO_PAGO_VERIFICADO'
   | 'MEDIO_PAGO_RECHAZADO'
+  | 'CONSIGNACION_RECIBIDA'
+  | 'CONSIGNACION_EN_INSPECCION'
   | 'CONSIGNACION_ACEPTADA'
   | 'CONSIGNACION_RECHAZADA'
   | 'OFERTA_BASE_PROPUESTA'
@@ -230,6 +232,8 @@ export interface Consignment {
   subastaFecha?: string | null;
   fechaSubastaAsignada?: string | null;
   motivoRechazo?: string | null;
+  envioConfirmado?: boolean;
+  fechaEnvio?: string | null;
 }
 
 export interface CreateConsignmentRequest {

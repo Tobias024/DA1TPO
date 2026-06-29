@@ -46,6 +46,8 @@ public final class ConsignacionMapper {
         m.put("gastosDevolucion", c.getGastosDevolucion());
         m.put("fechaSolicitud", c.getFechaSolicitud());
         m.put("fechaSubastaAsignada", c.getFechaSubastaAsignada());
+        m.put("envioConfirmado", c.isEnvioConfirmado());
+        m.put("fechaEnvio", c.getFechaEnvio());
 
         // Subasta asignada (momento explícito en que la empresa la incluye en un catálogo).
         Subasta s = c.getSubastaAsignada();

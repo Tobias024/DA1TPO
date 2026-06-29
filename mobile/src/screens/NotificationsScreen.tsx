@@ -15,6 +15,8 @@ type Nav = NativeStackNavigationProp<MainStackParamList>;
 type IconSpec = { name: React.ComponentProps<typeof Ionicons>['name']; color: string };
 
 const ICON: Record<TipoNotificacion, IconSpec> = {
+  CONSIGNACION_RECIBIDA: { name: 'cube', color: colors.brandPrimary },
+  CONSIGNACION_EN_INSPECCION: { name: 'search', color: colors.orangePending },
   CONSIGNACION_ACEPTADA: { name: 'checkmark-circle', color: colors.greenLive },
   CONSIGNACION_RECHAZADA: { name: 'close-circle', color: colors.redLive },
   OFERTA_BASE_PROPUESTA: { name: 'pricetag', color: colors.brandPrimary },
@@ -56,11 +58,20 @@ export default function NotificationsScreen() {
       notificationsApi.markRead(n.id).catch(() => {});
     }
     switch (n.tipo) {
+      case 'CONSIGNACION_RECIBIDA':
+        // Solicitud recién creada → pantalla con la dirección de envío + confirmar despacho.
+        if (n.referenciaId) nav.navigate('RequestSent', { consignmentId: n.referenciaId });
+        break;
+      case 'CONSIGNACION_EN_INSPECCION':
+        // Informativa: el bien fue recibido y está en inspección. Sin navegación.
+        break;
       case 'CONSIGNACION_ACEPTADA':
       case 'OFERTA_BASE_PROPUESTA':
         if (n.referenciaId) nav.navigate('RequestAccepted', { consignmentId: n.referenciaId });
         break;
       case 'CONSIGNACION_RECHAZADA':
+      case 'BIEN_DEVUELTO':
+        // Rechazo de la empresa o devolución por rechazo del usuario → motivo + gastos de envío.
         if (n.referenciaId) nav.navigate('RequestRejected', { consignmentId: n.referenciaId });
         break;
       case 'ASIGNADO_A_SUBASTA':

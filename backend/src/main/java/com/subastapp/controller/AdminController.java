@@ -234,6 +234,8 @@ public class AdminController {
         return consignaciones.findById(id).map(c -> {
             c.setEstado(EstadoConsignacion.EN_INSPECCION);
             consignaciones.save(c);
+            crearNotif(c.getUsuario(), TipoNotificacion.CONSIGNACION_EN_INSPECCION, "Producto recibido",
+                    "Recibimos tu bien y está en inspección. Te avisaremos el resultado.", c.getId());
             return ResponseEntity.ok(Map.of(
                     "id", c.getId(),
                     "estado", c.getEstado().name(),
@@ -272,6 +274,10 @@ public class AdminController {
             c.setEstado(EstadoConsignacion.PENDIENTE_CONFIRMACION_USUARIO);
             consignaciones.save(c);
 
+            crearNotif(c.getUsuario(), TipoNotificacion.CONSIGNACION_ACEPTADA, "Artículo aceptado",
+                    "Aceptamos tu bien tras la inspección. Revisá la propuesta de precio base y comisión.",
+                    c.getId());
+
             return ResponseEntity.ok(Map.of(
                     "id", c.getId(),
                     "estado", c.getEstado().name(),
@@ -299,6 +305,12 @@ public class AdminController {
             c.setGastosDevolucion(gastos);
             c.setEstado(EstadoConsignacion.RECHAZADO);
             consignaciones.save(c);
+
+            LocalDateTime llegada = LocalDateTime.now().plusDays(7);
+            crearNotif(c.getUsuario(), TipoNotificacion.CONSIGNACION_RECHAZADA, "Artículo rechazado",
+                    "Tu bien fue rechazado. Motivo: " + c.getCausaRechazo()
+                            + ". Gastos de devolución: $" + c.getGastosDevolucion().toPlainString()
+                            + ". Llegada estimada: " + llegada.toLocalDate() + ".", c.getId());
 
             return ResponseEntity.ok(Map.of(
                     "id", c.getId(),

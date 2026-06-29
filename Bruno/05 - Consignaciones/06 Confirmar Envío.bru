@@ -1,0 +1,24 @@
+meta {
+  name: 06 Confirmar Envío
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/consignments/{{consignmentId}}/confirm-shipment
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Usuario: confirma que despachó el bien al depósito.
+  Solo válido mientras la consignación está en PENDIENTE (si no, 409).
+
+  Marca envioConfirmado=true y fechaEnvio. No cambia el estado:
+  la transición a EN_INSPECCION la hace la empresa con
+  06 - Admin / 01 Iniciar Inspección.
+}
